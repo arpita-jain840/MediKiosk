@@ -1,8 +1,10 @@
-import React from 'react'
+import RoughInputTest from "./Input_section"
 
 const App = () => {
   return (
-    <div>App</div>
+    <main className="min-h-screen bg-slate-100 py-10 px-4">
+      <RoughInputTest />
+    </main>
   )
 }
 
