@@ -1,6 +1,10 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends, Header, HTTPException
 from schemas.ingest_schema import TextIngestRequest, TextIngestResponse
-from services.ai_service import transcribe_audio, process_user_text
+from services.ai_service import (
+    transcribe_audio,
+    process_user_text,
+    process_medical_image
+)
 from typing import Optional
 
 router = APIRouter(prefix="/ingest", tags=["Ingest"])
@@ -49,3 +53,18 @@ async def ingest_voice(
         session_id=session_id,
         reply=f"Transcription: '{transcription}' | Reply: {repy_text}"
         )
+# PIPE 3: Image Ingest
+@router.post("/image", response_model=TextIngestResponse)
+async def ingest_image(
+    file: UploadFile = File(..., description="Medical image/document"),
+    session_id: Optional[str] = Form(None),
+    current_user: str = Depends(get_current_user)
+):
+    # Image ko Gemini Vision se process karna
+    reply_text = await process_medical_image(file)
+
+    return TextIngestResponse(
+        status="success",
+        session_id=session_id,
+        reply=reply_text
+    )

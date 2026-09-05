@@ -24,6 +24,39 @@ export default function RoughInputTest() {
         },
         body: JSON.stringify({ text, session_id: "test_session" }),
       });
+  const sendImageToBackend = async (imageFile: File) => {
+    setLoading(true);
+    setServerReply("Image upload & Gemini Vision processing...");
+
+    try {
+      const formData = new FormData();
+
+      formData.append("file", imageFile);
+      formData.append("session_id", "image_session_101");
+
+      const res = await fetch("http://127.0.0.1:8000/ingest/image", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer test-user-token",
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setServerReply(data.detail || "Image processing failed.");
+        return;
+      }
+
+      setServerReply(data.reply || JSON.stringify(data));
+    } catch (err) {
+      setServerReply("Error: Image process nahi ho paya.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
       const data = await res.json();
       setServerReply(data.reply || JSON.stringify(data));
     } catch (err) {
@@ -160,10 +193,21 @@ export default function RoughInputTest() {
         </div>
 
         {selectedImage && (
-          <p className="text-xs text-green-600 truncate">
-            Selected: {selectedImage.name}
-          </p>
-        )}
+  <>
+    <p className="text-xs text-green-600 truncate">
+      Selected: {selectedImage.name}
+    </p>
+
+    <button
+      type="button"
+      onClick={() => sendImageToBackend(selectedImage)}
+      disabled={loading}
+      className="w-full py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 disabled:bg-gray-400 cursor-pointer"
+    >
+      {loading ? "Analyzing..." : " Analyze Image"}
+    </button>
+  </>
+)}
 
         {/* Send Action for Text */}
         <button
