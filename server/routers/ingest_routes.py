@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends, Header, HTTPException
 from schemas.ingest_schema import TextIngestRequest, TextIngestResponse
 from services.ai_service import (
-    transcribe_audio,
+    process_voice_intake,
     process_user_text,
     process_medical_image
 )
@@ -35,24 +35,26 @@ async def ingest_text(
 #PIPE 2: Voice Ingest
 @router.post("/voice", response_model=TextIngestResponse)
 async def ingest_voice(
-    file: UploadFile = File(..., description="Audio file to be transcribed"),
-    session_id: Optional[str] = Form(None, description="Optional session ID for context"),
+    file: UploadFile = File(...),
+    session_id: Optional[str] = Form(None),
     current_user: str = Depends(get_current_user)
 ):
     #voice to text
-    transcription = await transcribe_audio(file)
+    transcription_text = await process_voice_intake(file)
 
-    repy_text = await process_user_text(
+    reply_text = await process_user_text(
         user_id = current_user,
-        text=transcription,
+        text=transcription_text,
         session_id=session_id
     )
 
     return TextIngestResponse(
         status="success",
         session_id=session_id,
-        reply=f"Transcription: '{transcription}' | Reply: {repy_text}"
+        reply=reply_text
         )
+
+
 # PIPE 3: Image Ingest
 @router.post("/image", response_model=TextIngestResponse)
 async def ingest_image(
