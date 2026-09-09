@@ -1,0 +1,27 @@
+/* App shell — sidebar + content side by side */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Scrollable main content area */
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px 48px;
+  background: #ffffff;
+}
+
+/* Generic page styles */
+.page h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.page p {
+  font-size: 15px;
+  color: #64748b;
+}

@@ -1,0 +1,88 @@
+/* ── Sidebar ── */
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: #0f172a;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 12px;
+  gap: 4px;
+  border-right: 1px solid #1e293b;
+  flex-shrink: 0;
+}
+
+/* Brand */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px 24px 12px;
+}
+
+.sidebar-brand-icon {
+  font-size: 22px;
+}
+
+.sidebar-brand-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 0.3px;
+}
+
+/* Nav group */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-nav--bottom {
+  margin-top: auto;
+}
+
+/* Nav link */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.sidebar-link:hover {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.sidebar-link--active {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.sidebar-link--active:hover {
+  background: #2563eb;
+}
+
+.sidebar-link-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar-link-label {
+  line-height: 1;
+}
+
+/* Divider */
+.sidebar-divider {
+  height: 1px;
+  background: #1e293b;
+  margin: 12px 4px;
+}
