@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { initialPatients, markPatientAsCompleted } from '../data/patientsData';
 import type {
@@ -28,66 +28,128 @@ export const PrescriptionPage: React.FC = () => {
     return initialPatients.find((p) => p.id === id) || initialPatients[0];
   }, [id]);
 
-  // Initial Prescription Data automatically populated
-  const [prescription, setPrescription] = useState<PrescriptionData>({
-    patientId: matched.id,
-    patientName: matched.name,
-    patientAge: matched.age,
-    patientGender: matched.gender,
-    patientWeight: matched.weight || '64 kg',
-    patientBloodGroup: matched.bloodGroup || 'O+',
-    doctorId: 'DOC-MELVIN-01',
-    doctorName: 'Dr. Melvin Suharjo, MD',
-    doctorQualification: 'MD, FCCP, Internal Medicine & Pulmonology',
-    doctorSpecialty: 'Department of Clinical Medicine',
-    doctorRegNo: 'MED-98421-US',
-    clinicName: 'MEDIX HEALTH CENTER & SPECIALITY CLINIC',
-    clinicAddress: '450 Lexington Avenue, Suite 1200, New York, NY 10017',
-    clinicPhone: '+1 (212) 890-4400',
-    consultationId: matched.id.replace('MK-', 'CNS-'),
-    consultationDate: new Date().toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    }),
-    diagnosis: matched.complaint || 'Acute Allergic Rhinosinusitis & Upper Airway Congestion',
-    clinicalNotes: 'Patient presented with 4-day history of facial tension, nasal congestion, and mild eye pain.',
-    medicines: [
-      {
-        id: 'med-1',
-        name: 'Paracetamol 500mg',
-        dosage: '1 tablet',
-        frequency: 'Three times daily',
-        duration: '5 days',
-        instructions: 'Take after meals',
-      },
-      {
-        id: 'med-2',
-        name: 'Desloratadine 5mg (Clarinex)',
-        dosage: '1 tablet',
-        frequency: 'Once daily (Night)',
-        duration: '10 days',
-        instructions: 'Take with full glass of water',
-      },
-      {
-        id: 'med-3',
-        name: 'Fluticasone Propionate 50mcg',
-        dosage: '2 sprays each nostril',
-        frequency: 'Twice daily',
-        duration: '7 days',
-        instructions: 'Shake gently before use',
-      },
-    ],
-    instructions:
-      'Warm steam inhalation twice daily. Maintain hydration > 2.5 Liters/day. Avoid cold drinks and direct air conditioning draft.',
-    dietaryAdvice: 'Soft warm fluids, honey-ginger tea, low sodium diet.',
-    followUp: '7 Days (or earlier if high fever develops)',
-    voice: null,
-    handwritten: null,
-    uploadedFiles: [],
-    status: 'DRAFT',
-    createdAt: new Date().toISOString(),
+  // Initial Prescription Data automatically populated based on patient
+  const [prescription, setPrescription] = useState<PrescriptionData>(() => {
+    const isMigraine = matched.id === 'PAT-1002' || matched.name.includes('Priyanshi');
+    const isHypertension = matched.id === 'PAT-1003';
+    const isSkin = matched.id === 'PAT-1004';
+
+    const defaultDiagnosis = isMigraine
+      ? 'Acute Migraine with Photophobia & Nausea'
+      : isHypertension
+      ? 'Essential Hypertension (Stage 1) & Tension Fatigue'
+      : isSkin
+      ? 'Allergic Contact Dermatitis & Pruritus'
+      : 'Acute Bronchitis & Upper Airway Congestion';
+
+    const defaultMeds: MedicineItem[] = isMigraine
+      ? [
+          {
+            id: 'med-1',
+            name: 'Sumatriptan 50mg',
+            dosage: '1 tablet',
+            frequency: 'At onset of acute migraine attack',
+            duration: 'As needed',
+            instructions: 'Take immediately with water at first sign of aura',
+          },
+          {
+            id: 'med-2',
+            name: 'Naproxen Sodium 500mg',
+            dosage: '1 tablet',
+            frequency: 'Twice daily',
+            duration: '3 days',
+            instructions: 'Take with food to prevent gastric discomfort',
+          },
+          {
+            id: 'med-3',
+            name: 'Domperidone 10mg',
+            dosage: '1 tablet',
+            frequency: 'Before meals (PRN)',
+            duration: '5 days',
+            instructions: 'Take 30 mins before food for nausea control',
+          },
+        ]
+      : [
+          {
+            id: 'med-1',
+            name: 'Paracetamol 500mg',
+            dosage: '1 tablet',
+            frequency: 'Three times daily',
+            duration: '5 days',
+            instructions: 'Take after meals for fever & body ache',
+          },
+          {
+            id: 'med-2',
+            name: 'Levocetirizine 5mg',
+            dosage: '1 tablet',
+            frequency: 'Once daily (Night)',
+            duration: '7 days',
+            instructions: 'Take at bedtime with water',
+          },
+          {
+            id: 'med-3',
+            name: 'Ambroxol Syrup 30mg/5ml',
+            dosage: '10 ml',
+            frequency: 'Twice daily',
+            duration: '5 days',
+            instructions: 'Take with warm water after food',
+          },
+        ];
+
+    return {
+      patientId: matched.id,
+      patientName: matched.name,
+      patientAge: matched.age,
+      patientGender: matched.gender,
+      patientWeight: matched.weight || '56 kg',
+      patientBloodGroup: matched.bloodGroup || 'B+',
+      doctorId: 'DOC-1001',
+      doctorName: 'Dr. Ananya Sharma',
+      doctorQualification: 'MBBS, MD (Internal Medicine)',
+      doctorSpecialty: 'General Physician & Clinical Consultant',
+      doctorRegNo: 'MCI-DL-2014-98421',
+      clinicName: 'MEDIKIS CARE CENTER & MULTISPECIALTY CLINIC',
+      clinicAddress: 'Saket, New Delhi, India 110017',
+      clinicPhone: '+91 98101 23456',
+      consultationId: matched.id.replace('PAT-', 'RX-'),
+      consultationDate: new Date().toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      }),
+      diagnosis: defaultDiagnosis,
+      clinicalNotes: `Patient presented with ${matched.complaint}. Vital parameters recorded at Kiosk Desk.`,
+      medicines: defaultMeds,
+      instructions: isMigraine
+        ? 'Rest in a dark quiet room during acute flare-up. Maintain hydration > 2.5 Liters/day. Avoid direct bright screen glare and missed meals.'
+        : 'Warm steam inhalation twice daily. Maintain hydration > 2.5 Liters/day. Avoid cold drinks and direct AC drafts.',
+      dietaryAdvice: isMigraine
+        ? 'Avoid excess caffeine, aged cheese, MSG and processed foods. Regular sleep schedule.'
+        : 'Warm fluids, honey-ginger tea, low sodium fresh diet.',
+      followUp: isMigraine
+        ? '10 Days (or earlier if severe headache persists)'
+        : '7 Days (or earlier if high fever develops)',
+      voice: null,
+      handwritten: null,
+      uploadedFiles: [],
+      status: 'DRAFT',
+      createdAt: new Date().toISOString(),
+    };
   });
+
+  // Re-sync if patient ID changes
+  useEffect(() => {
+    setPrescription((prev) => ({
+      ...prev,
+      patientId: matched.id,
+      patientName: matched.name,
+      patientAge: matched.age,
+      patientGender: matched.gender,
+      patientWeight: matched.weight || '56 kg',
+      patientBloodGroup: matched.bloodGroup || 'B+',
+      consultationId: matched.id.replace('PAT-', 'RX-'),
+    }));
+  }, [matched]);
 
   // Modals state
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
@@ -165,10 +227,10 @@ export const PrescriptionPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-[1550px] mx-auto pb-24 space-y-6 text-slate-800">
+    <div className="w-full max-w-[1440px] mx-auto pb-24 space-y-5 sm:space-y-6 text-slate-800">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-6 right-8 z-50 bg-slate-950/95 backdrop-blur text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-800 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200 text-xs font-semibold">
+        <div className="fixed top-6 right-6 sm:right-8 z-50 bg-slate-950/95 backdrop-blur text-white px-4 sm:px-5 py-3 rounded-2xl shadow-2xl border border-slate-800 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200 text-xs font-semibold">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
@@ -177,10 +239,10 @@ export const PrescriptionPage: React.FC = () => {
       {/* 1. Page Header with Auto-populated Patient & Doctor Info */}
       <PrescriptionHeader prescription={prescription} />
 
-      {/* 2. Main Two-Column Prescription Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* LEFT PANEL: Prescription Creation Tools (5 Cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-6 sticky top-4">
+      {/* 2. Main Responsive Prescription Workspace */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 sm:gap-6 items-start">
+        {/* LEFT PANEL: 4 Option Tools (5 Cols on Desktop) */}
+        <div className="xl:col-span-5 flex flex-col gap-4 sticky xl:top-4 z-10">
           <PrescriptionTools
             prescription={prescription}
             onOpenText={() => setIsTextModalOpen(true)}
@@ -190,8 +252,8 @@ export const PrescriptionPage: React.FC = () => {
           />
         </div>
 
-        {/* RIGHT PANEL: Live Prescription Document (7 Cols) */}
-        <div className="lg:col-span-7">
+        {/* RIGHT PANEL: Authentic Medical Prescription Sheet (7 Cols on Desktop) */}
+        <div className="xl:col-span-7">
           <PrescriptionDocument
             prescription={prescription}
             onUpdatePrescription={handleUpdatePrescription}

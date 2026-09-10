@@ -32,19 +32,19 @@ export const PatientQRCard: React.FC<{ onPatientSynced?: (patient: SyncedPatient
   const [isScanning, setIsScanning] = useState(false);
   const [syncedPatient, setSyncedPatient] = useState<SyncedPatient | null>(null);
 
-  // Mock patient data for simulation
+  // Mock patient data for simulation from Indian dataset
   const mockPatient: SyncedPatient = {
-    id: 'MK-9824',
-    name: 'Emma Watson',
-    age: 28,
-    gender: 'Female',
+    id: 'PAT-1001',
+    name: 'Aarav Sharma',
+    age: 24,
+    gender: 'Male',
     bloodGroup: 'O+',
-    bp: '118/76 mmHg',
-    pulse: '74 bpm',
-    spO2: '99%',
-    complaint: 'Seasonal allergies & mild headache',
+    bp: '120/78 mmHg',
+    pulse: '76 bpm',
+    spO2: '98%',
+    complaint: 'Fever, cough & severe fatigue for 3 days',
     time: 'Just now',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'
+    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=120&auto=format&fit=crop&q=80'
   };
 
   const handleSimulateScan = () => {

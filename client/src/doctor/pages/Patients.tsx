@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getLivePatients, fetchLiveCockpitPatients } from '../data/patientsData';
+import { getLivePatients } from '../data/patientsData';
 import type { PatientRecord } from '../data/patientsData';
 import { ArrowRight, QrCode, Clock, Activity, CheckCircle2 } from 'lucide-react';
 
@@ -10,10 +10,7 @@ export const Patients: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>('active');
 
   useEffect(() => {
-    // Initial sync from local cache
     setPatients(getLivePatients());
-    // Live async update from PostgreSQL / FastAPI Layer 1/2/3
-    fetchLiveCockpitPatients().then((data) => setPatients(data));
   }, []);
 
   const waitingOrConsulting = patients.filter((p) => p.status === 'Waiting' || p.status === 'In Consultation');
@@ -38,10 +35,10 @@ export const Patients: React.FC = () => {
         </div>
 
         {/* Tab Controls */}
-        <div className="flex items-center gap-1.5 p-1 bg-white border border-slate-200 rounded-2xl shadow-xs self-start sm:self-auto">
+        <div className="flex items-center gap-1.5 p-1 bg-white border border-slate-200 rounded-2xl shadow-xs self-start sm:self-auto overflow-x-auto max-w-full">
           <button
             onClick={() => setActiveTab('active')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
               activeTab === 'active'
                 ? 'bg-indigo-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -51,7 +48,7 @@ export const Patients: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('completed')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
               activeTab === 'completed'
                 ? 'bg-indigo-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -61,7 +58,7 @@ export const Patients: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('all')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
               activeTab === 'all'
                 ? 'bg-indigo-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -73,7 +70,7 @@ export const Patients: React.FC = () => {
       </div>
 
       {/* Patients Table / Card List */}
-      <div className="bg-white rounded-4xl p-6 border border-slate-100/80 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-[2rem] p-4 sm:p-6 border border-slate-100/80 shadow-xs overflow-hidden">
         {displayedPatients.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-3">
@@ -89,39 +86,39 @@ export const Patients: React.FC = () => {
             {displayedPatients.map((patient) => (
               <div
                 key={patient.id}
-                onClick={() => navigate(`/doctor/patients/${patient.id}`)}
-                className="py-4.5 px-3 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/80 rounded-2xl transition-all cursor-pointer group"
+                onClick={() => navigate(`/patients/${patient.id}`)}
+                className="py-4 px-2 sm:px-3 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 hover:bg-slate-50/80 rounded-2xl transition-all cursor-pointer group"
               >
                 {/* Patient Basic Info */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 sm:gap-4">
                   <img
                     src={patient.avatar}
                     alt={patient.name}
-                    className="w-12 h-12 rounded-2xl object-cover border border-slate-200 group-hover:border-indigo-300 transition-colors"
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover border border-slate-200 group-hover:border-indigo-300 transition-colors flex-shrink-0"
                   />
-                  <div>
-                    <div className="flex items-center gap-2.5">
-                      <h3 className="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
                         {patient.name}
                       </h3>
                       <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-[10px] font-bold">
                         {patient.id}
                       </span>
-                      {patient.id === 'MK-9824' && (
+                      {patient.id === 'PAT-1001' && (
                         <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1">
                           <QrCode className="w-2.5 h-2.5" />
                           Live QR
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-400 font-medium mt-0.5">
+                    <p className="text-xs text-slate-400 font-medium mt-0.5 truncate">
                       {patient.gender}, {patient.age} yrs • Blood {patient.bloodGroup} • {patient.insurance}
                     </p>
                   </div>
                 </div>
 
                 {/* Vitals Summary */}
-                <div className="flex items-center gap-3 text-xs font-semibold text-slate-600">
+                <div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold text-slate-600 flex-wrap">
                   <span className="bg-slate-100/80 px-2.5 py-1 rounded-lg">
                     BP: <strong className="text-slate-800">{patient.bp.split(' ')[0]}</strong>
                   </span>
