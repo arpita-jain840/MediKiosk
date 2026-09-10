@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Printer, Download, Send, ArrowLeft, ShieldCheck } from 'lucide-react';
-import type { PrescriptionData } from '../../types/prescription';
+import type { PrescriptionData } from '../../../types/prescription';
 
 interface PrescriptionPreviewModalProps {
   isOpen: boolean;

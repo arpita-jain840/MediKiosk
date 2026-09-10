@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Calendar, Stethoscope, ShieldCheck } from 'lucide-react';
-import type { PrescriptionData } from '../../types/prescription';
+import type { PrescriptionData } from '../../../types/prescription';
 
 interface PrescriptionHeaderProps {
   prescription: PrescriptionData;

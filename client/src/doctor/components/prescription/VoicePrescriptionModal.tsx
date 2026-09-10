@@ -11,7 +11,7 @@ import {
   Sparkles,
   Volume2
 } from 'lucide-react';
-import type { VoiceAttachment } from '../../types/prescription';
+import type { VoiceAttachment } from '../../../types/prescription';
 
 interface VoicePrescriptionModalProps {
   isOpen: boolean;

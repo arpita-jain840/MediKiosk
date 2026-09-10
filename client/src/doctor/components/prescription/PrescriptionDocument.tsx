@@ -15,7 +15,7 @@ import {
   Eye,
   ShieldCheck
 } from 'lucide-react';
-import type { PrescriptionData, MedicineItem } from '../../types/prescription';
+import type { PrescriptionData, MedicineItem } from '../../../types/prescription';
 
 interface PrescriptionDocumentProps {
   prescription: PrescriptionData;

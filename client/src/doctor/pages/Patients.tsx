@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getLivePatients } from '../data/patientsData';
-import type { PatientRecord } from '../data/patientsData';
+import { getLivePatients } from '../../data/patientsData';
+import type { PatientRecord } from '../../data/patientsData';
 import { ArrowRight, QrCode, Clock, Activity, CheckCircle2 } from 'lucide-react';
 
 export const Patients: React.FC = () => {

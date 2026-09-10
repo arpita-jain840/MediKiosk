@@ -32,7 +32,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { initialPatients } from "../data/patientsData";
+import { initialPatients } from "../../data/patientsData";
 
 export default function PatientDetail() {
   const { id } = useParams<{ id: string }>();

@@ -33,7 +33,7 @@ const bottomNavItems: NavItem[] = [
 
 export const Sidebar: React.FC = () => {
   return (
-    <aside className="w-[72px] lg:w-20 bg-slate-950 text-slate-400 rounded-[2.5rem] flex flex-col items-center py-7 px-2.5 my-3 ml-4 shadow-2xl flex-shrink-0 justify-between select-none h-[calc(100vh-24px)] sticky top-3">
+    <aside className="w-[72px] lg:w-20 bg-white text-slate-500 rounded-[2.5rem] flex flex-col items-center py-7 px-2.5 my-3 ml-4 shadow-sm flex-shrink-0 justify-between select-none h-[calc(100vh-24px)] sticky top-3 border border-slate-100">
       {/* Top Section */}
       <div className="flex flex-col items-center gap-5 w-full">
         {mainNavItems.map((item) => (
@@ -44,15 +44,15 @@ export const Sidebar: React.FC = () => {
             title={item.label}
             className={({ isActive }) =>
               `relative group p-3 rounded-2xl flex items-center justify-center transition-all duration-300 ${isActive
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/40 ring-4 ring-indigo-500/20 scale-105'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900/90'
+                ? 'bg-primary text-white shadow-md shadow-primary/20 scale-105'
+                : 'text-slate-400 hover:text-primary hover:bg-primary-tint/50'
               }`
             }
           >
             {item.icon}
 
             {/* Hover Tooltip */}
-            <span className="absolute left-[calc(100%+14px)] bg-slate-900 text-white text-xs font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap shadow-xl z-50 border border-slate-800">
+            <span className="absolute left-[calc(100%+14px)] bg-slate-800 text-white text-xs font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap shadow-xl z-50">
               {item.label}
             </span>
           </NavLink>
@@ -60,7 +60,7 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Bottom Section */}
-      <div className="flex flex-col items-center gap-4 w-full pt-4 border-t border-slate-900/60">
+      <div className="flex flex-col items-center gap-4 w-full pt-4 border-t border-slate-100">
         {bottomNavItems.map((item) => (
           <NavLink
             key={item.to}
@@ -68,15 +68,15 @@ export const Sidebar: React.FC = () => {
             title={item.label}
             className={({ isActive }) =>
               `relative group p-3 rounded-2xl flex items-center justify-center transition-all duration-300 ${isActive
-                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/40'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900/90'
+                ? 'bg-primary text-white shadow-md shadow-primary/20'
+                : 'text-slate-400 hover:text-primary hover:bg-primary-tint/50'
               }`
             }
           >
             {item.icon}
 
             {/* Hover Tooltip */}
-            <span className="absolute left-[calc(100%+14px)] bg-slate-900 text-white text-xs font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap shadow-xl z-50 border border-slate-800">
+            <span className="absolute left-[calc(100%+14px)] bg-slate-800 text-white text-xs font-semibold px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 whitespace-nowrap shadow-xl z-50">
               {item.label}
             </span>
           </NavLink>

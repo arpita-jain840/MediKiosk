@@ -9,7 +9,7 @@ import {
   Info,
   Clock
 } from 'lucide-react';
-import type { PrescriptionData } from '../../types/prescription';
+import type { PrescriptionData } from '../../../types/prescription';
 
 interface PrescriptionToolsProps {
   prescription: PrescriptionData;

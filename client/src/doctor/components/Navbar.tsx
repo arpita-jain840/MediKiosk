@@ -29,10 +29,10 @@ export const Navbar: React.FC<NavbarProps> = ({
         )}
 
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-black shadow-md">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
+          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-black shadow-md">
+            <Sparkles className="w-4 h-4 text-primary-tint" />
           </div>
-          <span className="text-xl font-black tracking-wider text-slate-900 uppercase">
+          <span className="text-xl font-black tracking-wider text-primary uppercase">
             MEDIX
           </span>
         </div>
@@ -44,7 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           title="Open Patient Intake Kiosk"
           onClick={() => navigate('/kiosk')}
-          className="px-3.5 py-2 rounded-full bg-white border border-indigo-200 shadow-xs flex items-center gap-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 transition-all cursor-pointer"
+          className="px-3.5 py-2 rounded-full bg-white border border-primary-light/30 shadow-xs flex items-center gap-2 text-xs font-semibold text-primary hover:bg-primary-tint/30 hover:border-primary-light/60 transition-all cursor-pointer"
         >
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           Patient Kiosk

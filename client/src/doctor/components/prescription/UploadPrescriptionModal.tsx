@@ -11,7 +11,7 @@ import {
   RefreshCw,
   Plus
 } from 'lucide-react';
-import type { UploadedPrescriptionFile } from '../../types/prescription';
+import type { UploadedPrescriptionFile } from '../../../types/prescription';
 
 interface UploadPrescriptionModalProps {
   isOpen: boolean;
