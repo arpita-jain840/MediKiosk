@@ -1,5 +1,5 @@
 import { X, Send, CheckCircle2, Sparkles } from 'lucide-react';
-import type { PrescriptionData } from '../../../types/prescription';
+import type { PrescriptionData } from '../../types/prescription';
 
 interface SendConfirmationModalProps {
   isOpen: boolean;

@@ -10,7 +10,7 @@ import {
   Sparkles,
   Grid
 } from 'lucide-react';
-import type { HandwrittenAttachment } from '../../../types/prescription';
+import type { HandwrittenAttachment } from '../../types/prescription';
 
 interface HandwrittenCanvasModalProps {
   isOpen: boolean;

@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { initialPatients, markPatientAsCompleted } from '../../data/patientsData';
+import { initialPatients, markPatientAsCompleted } from '../data/patientsData';
 import type {
   PrescriptionData,
   MedicineItem,
   VoiceAttachment,
   UploadedPrescriptionFile,
   HandwrittenAttachment
-} from '../../types/prescription';
+} from '../types/prescription';
 import { PrescriptionHeader } from '../components/prescription/PrescriptionHeader';
 import { PrescriptionTools } from '../components/prescription/PrescriptionTools';
 import { PrescriptionDocument } from '../components/prescription/PrescriptionDocument';

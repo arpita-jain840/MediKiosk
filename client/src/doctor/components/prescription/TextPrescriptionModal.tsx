@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Plus, Trash2, Pill, Stethoscope, Sparkles } from 'lucide-react';
-import type { MedicineItem } from '../../../types/prescription';
+import type { MedicineItem } from '../../types/prescription';
 
 interface TextPrescriptionModalProps {
   isOpen: boolean;
