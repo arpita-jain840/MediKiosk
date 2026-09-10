@@ -7,7 +7,8 @@ import {
   MessageSquareText,
   FolderLock,
   Settings,
-  LogOut
+  LogOut,
+  MonitorSmartphone
 } from 'lucide-react';
 
 interface NavItem {
@@ -25,6 +26,7 @@ const mainNavItems: NavItem[] = [
 ];
 
 const bottomNavItems: NavItem[] = [
+  { to: '/kiosk', label: 'Patient Kiosk', icon: <MonitorSmartphone className="w-5 h-5 text-emerald-400" /> },
   { to: '/settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
   { to: '/profile', label: 'Logout', icon: <LogOut className="w-5 h-5" /> },
 ];

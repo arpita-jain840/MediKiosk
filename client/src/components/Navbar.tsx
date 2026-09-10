@@ -40,6 +40,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Action Controls & Doctor Profile */}
       <div className="flex items-center gap-4">
+        {/* Patient Kiosk Terminal button */}
+        <button
+          title="Open Patient Intake Kiosk"
+          onClick={() => navigate('/kiosk')}
+          className="px-3.5 py-2 rounded-full bg-white border border-indigo-200 shadow-xs flex items-center gap-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 transition-all cursor-pointer"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Patient Kiosk
+        </button>
+
         {/* Settings button */}
         <button
           title="Settings"

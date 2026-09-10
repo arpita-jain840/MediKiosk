@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
 
 export default function RoughInputTest() {
   const [text, setText] = useState("");
@@ -24,13 +25,22 @@ export default function RoughInputTest() {
         },
         body: JSON.stringify({ text, session_id: "test_session" }),
       });
+      const data = await res.json();
+      setServerReply(data.reply || JSON.stringify(data));
+    } catch (err) {
+      setServerReply("Error: Server se connect nahi ho paya.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Image Submission
   const sendImageToBackend = async (imageFile: File) => {
     setLoading(true);
     setServerReply("Image upload & Gemini Vision processing...");
 
     try {
       const formData = new FormData();
-
       formData.append("file", imageFile);
       formData.append("session_id", "image_session_101");
 
@@ -52,15 +62,6 @@ export default function RoughInputTest() {
       setServerReply(data.reply || JSON.stringify(data));
     } catch (err) {
       setServerReply("Error: Image process nahi ho paya.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-      const data = await res.json();
-      setServerReply(data.reply || JSON.stringify(data));
-    } catch (err) {
-      setServerReply("Error: Server se connect nahi ho paya.");
     } finally {
       setLoading(false);
     }
@@ -143,8 +144,19 @@ export default function RoughInputTest() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-12 p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
-      <h2 className="text-lg font-bold text-gray-800 mb-4">Rough Multi-Modal Input</h2>
+    <div className="max-w-md mx-auto mt-6 p-6 bg-white border border-gray-200 rounded-xl shadow-sm">
+      <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
+        <div>
+          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">Terminal 01</span>
+          <h2 className="text-lg font-bold text-gray-800 mt-1">Patient Intake Kiosk</h2>
+        </div>
+        <Link
+          to="/"
+          className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition flex items-center gap-1 shadow-xs"
+        >
+          Doctor Portal &rarr;
+        </Link>
+      </div>
 
       <div className="space-y-4">
         {/* Text Input */}
