@@ -142,7 +142,7 @@ export const RecordsScreen: React.FC = () => {
         })}
       </div>
 
-      <div className="px-5 md:px-10 pb-6 md:pb-10 space-y-2.5 md:space-y-4">
+      <div className="px-5 md:px-10 pb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {filtered.map((r) => (
           <div
             key={r.id}
@@ -151,29 +151,29 @@ export const RecordsScreen: React.FC = () => {
                 setViewingOcr({ title: r.title, ocr: r.ocr });
               }
             }}
-            className="rounded-2xl md:rounded-3xl p-3.5 md:p-5 flex items-center gap-3 md:gap-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            className="rounded-2xl p-4 md:p-5 flex items-start justify-between gap-3 shadow-xs hover:shadow-md transition-all cursor-pointer bg-white border border-slate-200/90 group"
           >
-            <div
-              className="rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 md:w-14 md:h-14"
-              style={{ width: 42, height: 42, background: "var(--primary-tint)" }}
-            >
-              <r.icon size={19} color="var(--primary)" className="md:w-6 md:h-6" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-[14px] md:text-[16px] truncate font-bold text-slate-900">{r.title}</p>
-                {r.ocr && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    Digitized OCR
-                  </span>
-                )}
+            <div className="flex items-start gap-3 min-w-0">
+              <div
+                className="rounded-xl flex items-center justify-center shrink-0 w-11 h-11 group-hover:scale-105 transition-transform"
+                style={{ background: "var(--primary-tint)" }}
+              >
+                <r.icon size={20} color="var(--primary)" />
               </div>
-              <p className="text-[12px] md:text-[14px] truncate text-slate-400">
-                {r.source} · {r.date}
-              </p>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                  <p className="text-sm font-bold text-slate-900 truncate">{r.title}</p>
+                  {r.ocr && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      OCR
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 truncate">{r.source}</p>
+                <p className="text-[11px] text-slate-400 mt-1">{r.date}</p>
+              </div>
             </div>
-            <ChevronRight size={17} color="var(--ink-soft)" className="md:w-5 md:h-5" />
+            <ChevronRight size={17} className="text-slate-400 group-hover:text-slate-700 shrink-0 mt-1" />
           </div>
         ))}
       </div>

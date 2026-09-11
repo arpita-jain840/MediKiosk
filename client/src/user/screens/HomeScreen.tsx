@@ -43,105 +43,155 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         }
       />
 
-      <div className="px-5 md:px-10 pb-6 md:pb-10 flex-1 md:grid md:grid-cols-2 md:gap-8">
-        <div>
+      <div className="px-5 md:px-10 pb-8 flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        {/* Left / Main Column (2 columns on large screens) */}
+        <div className="lg:col-span-2 space-y-5 md:space-y-6">
           {/* Greeting */}
-          <div className="mb-4 md:mb-6">
-            <p className="text-[20px] md:text-[28px] font-extrabold text-slate-900 tracking-tight">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                OPD Kiosk Terminal Active
+              </span>
+            </div>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
               Hello, {patient.name.split(" ")[0]}
-            </p>
-            <p className="text-[13px] md:text-[15px] text-slate-500 mt-0.5">
-              Welcome to the digital OPD case-taking kiosk.
+            </h2>
+            <p className="text-sm md:text-base text-slate-500 mt-1">
+              Welcome to the digital OPD clinical case-taking kiosk. Select a service below to get started.
             </p>
           </div>
 
-          {/* Health Check CTA */}
-          <button
+          {/* Primary Health Check Hero CTA */}
+          <div
             onClick={onOpenIntake}
-            className="w-full rounded-2xl md:rounded-3xl p-4 md:p-6 mb-4 md:mb-6 text-left flex items-center justify-between transition-transform hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
-            style={{ background: "var(--primary)", boxShadow: "0 10px 30px rgba(51,104,160,0.2)" }}
+            className="w-full rounded-2xl md:rounded-3xl p-6 md:p-8 text-left flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition-all hover:shadow-xl hover:scale-[1.005] active:scale-[0.995] cursor-pointer group"
+            style={{
+              background: "linear-gradient(135deg, #3368a0 0%, #1c436b 100%)",
+              boxShadow: "0 14px 40px rgba(51, 104, 160, 0.22)",
+            }}
           >
-            <div className="pr-3">
-              <p className="text-[16px] md:text-[22px] font-extrabold text-white leading-snug">
-                Not feeling well?
-              </p>
-              <p className="text-[13px] md:text-[15px] mt-1 md:mt-2 text-white/80 leading-snug">
-                Talk or type your symptoms — we'll create a 1-page health profile for your doctor.
-              </p>
-              <span
-                className="inline-flex items-center gap-1.5 mt-3 md:mt-5 rounded-full px-3.5 py-2 md:px-5 md:py-2.5 transition-colors hover:bg-white/20"
-                style={{ background: "rgba(255,255,255,0.16)" }}
-              >
-                <span className="text-[13px] md:text-[14px] font-bold text-white">Start health check</span>
-                <ChevronRight size={15} color="#fff" />
+            <div className="flex-1 space-y-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold tracking-wide">
+                <Stethoscope size={14} />
+                <span>AI Clinical Case-Taking</span>
               </span>
+              <h3 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-white leading-tight">
+                Not feeling well today?
+              </h3>
+              <p className="text-sm md:text-base text-white/85 max-w-xl leading-relaxed">
+                Talk or touch your symptoms in your native language. Our AI engine builds a comprehensive 1-page Clinical Blueprint so your doctor can evaluate your condition in seconds.
+              </p>
+              <div className="pt-2">
+                <span
+                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 transition-all group-hover:bg-white group-hover:text-[#3368a0]"
+                  style={{ background: "rgba(255,255,255,0.18)", color: "#ffffff" }}
+                >
+                  <span className="text-sm md:text-base font-bold">Start health check now</span>
+                  <ChevronRight size={17} />
+                </span>
+              </div>
             </div>
-            <div
-              className="shrink-0 rounded-full flex items-center justify-center md:w-20 md:h-20"
-              style={{ width: 52, height: 52, background: "rgba(255,255,255,0.14)" }}
-            >
-              <Stethoscope size={24} color="#fff" className="md:w-8 md:h-8" />
-            </div>
-          </button>
 
-          {/* Quick actions */}
-          <div className="grid grid-cols-3 gap-3 md:gap-5 mb-5 md:mb-8">
-            <QuickAction icon={FileText} label="Records" onClick={() => setTab("records")} />
-            <QuickAction icon={Calendar} label="Appointments" onClick={() => setTab("doctors")} />
-            <QuickAction icon={PhoneCall} label="Emergency" onClick={() => {}} danger />
+            <div
+              className="shrink-0 rounded-3xl flex items-center justify-center w-16 h-16 md:w-24 md:h-24 shadow-inner"
+              style={{ background: "rgba(255,255,255,0.15)" }}
+            >
+              <Stethoscope size={36} color="#fff" className="md:w-12 md:h-12" />
+            </div>
+          </div>
+
+          {/* Quick Actions Grid */}
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+              Essential Kiosk Services
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
+              <QuickAction icon={FileText} label="Upload Records" onClick={() => setTab("records")} />
+              <QuickAction icon={Calendar} label="OPD Doctors" onClick={() => setTab("doctors")} />
+              <QuickAction icon={Stethoscope} label="AYUSH Check" onClick={onOpenIntake} />
+              <QuickAction icon={PhoneCall} label="Emergency Desk" onClick={() => {}} danger />
+            </div>
           </div>
         </div>
 
-        <div>
-          {/* Upcoming appointment */}
-          <p className="text-[13px] md:text-[15px] mb-2 md:mb-4 font-bold" style={{ color: "var(--ink-soft)" }}>
-            Upcoming appointment
-          </p>
-          <div
-            className="rounded-2xl md:rounded-3xl p-4 md:p-6 mb-5 md:mb-8 flex items-center gap-3 md:gap-4 shadow-sm"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-          >
+        {/* Right Column (Hospital & Appointment Widgets) */}
+        <div className="space-y-5 md:space-y-6">
+          {/* Upcoming appointment card */}
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+              Today's OPD Queue
+            </p>
             <div
-              className="rounded-full flex items-center justify-center shrink-0 md:w-14 md:h-14"
-              style={{ width: 44, height: 44, background: "var(--primary-tint)" }}
+              className="rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm border border-[#3368a0]/15 bg-white space-y-4"
             >
-              <span style={{ color: "var(--primary)", fontWeight: 800 }} className="text-[14px] md:text-[16px]">
-                JS
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[14.5px] md:text-[16px] font-bold text-slate-900 truncate">
-                Dr. John Smith
-              </p>
-              <p className="text-[12.5px] md:text-[14px] text-slate-500">
-                Cardiology & General Medicine · Room 4B
-              </p>
-            </div>
-            <div className="text-right shrink-0">
-              <p className="text-[12.5px] md:text-[14px] font-bold" style={{ color: "var(--primary)" }}>
-                Today
-              </p>
-              <p className="text-[11.5px] md:text-[13px] text-slate-400">Token #2</p>
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <span className="text-xs font-bold text-slate-500">Department</span>
+                <span className="text-xs font-extrabold text-[#3368a0] bg-[#3368a0]/10 px-2.5 py-0.5 rounded-full">
+                  Cardiology & Ayush
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div
+                  className="rounded-2xl flex items-center justify-center shrink-0 w-14 h-14 font-black text-lg"
+                  style={{ background: "var(--primary-tint)", color: "var(--primary)" }}
+                >
+                  JS
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-base font-bold text-slate-900 truncate">
+                    Dr. John Smith
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    OPD Room 4B · AIIA Hospital
+                  </p>
+                </div>
+                <div className="text-right shrink-0 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                  <p className="text-xs font-bold text-slate-400 uppercase">Token</p>
+                  <p className="text-base font-black text-[#3368a0]">#2</p>
+                </div>
+              </div>
+              <div className="pt-1 flex items-center justify-between text-xs text-slate-500">
+                <span>Estimated Wait:</span>
+                <span className="font-bold text-slate-800">~4 minutes</span>
+              </div>
             </div>
           </div>
 
-          {/* History completeness */}
+          {/* History completeness Gauge */}
           <div
-            className="rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            className="rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm bg-white border border-slate-200/80 space-y-3"
           >
-            <div className="flex items-center justify-between mb-2 md:mb-4">
-              <p className="text-[13.5px] md:text-[15px] font-bold text-slate-900">Digital health profile</p>
-              <p className="text-[13px] md:text-[15px] font-black" style={{ color: "var(--primary)" }}>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold text-slate-900">Digital Health Profile</p>
+              <span className="text-xs font-black px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                 85% Complete
-              </p>
+              </span>
             </div>
-            <div className="rounded-full h-2 md:h-3 overflow-hidden mb-2 md:mb-4" style={{ background: "var(--primary-tint)" }}>
-              <div className="h-full rounded-full" style={{ width: "85%", background: "var(--primary)" }} />
+            <div className="rounded-full h-2.5 overflow-hidden bg-slate-100">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{ width: "85%", background: "var(--primary)" }}
+              />
             </div>
-            <p className="text-[12px] md:text-[14px] text-slate-500">
-              All paper prescriptions digitized and linked to your ABHA account.
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Paper prescriptions and Ayushman Bharat ID are linked. Complete the voice intake to reach 100%.
             </p>
+          </div>
+
+          {/* Ayushman Bharat (ABHA) Information Banner */}
+          <div
+            onClick={() => setTab("profile")}
+            className="rounded-2xl p-4 bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200/70 flex items-center justify-between cursor-pointer hover:shadow-xs transition-shadow"
+          >
+            <div>
+              <p className="text-xs font-extrabold text-teal-900">Ayushman Bharat (ABHA)</p>
+              <p className="text-xs font-mono text-teal-700 mt-0.5">{patient.abha}</p>
+            </div>
+            <span className="text-xs font-bold text-[#3368a0] flex items-center gap-1">
+              <span>View Profile</span>
+              <ChevronRight size={14} />
+            </span>
           </div>
         </div>
       </div>

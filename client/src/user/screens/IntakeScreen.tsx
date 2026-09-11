@@ -203,7 +203,7 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
         }
       />
 
-      <div className="px-5 md:px-10 pb-3 md:pb-6">
+      <div className="w-full max-w-4xl mx-auto px-5 md:px-10 pb-3 md:pb-6">
         <div className="flex items-center justify-between mb-1.5 md:mb-2.5">
           <span className="text-[11.5px] md:text-[13px]" style={{ color: "var(--ink-soft)" }}>
             {lang === "en" ? "Intake completeness" : "जाँच प्रगति"}
@@ -220,7 +220,7 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 md:px-10 py-2 md:py-4 space-y-3 md:space-y-5">
+      <div className="flex-1 overflow-y-auto px-5 md:px-10 py-2 md:py-4 space-y-3 md:space-y-5 w-full max-w-4xl mx-auto">
         {messages.map((m, i) => (
           <div key={i} className={"flex " + (m.from === "user" ? "justify-end" : "justify-start")}>
             <div className="flex items-end gap-2 max-w-[85%] md:max-w-[75%]">
@@ -283,7 +283,7 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
       </div>
 
       <div
-        className="px-5 md:px-10 pt-2 pb-5 md:py-6 shrink-0 bg-white md:bg-transparent shadow-[0_-10px_20px_rgba(0,0,0,0.02)] md:shadow-none"
+        className="w-full max-w-4xl mx-auto px-5 md:px-10 pt-2 pb-5 md:py-6 shrink-0 bg-white md:bg-transparent shadow-[0_-10px_20px_rgba(0,0,0,0.02)] md:shadow-none"
         style={{ borderTop: "1px solid var(--border)" }}
       >
         {isSynthesizing ? (
