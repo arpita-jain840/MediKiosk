@@ -84,7 +84,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </p>
               <div className="pt-2">
                 <span
-                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 transition-all group-hover:bg-white group-hover:text-[#3368a0]"
+                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 transition-all group-hover:bg-white group-hover:text-primary"
                   style={{ background: "rgba(255,255,255,0.18)", color: "#ffffff" }}
                 >
                   <span className="text-sm md:text-base font-bold">Start health check now</span>
@@ -123,11 +123,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               Today's OPD Queue
             </p>
             <div
-              className="rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm border border-[#3368a0]/15 bg-white space-y-4"
+              className="rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm border border-primary/15 bg-white space-y-4"
             >
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <span className="text-xs font-bold text-slate-500">Department</span>
-                <span className="text-xs font-extrabold text-[#3368a0] bg-[#3368a0]/10 px-2.5 py-0.5 rounded-full">
+                <span className="text-xs font-extrabold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
                   Cardiology & Ayush
                 </span>
               </div>
@@ -148,7 +148,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </div>
                 <div className="text-right shrink-0 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
                   <p className="text-xs font-bold text-slate-400 uppercase">Token</p>
-                  <p className="text-base font-black text-[#3368a0]">#2</p>
+                  <p className="text-base font-black text-primary">#2</p>
                 </div>
               </div>
               <div className="pt-1 flex items-center justify-between text-xs text-slate-500">
@@ -182,13 +182,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           {/* Ayushman Bharat (ABHA) Information Banner */}
           <div
             onClick={() => setTab("profile")}
-            className="rounded-2xl p-4 bg-gradient-to-r from-teal-50 to-blue-50 border border-teal-200/70 flex items-center justify-between cursor-pointer hover:shadow-xs transition-shadow"
+            className="rounded-2xl p-4 bg-linear-to-r from-teal-50 to-blue-50 border border-teal-200/70 flex items-center justify-between cursor-pointer hover:shadow-xs transition-shadow"
           >
             <div>
               <p className="text-xs font-extrabold text-teal-900">Ayushman Bharat (ABHA)</p>
               <p className="text-xs font-mono text-teal-700 mt-0.5">{patient.abha}</p>
             </div>
-            <span className="text-xs font-bold text-[#3368a0] flex items-center gap-1">
+            <span className="text-xs font-bold text-primary flex items-center gap-1">
               <span>View Profile</span>
               <ChevronRight size={14} />
             </span>

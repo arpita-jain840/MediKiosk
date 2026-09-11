@@ -32,9 +32,9 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
       <TopBar title="Health Assessment & Token" onBack={onClose} />
       <div className="px-5 md:px-10 pb-6 md:pb-10 space-y-4">
         {/* Token and One-Time Database Committal Ribbon */}
-        <div className="p-4 rounded-2xl bg-white border border-[#c8dfdb] shadow-xs flex items-center justify-between gap-3">
+        <div className="p-4 rounded-2xl bg-white border border-primary-tint shadow-xs flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[#3368a0] text-white flex flex-col items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-primary text-white flex flex-col items-center justify-center">
               <span className="text-[9px] font-bold uppercase">Token</span>
               <span className="text-sm font-black">#{token}</span>
             </div>

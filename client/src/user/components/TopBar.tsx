@@ -43,7 +43,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {currentLang && onOpenLangModal && (
           <button
             onClick={onOpenLangModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200/90 shadow-xs text-xs font-bold text-[#3368a0] hover:bg-slate-50 hover:border-[#3368a0]/40 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200/90 shadow-xs text-xs font-bold text-primary hover:bg-slate-50 hover:border-primary/40 transition-all cursor-pointer"
             title="Change Language (Bhashini AI)"
           >
             <Globe size={13} />

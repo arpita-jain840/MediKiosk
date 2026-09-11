@@ -37,7 +37,7 @@ export const LanguageModal: React.FC<LanguageModalProps> = ({
       <div className="bg-white rounded-3xl p-5 md:p-6 max-w-md w-full shadow-2xl border border-slate-200 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#3368a0]/10 flex items-center justify-center text-[#3368a0]">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
               <Globe size={18} />
             </div>
             <div>
@@ -69,8 +69,8 @@ export const LanguageModal: React.FC<LanguageModalProps> = ({
                 }}
                 className={`p-3 rounded-2xl text-left border transition-all cursor-pointer flex items-center justify-between gap-2 ${
                   isSelected
-                    ? "bg-[#3368a0] text-white border-[#3368a0] shadow-sm scale-[1.02]"
-                    : "bg-slate-50/70 hover:bg-white text-slate-800 border-slate-200/80 hover:border-[#3368a0]/40"
+                    ? "bg-primary text-white border-primary shadow-sm scale-[1.02]"
+                    : "bg-slate-50/70 hover:bg-white text-slate-800 border-slate-200/80 hover:border-primary/40"
                 }`}
               >
                 <div>

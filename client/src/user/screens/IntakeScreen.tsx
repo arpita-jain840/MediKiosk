@@ -194,7 +194,7 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
         right={
           <button
             onClick={() => setIsLangModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200/90 shadow-xs text-xs font-bold text-[#3368a0] hover:bg-slate-50 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200/90 shadow-xs text-xs font-bold text-primary hover:bg-slate-50 transition-colors cursor-pointer"
             title="Choose Language (Bhashini AI)"
           >
             <Globe size={13} />
@@ -246,8 +246,8 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
                   onClick={() => handlePlayTts(m.text, i)}
                   className={`p-2 rounded-full border transition-all cursor-pointer shrink-0 ${
                     playingTtsIndex === i
-                      ? "bg-[#3368a0] text-white border-[#3368a0] animate-pulse"
-                      : "bg-white text-slate-500 hover:text-[#3368a0] border-slate-200 hover:bg-slate-50"
+                      ? "bg-primary text-white border-primary animate-pulse"
+                      : "bg-white text-slate-500 hover:text-primary border-slate-200 hover:bg-slate-50"
                   }`}
                   title="Listen in your language (Bhashini TTS)"
                   aria-label="Play audio"
@@ -287,8 +287,8 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
         style={{ borderTop: "1px solid var(--border)" }}
       >
         {isSynthesizing ? (
-          <div className="py-4 px-5 rounded-2xl bg-white border border-[#c8dfdb] flex items-center justify-center gap-3 text-slate-700 shadow-xs">
-            <div className="w-5 h-5 border-2 border-[#3368a0] border-t-transparent rounded-full animate-spin" />
+          <div className="py-4 px-5 rounded-2xl bg-white border border-primary-tint flex items-center justify-center gap-3 text-slate-700 shadow-xs">
+            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             <div className="text-left">
               <p className="text-xs font-bold text-slate-900">
                 {lang === "en" ? "AI Engine Synthesizing Health Blueprint..." : "AI स्वास्थ्य ब्लूप्रिंट तैयार कर रहा है..."}
@@ -306,7 +306,7 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
               <button
                 onClick={() => sendAnswer(lang === "hi" ? INTAKE_SCRIPT[step].a.hi : INTAKE_SCRIPT[step].a.en)}
-                className="shrink-0 px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:border-[#3368a0]/40 transition-colors shadow-xs cursor-pointer truncate max-w-xs"
+                className="shrink-0 px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:border-primary/40 transition-colors shadow-xs cursor-pointer truncate max-w-xs"
               >
                 👉 {lang === "hi" ? INTAKE_SCRIPT[step].a.hi : INTAKE_SCRIPT[step].a.en}
               </button>
@@ -325,7 +325,7 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
                     ? "अपना जवाब यहाँ लिखें या बोलें..."
                     : "Type or speak your answer in your language..."
                 }
-                className="flex-1 rounded-full px-4 py-3 md:px-6 md:py-4 text-[13px] md:text-[15px] shadow-sm bg-white border border-slate-200 text-slate-800 focus:outline-none focus:border-[#3368a0] focus:ring-1 focus:ring-[#3368a0]"
+                className="flex-1 rounded-full px-4 py-3 md:px-6 md:py-4 text-[13px] md:text-[15px] shadow-sm bg-white border border-slate-200 text-slate-800 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               />
               <button
                 onClick={() => {

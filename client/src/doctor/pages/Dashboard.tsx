@@ -109,7 +109,7 @@ export const Dashboard: React.FC = () => {
       {syncedAlert && (
         <div className="bg-emerald-600 text-white px-5 py-3.5 rounded-2xl shadow-lg flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+            <CheckCircle2 className="w-5 h-5 shrink-0" />
             <span className="text-xs font-bold">{syncedAlert}</span>
           </div>
           <button
@@ -189,7 +189,7 @@ export const Dashboard: React.FC = () => {
         {/* Left Column (Span 2) */}
         <div className="xl:col-span-2 flex flex-col gap-6">
           {/* Chart Section */}
-          <div className="bg-white rounded-[2rem] p-6 border border-slate-100/80 shadow-xs">
+          <div className="bg-white rounded-4xl p-6 border border-slate-100/80 shadow-xs">
             {/* Chart Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <h2 className="text-lg font-bold text-slate-900">
@@ -243,7 +243,7 @@ export const Dashboard: React.FC = () => {
               </div>
 
               {/* Smooth Interactive SVG Chart */}
-              <div className="lg:col-span-3 relative w-full h-[220px]">
+              <div className="lg:col-span-3 relative w-full h-55">
                 {/* Horizontal guide lines and Y labels */}
                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[11px] font-semibold text-slate-300">
                   <div className="w-full flex items-center gap-3">
@@ -332,7 +332,7 @@ export const Dashboard: React.FC = () => {
           {/* Bottom Split Row: Events & Patient List */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Events Card */}
-            <div className="bg-white rounded-[2rem] p-6 border border-slate-100/80 shadow-xs flex flex-col justify-between">
+            <div className="bg-white rounded-4xl p-6 border border-slate-100/80 shadow-xs flex flex-col justify-between">
               <div>
                 <h3 className="text-lg font-bold text-slate-900 mb-5">Events</h3>
 
@@ -449,7 +449,7 @@ export const Dashboard: React.FC = () => {
             </div>
 
             {/* Patients Today List Card */}
-            <div className="bg-white rounded-[2rem] p-6 border border-slate-100/80 shadow-xs">
+            <div className="bg-white rounded-4xl p-6 border border-slate-100/80 shadow-xs">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-lg font-bold text-slate-900">Your patients today</h3>
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
@@ -494,7 +494,7 @@ export const Dashboard: React.FC = () => {
         {/* Right Column (Span 1) */}
         <div className="flex flex-col gap-6">
           {/* Mini Calendar Widget */}
-          <div className="bg-white rounded-[2rem] p-6 border border-slate-100/80 shadow-xs">
+          <div className="bg-white rounded-4xl p-6 border border-slate-100/80 shadow-xs">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-base font-bold text-slate-900">Appointment</h3>
               <button className="text-slate-400 hover:text-slate-700 cursor-pointer">

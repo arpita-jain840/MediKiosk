@@ -18,7 +18,7 @@ export default function Login({ onLogin }: LoginProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg-warm font-sans">
-      <div className="bg-white p-12 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] max-w-md w-full text-center">
+      <div className="bg-white p-12 rounded-4xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] max-w-md w-full text-center">
         <h1 className="text-4xl font-bold text-primary mb-3 tracking-tight">MediKiosk</h1>
         <p className="text-slate-500 mb-10 text-lg">Please select your portal</p>
         

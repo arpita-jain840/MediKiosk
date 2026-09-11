@@ -226,7 +226,7 @@ export default function PatientDetail() {
   if (loading || !data) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-slate-500">
-        <div className="w-10 h-10 border-3 border-[#3368a0] border-t-transparent rounded-full animate-spin" />
+        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
         <p className="text-sm font-semibold text-slate-700">Loading Clinical Blueprint from Database...</p>
         <span className="text-xs text-slate-400">Zero AI re-generation lag (&lt;50ms fast stream)</span>
       </div>
@@ -251,7 +251,7 @@ export default function PatientDetail() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/doctor/patients")}
-            className="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-[#3368a0] bg-white hover:bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
+            className="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-primary bg-white hover:bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
           >
             <ArrowLeft size={14} />
             <span>OPD Queue</span>
@@ -266,8 +266,8 @@ export default function PatientDetail() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-1.5 px-3 py-1 bg-[#c8dfdb]/40 border border-[#c8dfdb] rounded-lg text-xs font-semibold text-[#1e3a5f]">
-            <Zap size={13} className="text-[#3368a0]" />
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-primary-tint/40 border border-primary-tint rounded-lg text-xs font-semibold text-[#1e3a5f]">
+            <Zap size={13} className="text-primary" />
             <span>Pre-computed Blueprint (&lt;50ms)</span>
           </div>
           <button
@@ -283,7 +283,7 @@ export default function PatientDetail() {
       {/* 2. Patient Identity & Vitals Banner */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#3368a0]/10 border border-[#3368a0]/20 flex items-center justify-center text-[#3368a0] font-black text-lg">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-lg">
             {patient.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
           </div>
           <div>
@@ -358,8 +358,8 @@ export default function PatientDetail() {
       )}
 
       {/* 4. AI 2-Sentence Clinical Brief */}
-      <div className="bg-[#f2efe7]/70 border border-[#c8dfdb] rounded-2xl p-4.5 flex items-start gap-3.5 shadow-xs">
-        <div className="p-2 rounded-xl bg-[#3368a0] text-white shrink-0">
+      <div className="bg-bg-warm/70 border border-primary-tint rounded-2xl p-4.5 flex items-start gap-3.5 shadow-xs">
+        <div className="p-2 rounded-xl bg-primary text-white shrink-0">
           <Sparkles size={16} />
         </div>
         <div className="flex-1">
@@ -385,7 +385,7 @@ export default function PatientDetail() {
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <FileText size={16} className="text-[#3368a0]" />
+                <FileText size={16} className="text-primary" />
                 <h3 className="text-sm font-bold text-slate-900">Chief Complaint & HPI Breakdown</h3>
               </div>
               <span className="text-[11px] font-semibold text-slate-400">SOCRATES Clinical Model</span>
@@ -428,7 +428,7 @@ export default function PatientDetail() {
           {/* Active Medications, Allergies & History */}
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-4">
             <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <Pill size={16} className="text-[#3368a0]" />
+              <Pill size={16} className="text-primary" />
               <span>Medications, Allergies & Medical History</span>
             </h3>
 
@@ -484,7 +484,7 @@ export default function PatientDetail() {
               </div>
               <button
                 onClick={() => setShowAyush(!showAyush)}
-                className="text-xs font-semibold text-[#3368a0] hover:underline cursor-pointer"
+                className="text-xs font-semibold text-primary hover:underline cursor-pointer"
               >
                 {showAyush ? "Collapse" : "Expand"}
               </button>
@@ -520,10 +520,10 @@ export default function PatientDetail() {
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <FileCheck2 size={16} className="text-[#3368a0]" />
+                <FileCheck2 size={16} className="text-primary" />
                 <h3 className="text-sm font-bold text-slate-900">Digitized Parche & Reports</h3>
               </div>
-              <span className="text-xs font-bold text-[#3368a0] bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">
+              <span className="text-xs font-bold text-primary bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">
                 {documents.length} Records
               </span>
             </div>
@@ -535,7 +535,7 @@ export default function PatientDetail() {
                 {documents.map((doc) => (
                   <div
                     key={doc.id}
-                    className="p-3 rounded-xl border border-slate-200/70 hover:border-[#3368a0]/40 transition-colors bg-slate-50/50 flex items-start justify-between gap-3"
+                    className="p-3 rounded-xl border border-slate-200/70 hover:border-primary/40 transition-colors bg-slate-50/50 flex items-start justify-between gap-3"
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -552,7 +552,7 @@ export default function PatientDetail() {
                     </div>
                     <button
                       onClick={() => setSelectedDoc(doc)}
-                      className="text-slate-400 hover:text-[#3368a0] p-1.5 rounded-lg hover:bg-white transition-colors cursor-pointer shrink-0"
+                      className="text-slate-400 hover:text-primary p-1.5 rounded-lg hover:bg-white transition-colors cursor-pointer shrink-0"
                       title="View Document & OCR"
                     >
                       <Eye size={15} />
@@ -567,13 +567,13 @@ export default function PatientDetail() {
           {blueprint.timeline && blueprint.timeline.length > 0 && (
             <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                <Clock size={16} className="text-[#3368a0]" />
+                <Clock size={16} className="text-primary" />
                 <h3 className="text-sm font-bold text-slate-900">Medical History Timeline</h3>
               </div>
               <div className="relative border-l-2 border-slate-200 ml-2 space-y-3 pl-3.5 pt-1">
                 {blueprint.timeline.map((item, idx) => (
                   <div key={idx} className="relative">
-                    <div className="absolute -left-[19px] top-1 w-2.5 h-2.5 rounded-full bg-[#3368a0] border-2 border-white ring-2 ring-sky-100" />
+                    <div className="absolute -left-4.75 top-1 w-2.5 h-2.5 rounded-full bg-primary border-2 border-white ring-2 ring-sky-100" />
                     <span className="text-[10px] font-bold text-slate-400 block">{item.date}</span>
                     <span className="text-xs font-bold text-slate-800 block">{item.title}</span>
                     <span className="text-xs text-slate-600 block mt-0.5">{item.summary}</span>
@@ -587,7 +587,7 @@ export default function PatientDetail() {
           <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <Stethoscope size={16} className="text-[#3368a0]" />
+                <Stethoscope size={16} className="text-primary" />
                 <h3 className="text-sm font-bold text-slate-900">Doctor Remarks & Action</h3>
               </div>
               {noteSavedAlert && (
@@ -603,7 +603,7 @@ export default function PatientDetail() {
               onChange={(e) => setDoctorNote(e.target.value)}
               placeholder="Type clinical impressions, examination findings or modifications..."
               rows={3}
-              className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-200 focus:outline-none focus:border-[#3368a0] focus:ring-1 focus:ring-[#3368a0] transition-colors resize-none"
+              className="w-full text-xs sm:text-sm p-3 rounded-xl border border-slate-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
             />
 
             <div className="flex items-center gap-2 pt-1">
@@ -616,14 +616,14 @@ export default function PatientDetail() {
               </button>
               <button
                 onClick={() => navigate(`/doctor/prescription/${patient.id}`)}
-                className="flex-1 py-2 px-3 rounded-xl bg-[#66a3bf] hover:bg-[#3368a0] text-xs font-bold text-white transition-colors cursor-pointer text-center"
+                className="flex-1 py-2 px-3 rounded-xl bg-primary-light hover:bg-primary text-xs font-bold text-white transition-colors cursor-pointer text-center"
               >
                 Generate Rx
               </button>
               <button
                 onClick={() => handleSaveNote(true)}
                 disabled={isSavingNote}
-                className="flex-1 py-2 px-3 rounded-xl bg-[#3368a0] hover:bg-[#1e3a5f] text-xs font-bold text-white transition-colors cursor-pointer text-center shadow-xs"
+                className="flex-1 py-2 px-3 rounded-xl bg-primary hover:bg-[#1e3a5f] text-xs font-bold text-white transition-colors cursor-pointer text-center shadow-xs"
               >
                 Finish (Done)
               </button>
@@ -673,7 +673,7 @@ export default function PatientDetail() {
 
             <button
               onClick={() => setSelectedDoc(null)}
-              className="w-full py-2.5 rounded-xl bg-[#3368a0] text-white font-bold text-xs cursor-pointer"
+              className="w-full py-2.5 rounded-xl bg-primary text-white font-bold text-xs cursor-pointer"
             >
               Close
             </button>

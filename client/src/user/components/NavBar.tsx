@@ -51,7 +51,7 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => 
               <h2 className="text-lg font-extrabold text-slate-900 tracking-tight leading-none">
                 MediKiosk
               </h2>
-              <p className="text-[11px] font-bold text-[#3368a0] tracking-wide mt-1">
+              <p className="text-[11px] font-bold text-primary tracking-wide mt-1">
                 AI CLINICAL INTAKE
               </p>
             </div>
@@ -93,13 +93,13 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => 
                   onClick={() => setTab(it.id)}
                   className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer text-left ${
                     active
-                      ? "bg-[#3368a0]/10 text-[#3368a0] font-bold shadow-2xs border-l-4 border-[#3368a0]"
+                      ? "bg-primary/10 text-primary font-bold shadow-2xs border-l-4 border-primary"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   <it.icon
                     size={19}
-                    className={active ? "text-[#3368a0]" : "text-slate-400"}
+                    className={active ? "text-primary" : "text-slate-400"}
                   />
                   <span>{it.label}</span>
                 </button>
@@ -136,7 +136,7 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => 
               localStorage.setItem("medikiosk_role", "doctor");
               window.location.href = "/doctor";
             }}
-            className="w-full text-center py-2 text-xs font-bold text-[#3368a0] hover:text-[#204b77] hover:underline cursor-pointer"
+            className="w-full text-center py-2 text-xs font-bold text-primary hover:text-[#204b77] hover:underline cursor-pointer"
           >
             Switch to Doctor Cockpit →
           </button>

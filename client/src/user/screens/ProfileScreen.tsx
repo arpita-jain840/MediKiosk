@@ -81,7 +81,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                   <span className="text-[13.5px] md:text-[15px] font-semibold text-slate-800">
                     {activeLang ? `${activeLang.name} (${activeLang.native})` : "English"}
                   </span>
-                  <p className="text-[11px] text-[#3368a0] font-medium">Bhashini Indic AI Enabled</p>
+                  <p className="text-[11px] text-primary font-medium">Bhashini Indic AI Enabled</p>
                 </div>
               </div>
               <ChevronRight size={17} color="var(--ink-soft)" className="md:w-5 md:h-5" />

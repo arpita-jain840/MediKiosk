@@ -33,7 +33,7 @@ const bottomNavItems: NavItem[] = [
 
 export const Sidebar: React.FC = () => {
   return (
-    <aside className="w-[72px] lg:w-20 bg-white text-slate-500 rounded-[2.5rem] flex flex-col items-center py-7 px-2.5 my-3 ml-4 shadow-sm flex-shrink-0 justify-between select-none h-[calc(100vh-24px)] sticky top-3 border border-slate-100">
+    <aside className="w-18 lg:w-20 bg-white text-slate-500 rounded-[2.5rem] flex flex-col items-center py-7 px-2.5 my-3 ml-4 shadow-sm shrink-0 justify-between select-none h-[calc(100vh-24px)] sticky top-3 border border-slate-100">
       {/* Top Section */}
       <div className="flex flex-col items-center gap-5 w-full">
         {mainNavItems.map((item) => (

@@ -73,7 +73,7 @@ export const Patients: React.FC = () => {
       </div>
 
       {/* Patients Table / Card List */}
-      <div className="bg-white rounded-[2rem] p-6 border border-slate-100/80 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-4xl p-6 border border-slate-100/80 shadow-xs overflow-hidden">
         {displayedPatients.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-3">

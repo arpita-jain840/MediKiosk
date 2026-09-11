@@ -88,10 +88,10 @@ export const RecordsScreen: React.FC = () => {
       <div className="px-5 md:px-10 pb-4">
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="rounded-2xl p-4 border border-[#c8dfdb] bg-white hover:bg-slate-50 transition-all cursor-pointer shadow-xs flex items-center justify-between gap-3"
+          className="rounded-2xl p-4 border border-primary-tint bg-white hover:bg-slate-50 transition-all cursor-pointer shadow-xs flex items-center justify-between gap-3"
         >
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-[#3368a0]/10 flex items-center justify-center text-[#3368a0] shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
               <UploadCloud size={20} />
             </div>
             <div>
@@ -107,7 +107,7 @@ export const RecordsScreen: React.FC = () => {
           </div>
           <button
             disabled={uploading}
-            className="px-3 py-1.5 rounded-lg bg-[#3368a0] text-white text-xs font-bold shrink-0 cursor-pointer"
+            className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold shrink-0 cursor-pointer"
           >
             {uploading ? "Scanning..." : "Upload"}
           </button>
@@ -201,7 +201,7 @@ export const RecordsScreen: React.FC = () => {
             </div>
             <button
               onClick={() => setViewingOcr(null)}
-              className="w-full py-2 rounded-xl bg-[#3368a0] text-white font-bold text-xs cursor-pointer"
+              className="w-full py-2 rounded-xl bg-primary text-white font-bold text-xs cursor-pointer"
             >
               Done
             </button>
