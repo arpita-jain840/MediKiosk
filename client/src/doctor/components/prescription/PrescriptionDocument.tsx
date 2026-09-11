@@ -90,8 +90,8 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
       ...prev,
       {
         id: `med-${Date.now()}`,
-        name: 'New Medicine',
-        dosage: '1 tab',
+        name: 'New Medicine 500mg',
+        dosage: '1 tablet',
         frequency: 'Twice daily',
         duration: '5 days',
         instructions: 'Take after meals',
@@ -103,18 +103,20 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
     setDraftMedicines((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const displayMedicines = isEditing ? draftMedicines : prescription.medicines;
+
   return (
     <div className="flex flex-col gap-4">
       {/* Top Action Ribbon over Prescription Paper */}
-      <div className="flex items-center justify-between px-2">
+      <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
           <span className="text-xs font-black text-slate-800 tracking-wider uppercase">
-            Live Prescription Sheet
+            Official E-Prescription
           </span>
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
         </div>
 
-        {/* Canva-Style Edit Toggle */}
+        {/* Edit Toggle */}
         <div className="flex items-center gap-2">
           {isEditing ? (
             <div className="flex items-center gap-2 animate-in fade-in duration-150">
@@ -123,11 +125,11 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
                 className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 bg-white transition-colors cursor-pointer"
               >
                 <X size={13} />
-                <span>Cancel Edit</span>
+                <span>Cancel</span>
               </button>
               <button
                 onClick={handleSaveEdit}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-xs transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-black shadow-xs transition-colors cursor-pointer"
               >
                 <Check size={13} />
                 <span>Save Changes</span>
@@ -136,75 +138,75 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
           ) : (
             <button
               onClick={handleStartEdit}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-indigo-50 border border-slate-200/90 text-xs font-bold text-indigo-700 hover:border-indigo-200 transition-all shadow-2xs cursor-pointer group"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white hover:bg-teal-50 border border-slate-200/90 text-xs font-bold text-teal-800 hover:border-teal-300 transition-all shadow-2xs cursor-pointer group"
             >
               <Edit3 size={13} className="group-hover:rotate-12 transition-transform" />
-              <span>Edit Sheet</span>
+              <span>Quick Edit Sheet</span>
             </button>
           )}
         </div>
       </div>
 
       {/* ============================================================ */}
-      {/* REALISTIC PRESCRIPTION DOCUMENT (Paper styling)              */}
+      {/* AUTHENTIC MEDICAL PRESCRIPTION DOCUMENT (Paper styling)       */}
       {/* ============================================================ */}
       <div
         id="prescription-paper"
-        className={`bg-white rounded-[2rem] p-7 sm:p-9 shadow-md border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
+        className={`bg-white rounded-[2rem] p-5 sm:p-8 shadow-sm border transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
           isEditing
             ? 'border-indigo-400 ring-4 ring-indigo-50/60'
-            : 'border-slate-200/90'
+            : 'border-slate-200/80'
         }`}
       >
-        {/* Subtle Watermark Logo in background */}
-        <div className="absolute right-8 top-28 pointer-events-none opacity-[0.03] select-none">
-          <span className="font-serif text-[180px] font-black text-indigo-950">℞</span>
+        {/* Watermark ℞ symbol */}
+        <div className="absolute right-6 top-24 pointer-events-none opacity-[0.03] select-none">
+          <span className="font-serif text-[160px] font-black text-slate-900">℞</span>
         </div>
 
-        {/* Paper Header: Clinic Details + Doctor Specialty */}
-        <div className="border-b-2 border-slate-800 pb-5">
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        {/* 1. Header: Clinic Details + Doctor Credentials */}
+        <div className="border-b-2 border-slate-900 pb-4 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-lg bg-indigo-900 text-white flex items-center justify-center font-serif font-black text-base shadow-xs">
+              <div className="flex items-center gap-2 mb-0.5">
+                <div className="w-8 h-8 rounded-lg bg-teal-800 text-white flex items-center justify-center font-serif font-black text-base shadow-xs">
                   M
                 </div>
                 <h3 className="text-base sm:text-lg font-black text-slate-950 tracking-tight">
-                  {prescription.clinicName}
+                  MEDIKIS CARE CENTER & MULTISPECIALTY CLINIC
                 </h3>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium">
-                {prescription.clinicAddress} • Tel: {prescription.clinicPhone}
+              <p className="text-xs text-slate-600 font-medium">
+                Saket, New Delhi, India 110017 • Tel: +91 98101 23456
               </p>
               <p className="text-[10px] text-slate-400 font-mono mt-0.5">
-                Accredited Clinical Facility #MEDIX-NY-2026
+                Accredited NABH Facility #MK-DEL-2026
               </p>
             </div>
 
             <div className="text-left sm:text-right border-t sm:border-t-0 border-slate-100 pt-2 sm:pt-0">
               <h4 className="text-sm font-black text-slate-900">
-                {prescription.doctorName}
+                Dr. Ananya Sharma
               </h4>
-              <p className="text-[11px] font-bold text-indigo-700">
-                {prescription.doctorQualification}
+              <p className="text-xs font-bold text-teal-700">
+                MBBS, MD (Internal Medicine)
               </p>
-              <p className="text-[10px] text-slate-500 font-medium">
-                {prescription.doctorSpecialty}
+              <p className="text-[11px] text-slate-500 font-medium">
+                General Physician & Clinical Consultant
               </p>
               <span className="inline-block text-[10px] font-mono font-bold text-slate-400 mt-0.5">
-                Lic: {prescription.doctorRegNo}
+                Reg: MCI-DL-2014-98421
               </span>
             </div>
           </div>
         </div>
 
-        {/* Patient Demographics Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-3.5 my-3 bg-slate-50/70 rounded-2xl px-4 border border-slate-100 text-xs">
+        {/* 2. Patient Demographics Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-3 bg-slate-50 rounded-2xl px-4 border border-slate-100 text-xs mb-4">
           <div>
             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               Patient Name
             </span>
-            <p className="font-extrabold text-slate-900">{prescription.patientName}</p>
+            <p className="font-extrabold text-slate-900 truncate">{prescription.patientName}</p>
           </div>
           <div>
             <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
@@ -232,32 +234,32 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
           </div>
         </div>
 
-        {/* Clinical Diagnosis Bar */}
+        {/* 3. Clinical Diagnosis */}
         <div className="mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-              Diagnosis:
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+              Clinical Diagnosis:
             </span>
             {isEditing ? (
               <input
                 type="text"
                 value={draftDiagnosis}
                 onChange={(e) => setDraftDiagnosis(e.target.value)}
-                className="flex-1 text-xs font-bold px-3 py-1 bg-indigo-50/50 border border-indigo-300 rounded-lg text-indigo-950 focus:outline-none"
+                className="flex-1 text-xs font-bold px-3 py-1.5 bg-teal-50 border border-teal-300 rounded-lg text-teal-950 focus:outline-none"
               />
             ) : (
-              <span className="text-xs font-black text-slate-900 bg-indigo-50/80 px-2.5 py-0.5 rounded-md border border-indigo-100">
+              <span className="text-xs font-black text-slate-900 bg-teal-50 px-3 py-1 rounded-lg border border-teal-100">
                 {prescription.diagnosis}
               </span>
             )}
           </div>
         </div>
 
-        {/* ℞ Medical Symbol & Medicines Section */}
+        {/* 4. ℞ Prescribed Medications Section */}
         <div className="my-2 space-y-3">
           <div className="flex items-baseline justify-between">
             <div className="flex items-baseline gap-2">
-              <span className="font-serif font-black text-3xl text-indigo-900 leading-none">
+              <span className="font-serif font-black text-3xl text-teal-800 leading-none">
                 ℞
               </span>
               <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
@@ -268,36 +270,36 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
               <button
                 type="button"
                 onClick={handleAddDraftMed}
-                className="flex items-center gap-1 text-[11px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg cursor-pointer"
+                className="flex items-center gap-1 text-[11px] font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 px-2.5 py-1 rounded-lg cursor-pointer"
               >
                 <Plus size={12} />
-                <span>Add Row</span>
+                <span>Add Medication</span>
               </button>
             )}
           </div>
 
-          {/* Medicines Table */}
-          <div className="border border-slate-200/90 rounded-2xl overflow-hidden">
+          {/* Desktop Table View (md and up) */}
+          <div className="hidden md:block border border-slate-200/90 rounded-2xl overflow-hidden">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50/90 border-b border-slate-200/80 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <thead className="bg-slate-50 border-b border-slate-200/80 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                 <tr>
-                  <th className="py-2.5 px-3.5">#</th>
-                  <th className="py-2.5 px-3.5">Medicine Name & Strength</th>
-                  <th className="py-2.5 px-3.5">Dosage</th>
-                  <th className="py-2.5 px-3.5">Frequency</th>
-                  <th className="py-2.5 px-3.5">Duration</th>
-                  <th className="py-2.5 px-3.5">Instructions</th>
+                  <th className="py-2.5 px-3">#</th>
+                  <th className="py-2.5 px-3">Medicine & Strength</th>
+                  <th className="py-2.5 px-3">Dosage</th>
+                  <th className="py-2.5 px-3">Frequency</th>
+                  <th className="py-2.5 px-3">Duration</th>
+                  <th className="py-2.5 px-3">Instructions</th>
                   {isEditing && <th className="py-2.5 px-2 text-center">Action</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {(isEditing ? draftMedicines : prescription.medicines).map((med, idx) => (
-                  <tr key={med.id || idx} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-2.5 px-3.5 font-bold text-slate-400 font-mono text-[11px]">
+                {displayMedicines.map((med, idx) => (
+                  <tr key={med.id || idx} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="py-2.5 px-3 font-bold text-slate-400 font-mono text-[11px]">
                       {idx + 1}
                     </td>
 
-                    <td className="py-2.5 px-3.5 font-extrabold text-slate-900">
+                    <td className="py-2.5 px-3 font-extrabold text-slate-900">
                       {isEditing ? (
                         <input
                           type="text"
@@ -310,7 +312,7 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
                       )}
                     </td>
 
-                    <td className="py-2.5 px-3.5 font-medium text-slate-600">
+                    <td className="py-2.5 px-3 font-medium text-slate-700">
                       {isEditing ? (
                         <input
                           type="text"
@@ -323,7 +325,7 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
                       )}
                     </td>
 
-                    <td className="py-2.5 px-3.5 font-semibold text-indigo-700">
+                    <td className="py-2.5 px-3 font-semibold text-teal-700">
                       {isEditing ? (
                         <input
                           type="text"
@@ -336,7 +338,7 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
                       )}
                     </td>
 
-                    <td className="py-2.5 px-3.5 font-bold text-slate-700">
+                    <td className="py-2.5 px-3 font-bold text-slate-700">
                       {isEditing ? (
                         <input
                           type="text"
@@ -349,7 +351,7 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
                       )}
                     </td>
 
-                    <td className="py-2.5 px-3.5 text-[11px] text-slate-500">
+                    <td className="py-2.5 px-3 text-[11px] text-slate-500">
                       {isEditing ? (
                         <input
                           type="text"
@@ -378,13 +380,70 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Card List View (Clean and uncluttered on small screens) */}
+          <div className="flex md:hidden flex-col gap-2.5">
+            {displayMedicines.map((med, idx) => (
+              <div
+                key={med.id || idx}
+                className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col gap-2 text-xs"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-teal-100 text-teal-800 text-[10px] font-bold flex items-center justify-center font-mono">
+                      {idx + 1}
+                    </span>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={med.name}
+                        onChange={(e) => handleUpdateDraftMed(idx, 'name', e.target.value)}
+                        className="text-xs font-bold p-1 bg-white border border-slate-200 rounded"
+                      />
+                    ) : (
+                      <h4 className="font-extrabold text-slate-900">{med.name}</h4>
+                    )}
+                  </div>
+
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveDraftMed(idx)}
+                      className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-1.5 text-[11px]">
+                  <div className="bg-white px-2 py-1 rounded-lg border border-slate-100">
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase">Dose</span>
+                    <span className="font-semibold text-slate-700">{med.dosage}</span>
+                  </div>
+                  <div className="bg-white px-2 py-1 rounded-lg border border-slate-100">
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase">Frequency</span>
+                    <span className="font-semibold text-teal-700">{med.frequency}</span>
+                  </div>
+                  <div className="bg-white px-2 py-1 rounded-lg border border-slate-100">
+                    <span className="block text-[9px] font-bold text-slate-400 uppercase">Duration</span>
+                    <span className="font-semibold text-slate-700">{med.duration}</span>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-500 italic bg-white/70 px-2 py-1 rounded-lg">
+                  {med.instructions}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Extended Clinical Advice & Diet */}
+        {/* 5. Clinical Advice, Diet & Follow-up */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 my-3">
-          <div className="p-3 bg-slate-50/80 rounded-2xl border border-slate-100">
+          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-              General Instructions & Hydration
+              General Advice & Hydration
             </span>
             {isEditing ? (
               <textarea
@@ -400,9 +459,9 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
             )}
           </div>
 
-          <div className="p-3 bg-slate-50/80 rounded-2xl border border-slate-100">
+          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-              Follow-up & Review
+              Follow-up Schedule
             </span>
             {isEditing ? (
               <input
@@ -412,8 +471,8 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
                 className="w-full text-xs p-2 bg-white border border-slate-200 rounded-lg text-slate-800"
               />
             ) : (
-              <div className="flex items-center gap-2">
-                <Calendar size={14} className="text-indigo-600" />
+              <div className="flex items-center gap-2 mt-1">
+                <Calendar size={14} className="text-teal-700" />
                 <p className="text-xs text-slate-800 font-bold">
                   {prescription.followUp}
                 </p>
@@ -422,79 +481,77 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
           </div>
         </div>
 
-        {/* ============================================================ */}
-        {/* MULTI-MODALITY ATTACHMENTS (Voice / Handwritten / Uploads)   */}
-        {/* ============================================================ */}
+        {/* 6. Multi-Modal Attachments rendered directly on sheet */}
         <div className="space-y-3 pt-2 border-t border-slate-100">
-          {/* 1. Voice Attachment (If present) */}
+          {/* Voice Dictation */}
           {prescription.voice && (
-            <div className="p-3 rounded-2xl bg-blue-50/70 border border-blue-200/80 flex flex-col gap-2">
+            <div className="p-3 rounded-2xl bg-sky-50 border border-sky-200 flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-                    className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
+                    className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs hover:bg-blue-700 transition-colors cursor-pointer"
                   >
-                    {isPlayingAudio ? <Pause size={13} /> : <Play size={13} className="ml-0.5" />}
+                    {isPlayingAudio ? <Pause size={12} /> : <Play size={12} className="ml-0.5" />}
                   </button>
                   <div>
                     <span className="text-xs font-bold text-blue-950 block">
-                      Doctor Voice Dictation Attachment
+                      Doctor Voice Dictation
                     </span>
                     <span className="text-[10px] text-blue-600 font-medium">
-                      Duration: {prescription.voice.duration} • Recorded {prescription.voice.recordedAt}
+                      Duration: {prescription.voice.duration}
                     </span>
                   </div>
                 </div>
-                <span className="flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-white px-2.5 py-0.5 rounded-full border border-blue-200">
-                  <Volume2 size={12} />
-                  Patient Audio Ready
+                <span className="flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-white px-2 py-0.5 rounded-full border border-blue-200">
+                  <Volume2 size={11} />
+                  Audio Ready
                 </span>
               </div>
-              <p className="text-[11px] text-slate-700 italic bg-white/80 p-2.5 rounded-xl border border-blue-100">
+              <p className="text-[11px] text-slate-700 italic bg-white/80 p-2 rounded-xl border border-sky-100">
                 "{prescription.voice.transcription}"
               </p>
             </div>
           )}
 
-          {/* 2. Handwritten Canvas Drawing (If present) */}
+          {/* Handwritten Canvas Note */}
           {prescription.handwritten && (
-            <div className="p-3 rounded-2xl bg-teal-50/50 border border-teal-200/80 space-y-1.5">
+            <div className="p-3 rounded-2xl bg-teal-50 border border-teal-200 space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-teal-900">
-                  ✍ Doctor Handwritten Prescription Ink
+                <span className="text-xs font-bold text-teal-900">
+                  ✍ Doctor Handwritten Clinical Ink
                 </span>
                 <span className="text-[10px] text-teal-600 font-mono">
-                  Digitally Captured {prescription.handwritten.createdAt}
+                  Captured {prescription.handwritten.createdAt}
                 </span>
               </div>
               <div className="bg-white p-2 rounded-xl border border-teal-100 flex items-center justify-center">
                 <img
                   src={prescription.handwritten.imageDataUrl}
                   alt="Handwritten prescription note"
-                  className="max-h-40 object-contain rounded-lg"
+                  className="max-h-36 object-contain rounded-lg"
                 />
               </div>
             </div>
           )}
 
-          {/* 3. Uploaded Files (If present) */}
+          {/* Uploaded Files */}
           {prescription.uploadedFiles.length > 0 && (
             <div className="space-y-1.5">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                Attached Documents & Diagnostic Reports ({prescription.uploadedFiles.length})
+                Attached Diagnostic Reports ({prescription.uploadedFiles.length})
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {prescription.uploadedFiles.map((file) => (
                   <div
                     key={file.id}
-                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 text-xs"
+                    className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200 text-xs"
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       {file.type === 'audio' ? (
-                        <Music size={15} className="text-blue-600 shrink-0" />
+                        <Music size={14} className="text-blue-600 shrink-0" />
                       ) : (
-                        <FileText size={15} className="text-amber-600 shrink-0" />
+                        <FileText size={14} className="text-amber-600 shrink-0" />
                       )}
                       <span className="text-xs font-bold text-slate-800 truncate font-mono">
                         {file.name}
@@ -510,27 +567,26 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
           )}
         </div>
 
-        {/* Paper Footer: Doctor Signature & Clinic Stamp */}
-        <div className="pt-6 mt-6 border-t-2 border-slate-100 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        {/* 7. Footer: Doctor Signature & Verification QR */}
+        <div className="pt-5 mt-5 border-t-2 border-slate-100 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs">
-              <ShieldCheck size={16} />
-              <span>Cryptographically Signed & Timestamped</span>
+            <div className="flex items-center gap-1.5 text-teal-800 font-bold text-xs">
+              <ShieldCheck size={15} />
+              <span>Digitally Verified & Valid at all Pharmacies</span>
             </div>
             <p className="text-[10px] text-slate-400 font-mono">
-              Hash: SHA256-MEDIX-98A72F4B • Valid in all accredited pharmacies
+              Rx Hash: SHA256-MK-2026-98A7 • Medikis Saket Clinic
             </p>
           </div>
 
           <div className="text-left sm:text-right flex flex-col items-start sm:items-end">
-            {/* Authentic Digital Signature Styling */}
-            <div className="h-10 w-44 flex items-end justify-start sm:justify-end border-b border-slate-400 pb-1">
-              <span className="font-serif italic font-black text-lg text-indigo-950 tracking-wider">
-                Dr. Melvin S., MD
+            <div className="h-9 w-40 flex items-end justify-start sm:justify-end border-b border-slate-400 pb-0.5">
+              <span className="font-serif italic font-black text-lg text-teal-950 tracking-wider">
+                Dr. Ananya Sharma
               </span>
             </div>
-            <span className="text-[11px] font-bold text-slate-900 mt-1 block">
-              {prescription.doctorName}
+            <span className="text-xs font-bold text-slate-900 mt-1 block">
+              Dr. Ananya Sharma, MD
             </span>
             <span className="text-[10px] text-slate-400 font-medium">
               Registered Practitioner Signature
@@ -539,7 +595,7 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
         </div>
       </div>
 
-      {/* Bottom Action Bar: Preview Prescription & Send to Patient */}
+      {/* Bottom Action Bar: Preview & Send */}
       <div className="flex items-center justify-end gap-3 pt-2">
         <button
           type="button"
@@ -547,24 +603,24 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
           className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 shadow-xs hover:shadow transition-all cursor-pointer"
         >
           <Eye size={15} />
-          <span>Preview Prescription</span>
+          <span>Preview E-Rx</span>
         </button>
 
         <button
           type="button"
           onClick={onSend}
           disabled={isSending}
-          className="flex items-center gap-2 px-7 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-black tracking-wide shadow-lg shadow-indigo-600/25 transition-all cursor-pointer hover:scale-101"
+          className="flex items-center gap-2 px-6 sm:px-7 py-3 rounded-2xl bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white text-xs font-black tracking-wide shadow-lg shadow-teal-700/25 transition-all cursor-pointer hover:scale-101"
         >
           {isSending ? (
             <>
               <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-              <span>Sending...</span>
+              <span>Dispatching...</span>
             </>
           ) : (
             <>
               <Send size={15} />
-              <span>Send to Patient</span>
+              <span>Send to Patient App</span>
             </>
           )}
         </button>
@@ -572,3 +628,5 @@ export const PrescriptionDocument: React.FC<PrescriptionDocumentProps> = ({
     </div>
   );
 };
+
+export default PrescriptionDocument;

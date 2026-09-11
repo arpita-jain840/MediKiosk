@@ -14,25 +14,26 @@ import Profile from './doctor/pages/Profile';
 import Settings from './doctor/pages/Settings';
 import PrescriptionPage from './doctor/pages/PrescriptionPage';
 
-// Patient App
+// Patient App & Access Submission
 import PatientApp from './user/PatientApp';
+import SubmitAccess from './app/SubmitAccess';
 
 // Auth
 import Login from './auth/Login';
 
 const DoctorLayout = () => {
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-bg-warm font-sans">
+    <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-[#f4f6f9]">
       {/* Modern Pill Sidebar */}
       <Sidebar />
 
       {/* Main Content Viewport */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Top Modern Header / Navbar */}
-        <Navbar doctorName="Dr. John Smith" role="Admin" />
+        <Navbar doctorName="Dr. Ananya Sharma" role="Admin" />
 
         {/* Page Routing Container */}
-        <main className="flex-1 overflow-y-auto px-6 lg:px-8 pt-2">
+        <main className="flex-1 overflow-y-auto px-3.5 sm:px-6 lg:px-8 pt-1 md:pt-2 pb-24 md:pb-6">
           <Outlet />
         </main>
       </div>
@@ -60,7 +61,10 @@ function App() {
       <Routes>
         {/* Auth Route */}
         <Route path="/login" element={<Login onLogin={handleSetRole} />} />
-        
+
+        {/* Access Submission from QR */}
+        <Route path="/submit" element={<SubmitAccess />} />
+
         {/* Base Route handles redirects based on auth */}
         <Route path="/" element={
           !userRole ? <Navigate to="/login" replace /> :
@@ -72,9 +76,9 @@ function App() {
         <Route path="/patient" element={
           userRole === 'patient' ? <PatientApp /> : <Navigate to="/login" replace />
         } />
-        {/* Keep kiosk as alias or redirect */}
+        {/* Keep kiosk as alias */}
         <Route path="/kiosk" element={<Navigate to="/patient" replace />} />
-        
+
         {/* Direct patient detail route aliases */}
         <Route path="/patients/:id" element={<Navigate to="/doctor/patients/:id" replace />} />
 
