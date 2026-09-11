@@ -39,8 +39,8 @@ export default function Login({ onLogin }: LoginProps) {
     } else {
       setActiveTab("patient");
       setUsername("user1");
-      setPassword("user123");
-      await submitCredentials("user1", "user123", "patient");
+      setPassword("user1123");
+      await submitCredentials("user1", "user1123", "patient");
     }
   };
 
@@ -347,7 +347,7 @@ export default function Login({ onLogin }: LoginProps) {
                   <span>Patient</span>
                 </div>
                 <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                  user1 / user123
+                  user1 / user1123
                 </div>
               </button>
             </div>
@@ -357,7 +357,7 @@ export default function Login({ onLogin }: LoginProps) {
 
         {/* Footer info */}
         <p className="text-center text-[11px] text-slate-400 mt-5">
-          ABHA / ABDM Compliant · MediKiosk AI v2.4 · 10 Database Patients Loaded
+          ABHA / ABDM Compliant · MediKiosk AI · 5 Patient Accounts · Appointments Created Live via UI
         </p>
 
       </div>

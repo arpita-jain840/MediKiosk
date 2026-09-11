@@ -8,7 +8,9 @@ import { AIAssistantScreen } from "./screens/AIAssistantScreen";
 import { ResultScreen } from "./screens/ResultScreen";
 import { ConfirmScreen } from "./screens/ConfirmScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
+import { KioskSessionGuard } from "./components/KioskSessionGuard";
 import { DEFAULT_PATIENT } from "./data/patientData";
+
 import type { DoctorDirectoryItem, BlueprintSynthesisResult } from "./types";
 
 export default function PatientApp() {
@@ -18,6 +20,27 @@ export default function PatientApp() {
   const [isLangModalOpen, setIsLangModalOpen] = useState(false);
   const [bookedDoctor, setBookedDoctor] = useState<DoctorDirectoryItem | null>(null);
   const [blueprintResult] = useState<BlueprintSynthesisResult | null>(null);
+
+  const [currentUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem("medikiosk_user");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return {
+          ...DEFAULT_PATIENT,
+          name: parsed.full_name || DEFAULT_PATIENT.name,
+          abha: parsed.abha || DEFAULT_PATIENT.abha,
+          bloodGroup: parsed.bloodGroup || DEFAULT_PATIENT.bloodGroup,
+          allergies: parsed.allergies || DEFAULT_PATIENT.allergies,
+          phone: parsed.phone || DEFAULT_PATIENT.phone,
+          gender: parsed.gender || DEFAULT_PATIENT.gender,
+        };
+      }
+    } catch {
+      // fallback
+    }
+    return DEFAULT_PATIENT;
+  });
 
   let content;
   if (flow === "result") {
@@ -68,7 +91,7 @@ export default function PatientApp() {
   } else if (tab === "profile") {
     content = (
       <ProfileScreen
-        patient={DEFAULT_PATIENT}
+        patient={currentUser}
         currentLang={lang}
         onOpenLangModal={() => setIsLangModalOpen(true)}
         onBack={() => setTab("home")}
@@ -77,7 +100,7 @@ export default function PatientApp() {
   } else {
     content = (
       <HomeScreen
-        patient={DEFAULT_PATIENT}
+        patient={currentUser}
         currentLang={lang}
         onOpenLangModal={() => setIsLangModalOpen(true)}
         onOpenIntake={() => setTab("ai-assistant")}
@@ -154,6 +177,17 @@ export default function PatientApp() {
           onClose={() => setIsLangModalOpen(false)}
         />
       )}
+
+      {/* DPDP Act 2023 Public Kiosk Inactivity Auto-Reset */}
+      <KioskSessionGuard
+        onReset={() => {
+          setFlow(null);
+          setTab("home");
+        }}
+        inactivityTimeoutSeconds={90}
+        countdownThresholdSeconds={15}
+      />
     </div>
   );
 }
+

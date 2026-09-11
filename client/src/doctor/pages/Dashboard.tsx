@@ -12,7 +12,8 @@ import {
   Pencil, 
   ChevronRight as ArrowRight,
   QrCode,
-  CheckCircle2
+  CheckCircle2,
+  Radio
 } from 'lucide-react';
 import PatientQRCard from '../components/PatientQRCard';
 
@@ -23,6 +24,30 @@ export const Dashboard: React.FC = () => {
   const [event1Active, setEvent1Active] = useState<boolean>(true);
   const [event2Active, setEvent2Active] = useState<boolean>(false);
   const [syncedAlert, setSyncedAlert] = useState<string | null>(null);
+  const [isCallingNext, setIsCallingNext] = useState<boolean>(false);
+  const [callAlert, setCallAlert] = useState<string | null>(null);
+
+  const handleCallNextPatient = async () => {
+    setIsCallingNext(true);
+    try {
+      const form = new FormData();
+      form.append("room_number", "Room 4B");
+      const res = await fetch("http://127.0.0.1:8000/api/doctor/queue/advance", {
+        method: "POST",
+        body: form
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCallAlert(data.message);
+        setTimeout(() => setCallAlert(null), 5000);
+      }
+    } catch (e) {
+      console.error("Error advancing queue:", e);
+    } finally {
+      setIsCallingNext(false);
+    }
+  };
+
 
   const [patients, setPatients] = useState([
     {
@@ -450,12 +475,31 @@ export const Dashboard: React.FC = () => {
 
             {/* Patients Today List Card */}
             <div className="bg-white rounded-4xl p-6 border border-slate-100/80 shadow-xs">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-bold text-slate-900">Your patients today</h3>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
-                  {patients.length} Registered
-                </span>
+              <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Your patients today</h3>
+                  <span className="text-xs text-slate-400">{patients.length} In Queue / Registered</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleCallNextPatient}
+                    disabled={isCallingNext}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                    title="Advance OPD queue and broadcast live over WebSockets"
+                  >
+                    <Radio size={13} className={isCallingNext ? "animate-spin" : "animate-pulse"} />
+                    <span>{isCallingNext ? "Calling..." : "Call Next Patient"}</span>
+                  </button>
+                </div>
               </div>
+
+              {callAlert && (
+                <div className="mb-3 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+                  <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                  <span>{callAlert}</span>
+                </div>
+              )}
+
 
               <div className="flex flex-col gap-3">
                 {patients.map((patient) => (

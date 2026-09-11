@@ -1,351 +1,163 @@
-import json
-from datetime import datetime, date
-from sqlalchemy import select
+import asyncio
+from datetime import date
+from sqlalchemy import text
 from database import engine, Base, AsyncSessionLocal
-from models import User, Patient, Doctor, Appointment, PatientClinicalProfile, PatientDocument
+from models import (
+    User, Patient, Doctor, Appointment,
+    RawRecord, ClinicalBlueprint
+)
 
-INITIAL_PATIENTS = [
+USERS_SEED = [
     {
-        "name": "Emma Watson",
-        "email": "emma.watson@example.com",
-        "age": 28,
+        "username": "user1",
+        "password": "user1123",
+        "full_name": "Priya Sharma",
+        "email": "user1",
+        "phone": "+91 91234 56781",
+        "abha": "14-2938-4471-0093",
+        "dob": date(1992, 5, 14),
+        "gender": "Female",
+        "blood_group": "B+",
+        "allergies": ["Penicillin", "Dust"],
+    },
+    {
+        "username": "user2",
+        "password": "user2123",
+        "full_name": "Emma Watson",
+        "email": "user2",
+        "phone": "+91 91234 56782",
+        "abha": "14-9824-3321-0012",
+        "dob": date(1998, 4, 15),
         "gender": "Female",
         "blood_group": "O+",
-        "abha": "14-9824-3321-0012",
-        "vitals": {"bp": "118/76 mmHg", "pulse": "74 bpm", "spO2": "99%", "temp": "98.4 °F", "weight": "58 kg"},
-        "complaint": "Seasonal allergies, nasal congestion & mild tension headache",
         "allergies": ["Penicillin", "Peanuts"],
-        "medications": ["Cetirizine 10mg", "Vitamin D3"],
-        "history": "Mild asthma diagnosed in 2021. No prior surgeries.",
-        "status": "waiting",
-        "token": 1,
-        "priority": "Routine"
     },
     {
-        "name": "Sarah Hosten",
-        "email": "sarah.hosten@example.com",
-        "age": 34,
-        "gender": "Female",
-        "blood_group": "A+",
-        "abha": "14-4412-8823-0101",
-        "vitals": {"bp": "124/82 mmHg", "pulse": "80 bpm", "spO2": "97%", "temp": "99.1 °F", "weight": "64 kg"},
-        "complaint": "Persistent dry bronchitis cough for 5 days",
-        "allergies": ["Sulfa drugs"],
-        "medications": ["Albuterol Inhaler"],
-        "history": "Frequent seasonal upper respiratory infections.",
-        "status": "in_consultation",
-        "token": 2,
-        "priority": "Specialist"
-    },
-    {
-        "name": "Dakota Smith",
-        "email": "dakota.smith@example.com",
-        "age": 52,
-        "gender": "Male",
-        "blood_group": "B+",
-        "abha": "14-8723-5561-0102",
-        "vitals": {"bp": "138/88 mmHg", "pulse": "76 bpm", "spO2": "98%", "temp": "98.6 °F", "weight": "78 kg"},
-        "complaint": "Post-stroke neurological rehabilitation follow-up",
-        "allergies": ["Aspirin"],
-        "medications": ["Atorvastatin 20mg", "Clopidogrel 75mg"],
-        "history": "Ischemic stroke 6 months ago; physical therapy ongoing.",
-        "status": "waiting",
-        "token": 3,
-        "priority": "Specialist"
-    },
-    {
-        "name": "John Smith",
-        "email": "john.smith@example.com",
-        "age": 46,
-        "gender": "Male",
-        "blood_group": "O-",
-        "abha": "14-1920-9942-0103",
-        "vitals": {"bp": "130/84 mmHg", "pulse": "72 bpm", "spO2": "98%", "temp": "98.8 °F", "weight": "82 kg"},
-        "complaint": "Liver function panel review & abdominal ultrasound follow-up",
-        "allergies": [],
-        "medications": ["Spironolactone 50mg", "Multivitamins"],
-        "history": "Non-alcoholic fatty liver disease (NAFLD) stage 2.",
-        "status": "waiting",
-        "token": 4,
-        "priority": "Routine"
-    },
-    {
-        "name": "Priya Sharma",
-        "email": "priya.sharma@example.com",
-        "age": 34,
-        "gender": "Female",
-        "blood_group": "B+",
-        "abha": "14-2938-4471-0093",
-        "vitals": {"bp": "128/82 mmHg", "pulse": "88 bpm", "spO2": "98%", "temp": "98.6 °F", "weight": "62 kg"},
-        "complaint": "Chest tightness and mild breathlessness when climbing stairs for 3 hours",
-        "allergies": ["Penicillin", "Dust"],
-        "medications": ["Metformin 500mg"],
-        "history": "Type 2 diabetes mellitus diagnosed 4 years ago.",
-        "status": "waiting",
-        "token": 5,
-        "priority": "Specialist"
-    },
-    {
-        "name": "Rajesh Kumar",
-        "email": "rajesh.kumar@example.com",
-        "age": 59,
+        "username": "user3",
+        "password": "user3123",
+        "full_name": "Rajesh Kumar",
+        "email": "user3",
+        "phone": "+91 91234 56783",
+        "abha": "14-5582-7719-0104",
+        "dob": date(1967, 8, 22),
         "gender": "Male",
         "blood_group": "AB+",
-        "abha": "14-5582-7719-0104",
-        "vitals": {"bp": "150/94 mmHg", "pulse": "82 bpm", "spO2": "96%", "temp": "98.7 °F", "weight": "84 kg"},
-        "complaint": "Hypertensive follow-up with recurring morning dizziness",
         "allergies": ["Iodinated contrast"],
-        "medications": ["Amlodipine 5mg", "Telmisartan 40mg"],
-        "history": "Essential hypertension for 8 years.",
-        "status": "waiting",
-        "token": 6,
-        "priority": "Routine"
     },
     {
-        "name": "Amina Begum",
-        "email": "amina.begum@example.com",
-        "age": 41,
+        "username": "user4",
+        "password": "user4123",
+        "full_name": "Sarah Hosten",
+        "email": "user4",
+        "phone": "+91 91234 56784",
+        "abha": "14-4412-8823-0101",
+        "dob": date(1992, 11, 30),
         "gender": "Female",
-        "blood_group": "O+",
-        "abha": "14-7712-4439-0105",
-        "vitals": {"bp": "114/72 mmHg", "pulse": "70 bpm", "spO2": "99%", "temp": "98.2 °F", "weight": "55 kg"},
-        "complaint": "Severe acute migraine with visual aura & nausea",
-        "allergies": ["NSAIDs (gastric pain)"],
-        "medications": ["Sumatriptan 50mg PRN"],
-        "history": "Chronic episodic migraine since age 25.",
-        "status": "waiting",
-        "token": 7,
-        "priority": "Specialist"
+        "blood_group": "A+",
+        "allergies": ["Sulfa drugs"],
     },
     {
-        "name": "David Chen",
-        "email": "david.chen@example.com",
-        "age": 23,
-        "gender": "Male",
-        "blood_group": "A-",
-        "abha": "14-3382-9901-0106",
-        "vitals": {"bp": "120/78 mmHg", "pulse": "65 bpm", "spO2": "99%", "temp": "98.4 °F", "weight": "70 kg"},
-        "complaint": "Right knee swelling and twisting injury during football match",
-        "allergies": [],
-        "medications": ["Ibuprofen 400mg"],
-        "history": "No prior orthopedic injuries or surgeries.",
-        "status": "completed",
-        "token": 8,
-        "priority": "Low"
-    },
-    {
-        "name": "Fatima Noor",
-        "email": "fatima.noor@example.com",
-        "age": 67,
-        "gender": "Female",
-        "blood_group": "B-",
-        "abha": "14-9901-2244-0107",
-        "vitals": {"bp": "136/84 mmHg", "pulse": "75 bpm", "spO2": "95%", "temp": "98.6 °F", "weight": "68 kg"},
-        "complaint": "COPD maintenance visit, mild exertion dyspnea with seasonal climate change",
-        "allergies": ["Codeine"],
-        "medications": ["Tiotropium Respimat", "Formoterol"],
-        "history": "COPD Stage 2, diagnosed in 2018.",
-        "status": "waiting",
-        "token": 9,
-        "priority": "Specialist"
-    },
-    {
-        "name": "Vikram Malhotra",
-        "email": "vikram.malhotra@example.com",
-        "age": 38,
-        "gender": "Male",
-        "blood_group": "O+",
+        "username": "user5",
+        "password": "user5123",
+        "full_name": "Vikram Malhotra",
+        "email": "user5",
+        "phone": "+91 91234 56785",
         "abha": "14-1182-6632-0108",
-        "vitals": {"bp": "122/80 mmHg", "pulse": "78 bpm", "spO2": "99%", "temp": "98.6 °F", "weight": "75 kg"},
-        "complaint": "Annual preventive executive health checkup and lipid profile review",
+        "dob": date(1988, 3, 10),
+        "gender": "Male",
+        "blood_group": "O+",
         "allergies": [],
-        "medications": [],
-        "history": "None. Family history of coronary artery disease.",
-        "status": "waiting",
-        "token": 10,
-        "priority": "Low"
-    }
+    },
 ]
 
+async def reset_and_seed_db():
+    """
+    Resets database schema to clean state:
+    - 1 Doctor account: admindoc / admindoc
+    - 5 User accounts: user1..user5 with passwords user1123..user5123
+    - 0 Appointments (to be added via UI)
+    - 0 Raw Records (to be uploaded via UI)
+    - 0 Clinical Blueprints (to be synthesized via UI)
+    """
+    print("[Database] Dropping legacy & existing tables...")
+    async with engine.begin() as conn:
+        # Drop legacy tables if present
+        await conn.execute(text("DROP TABLE IF EXISTS patient_documents CASCADE;"))
+        await conn.execute(text("DROP TABLE IF EXISTS patient_clinical_profiles CASCADE;"))
+        await conn.execute(text("DROP TABLE IF EXISTS clinical_blueprints CASCADE;"))
+        await conn.execute(text("DROP TABLE IF EXISTS raw_records CASCADE;"))
+        await conn.execute(text("DROP TABLE IF EXISTS appointments CASCADE;"))
+        await conn.execute(text("DROP TABLE IF EXISTS doctors CASCADE;"))
+        await conn.execute(text("DROP TABLE IF EXISTS patients CASCADE;"))
+        await conn.execute(text("DROP TABLE IF EXISTS users CASCADE;"))
+        
+        # Create all current tables fresh
+        await conn.run_sync(Base.metadata.create_all)
+        print("[Database] Fresh tables created: users, patients, doctors, appointments, raw_records, clinical_blueprints")
+
+    async with AsyncSessionLocal() as session:
+        # 1. Seed Doctor (admindoc / admindoc)
+        print("[Database] Seeding 1 Doctor: admindoc / admindoc ...")
+        doctor_user = User(
+            email="admindoc",
+            password_hash="admindoc",
+            full_name="Dr. Admin Doc",
+            role="doctor",
+            phone="+91 98765 43210"
+        )
+        session.add(doctor_user)
+        await session.flush()
+
+        doctor_profile = Doctor(
+            user_id=doctor_user.id,
+            specialization="Cardiologist & General Medicine",
+            license_number="DOC-ADMIN-001",
+            hospital_name="City Care Hospital · AIIA OPD",
+            room_number="Room 4B"
+        )
+        session.add(doctor_profile)
+        await session.flush()
+
+        # 2. Seed 5 Patients (user1..user5)
+        print("[Database] Seeding 5 Patient accounts (user1..user5) with passwords user1123..user5123 ...")
+        for u in USERS_SEED:
+            patient_user = User(
+                email=u["email"],
+                password_hash=u["password"],
+                full_name=u["full_name"],
+                role="patient",
+                phone=u["phone"]
+            )
+            session.add(patient_user)
+            await session.flush()
+
+            patient_profile = Patient(
+                user_id=patient_user.id,
+                abha_id=u["abha"],
+                dob=u["dob"],
+                gender=u["gender"],
+                blood_group=u["blood_group"],
+                allergies=u["allergies"]
+            )
+            session.add(patient_profile)
+            await session.flush()
+
+        # Note: 0 appointments, 0 raw_records, 0 clinical_blueprints seeded as requested!
+        await session.commit()
+        print("[Database] Setup complete! 1 doctor and 5 patients seeded. 0 appointments (clean state for UI).")
+
 async def init_db_and_seed():
-    """Initializes tables and seeds the 10 patients if the database is empty."""
+    """Safe startup hook: creates tables if not present and seeds only if users table is empty."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
     async with AsyncSessionLocal() as session:
-        # Check if admindoc already exists
-        result = await session.execute(select(User).where(User.email == "admindoc"))
-        admin_doc_user = result.scalars().first()
-
-        if not admin_doc_user:
-            print("[Database] Seeding admindoc (doctor) credentials...")
-            doctor_user = User(
-                email="admindoc",
-                password_hash="admindoc",
-                full_name="Dr. Admin Doc",
-                role="doctor",
-                phone="+91 98765 43210"
-            )
-            session.add(doctor_user)
-            await session.flush()
-
-            doctor = Doctor(
-                user_id=doctor_user.id,
-                specialization="Cardiologist & General Medicine",
-                license_number="DOC-ADMIN-001",
-                hospital_name="City Care Hospital",
-                room_number="Room 4B"
-            )
-            session.add(doctor)
-            await session.flush()
-        else:
-            doctor_user = admin_doc_user
-            doc_res = await session.execute(select(Doctor).where(Doctor.user_id == doctor_user.id))
-            doctor = doc_res.scalars().first()
-            if not doctor:
-                doctor = Doctor(
-                    user_id=doctor_user.id,
-                    specialization="Cardiologist & General Medicine",
-                    license_number="DOC-ADMIN-001",
-                    hospital_name="City Care Hospital",
-                    room_number="Room 4B"
-                )
-                session.add(doctor)
-                await session.flush()
-
-        # Check if user1 (patient) already exists
-        result_user1 = await session.execute(select(User).where(User.email == "user1"))
-        user1_record = result_user1.scalars().first()
-        if not user1_record:
-            print("[Database] Seeding user1 (patient) credentials...")
-            user1_record = User(
-                email="user1",
-                password_hash="user123",
-                full_name="User One (Priya Sharma)",
-                role="patient",
-                phone="+91 91234 56789"
-            )
-            session.add(user1_record)
-            await session.flush()
-
-        # Check if 10 patients are already populated
-        pat_count_res = await session.execute(select(Patient).limit(10))
-        existing_patients = pat_count_res.scalars().all()
-        if len(existing_patients) >= 10:
-            await session.commit()
-            print("[Database] 10 patient records & credentials already populated. Seed complete.")
+        from sqlalchemy import select
+        res = await session.execute(select(User).limit(1))
+        if res.scalars().first():
             return
-
-        print("[Database] Seeding 10 clinical patients...")
-
-        # 2. Create 10 Patients with Layer 1 Appointments and Layer 3 Clinical Profiles
-        for pdata in INITIAL_PATIENTS:
-            p_user = User(
-                email=pdata["email"],
-                full_name=pdata["name"],
-                role="patient",
-                phone="+91 91234 56789"
-            )
-            session.add(p_user)
-            await session.flush()
-
-            patient = Patient(
-                user_id=p_user.id,
-                abha_id=pdata["abha"],
-                gender=pdata["gender"],
-                blood_group=pdata["blood_group"],
-                allergies=pdata["allergies"],
-                dob=date(2026 - pdata["age"], 1, 1)
-            )
-            session.add(patient)
-            await session.flush()
-
-            # Layer 1: Appointment
-            appointment = Appointment(
-                patient_id=patient.id,
-                doctor_id=doctor.id,
-                scheduled_at=datetime.utcnow(),
-                token_number=pdata["token"],
-                status=pdata["status"]
-            )
-            session.add(appointment)
-            await session.flush()
-
-            # Layer 2: Seed Scanned Parche / Documents
-            sample_doc = PatientDocument(
-                patient_id=patient.id,
-                document_type="prescription" if pdata["token"] % 2 == 1 else "lab_report",
-                file_url="https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=800&auto=format&fit=crop&q=80",
-                file_name=f"Prior_OPD_Record_{pdata['token']}.pdf",
-                mime_type="application/pdf",
-                file_size=245000,
-                raw_extracted_text=f"Physician Note: Patient {pdata['name']}. Rx: {', '.join(pdata['medications']) if pdata['medications'] else 'Lifestyle management'}. History: {pdata['history']}."
-            )
-            session.add(sample_doc)
-            await session.flush()
-
-            # Layer 3: AI Refined Clinical Blueprint (JSONB)
-            is_cardiac = "chest" in pdata["complaint"].lower()
-            red_flags = []
-            if is_cardiac:
-                red_flags.append("Possible acute coronary/cardiovascular distress — left arm radiation & sweating flagged.")
-            elif "stroke" in pdata["complaint"].lower():
-                red_flags.append("Recent cerebrovascular event — monitor neurological status & BP.")
-
-            hpi_data = {
-                "onset": "3 hours ago" if is_cardiac else "5 days ago",
-                "duration": "Acute episodic",
-                "character": "Compressive tightness" if is_cardiac else "Dull intermittent ache",
-                "radiation": "Left arm and shoulder" if is_cardiac else "Local",
-                "triggers": "Exertion / climbing stairs",
-                "relieving": "Rest"
-            }
-
-            ayush_data = {
-                "prakriti": "Vata-Pitta" if pdata["gender"] == "Female" else "Pitta-Kapha",
-                "agni": "Mandagni (slow digestion)" if pdata["age"] > 50 else "Vishamagni (variable)",
-                "koshtha": "Madhyama (normal bowel pattern)",
-                "ahara_vihara": "High stress, sedentary urban OPD lifestyle, irregular meal timings"
-            }
-
-            timeline_data = [
-                {
-                    "date": "2026-09-02",
-                    "type": "prescription",
-                    "title": "Hospital OPD Prescription",
-                    "summary": f"Prescribed: {', '.join(pdata['medications']) if pdata['medications'] else 'Observation'}"
-                },
-                {
-                    "date": "2026-08-18",
-                    "type": "lab_report",
-                    "title": "Routine Investigation",
-                    "summary": f"Vitals check: BP {pdata['vitals']['bp']}, Pulse {pdata['vitals']['pulse']}."
-                }
-            ]
-
-            clinical_profile = PatientClinicalProfile(
-                patient_id=patient.id,
-                appointment_id=appointment.id,
-                triage_priority=pdata["priority"],
-                chief_complaint=pdata["complaint"],
-                vitals=pdata["vitals"],
-                ai_summary=f"Patient {pdata['name']} ({pdata['age']}y {pdata['gender']}) presents with {pdata['complaint'].lower()}. Vitals: BP {pdata['vitals']['bp']}, SpO2 {pdata['vitals']['spO2']}. Relevant history: {pdata['history']}",
-                clinical_entities={
-                    "medications": pdata["medications"],
-                    "allergies": pdata["allergies"],
-                    "history": pdata["history"],
-                    "symptoms": [pdata["complaint"]]
-                },
-                hpi=hpi_data,
-                red_flags=red_flags,
-                ayush_pariksha=ayush_data,
-                timeline=timeline_data
-            )
-            session.add(clinical_profile)
-
-        await session.commit()
-        print("[Database] Successfully initialized and seeded 10 patient records across all 3 layers!")
+    await reset_and_seed_db()
 
 if __name__ == "__main__":
-    import asyncio
-    asyncio.run(init_db_and_seed())
+    asyncio.run(reset_and_seed_db())
+

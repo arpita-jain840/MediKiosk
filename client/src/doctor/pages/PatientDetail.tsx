@@ -13,8 +13,10 @@ import {
   Eye,
   FileCheck2,
   Leaf,
-  Zap
+  Zap,
+  Download
 } from "lucide-react";
+
 import { initialPatients } from "../data/patientsData";
 
 interface BlueprintData {
@@ -223,6 +225,26 @@ export default function PatientDetail() {
     }
   };
 
+  const handleExportFhir = async () => {
+    if (!data) return;
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/patient/${data.patient.id}/fhir`);
+      if (res.ok) {
+        const bundle = await res.json();
+        const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `ABDM_FHIR_${data.patient.name.replace(/\s+/g, "_")}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (e) {
+      console.error("Error exporting FHIR:", e);
+    }
+  };
+
+
   if (loading || !data) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-slate-500">
@@ -271,6 +293,14 @@ export default function PatientDetail() {
             <span>Pre-computed Blueprint (&lt;50ms)</span>
           </div>
           <button
+            onClick={handleExportFhir}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+            title="Download NHA/ABDM HL7 FHIR R4 Bundle"
+          >
+            <Download size={13} className="text-primary" />
+            <span>Export ABDM FHIR</span>
+          </button>
+          <button
             onClick={() => window.print()}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
           >
@@ -279,6 +309,7 @@ export default function PatientDetail() {
           </button>
         </div>
       </div>
+
 
       {/* 2. Patient Identity & Vitals Banner */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">

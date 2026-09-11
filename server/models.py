@@ -4,7 +4,7 @@ from sqlalchemy import (
     Column, String, Text, Integer, Boolean, DateTime, Date, ForeignKey, JSON
 )
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, synonym
 from database import Base, engine
 
 # Helper for universal UUID & JSON that works seamlessly in both PostgreSQL and SQLite
@@ -45,8 +45,12 @@ class Patient(Base):
 
     user = relationship("User", back_populates="patient_profile")
     appointments = relationship("Appointment", back_populates="patient", cascade="all, delete-orphan")
-    documents = relationship("PatientDocument", back_populates="patient", cascade="all, delete-orphan")
-    clinical_profiles = relationship("PatientClinicalProfile", back_populates="patient", cascade="all, delete-orphan")
+    documents = relationship("RawRecord", back_populates="patient", cascade="all, delete-orphan")
+    clinical_profiles = relationship("ClinicalBlueprint", back_populates="patient", cascade="all, delete-orphan")
+
+    # Semantic aliases for the 4 Core Tasks
+    raw_records = synonym("documents")
+    clinical_blueprints = synonym("clinical_profiles")
 
 
 class Doctor(Base):
@@ -77,12 +81,14 @@ class Appointment(Base):
 
     patient = relationship("Patient", back_populates="appointments")
     doctor = relationship("Doctor", back_populates="appointments")
-    clinical_profile = relationship("PatientClinicalProfile", back_populates="appointment", uselist=False)
+    clinical_profile = relationship("ClinicalBlueprint", back_populates="appointment", uselist=False)
+    clinical_blueprint = synonym("clinical_profile")
 
 
-class PatientDocument(Base):
-    """Layer 2: Digital Documents, Prescriptions, Parche & Reports"""
-    __tablename__ = "patient_documents"
+
+class RawRecord(Base):
+    """Core Task 1: Raw Records (Digital Documents, Prescriptions, Parche & Voice Transcripts)"""
+    __tablename__ = "raw_records"
 
     id = Column(UUIDType, primary_key=True, default=generate_id)
     patient_id = Column(UUIDType, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
@@ -96,10 +102,13 @@ class PatientDocument(Base):
 
     patient = relationship("Patient", back_populates="documents")
 
+# Alias for backwards compatibility
+PatientDocument = RawRecord
 
-class PatientClinicalProfile(Base):
-    """Layer 3: AI Refined Clinical Profile (JSONB) for 1-Page Fast Render"""
-    __tablename__ = "patient_clinical_profiles"
+
+class ClinicalBlueprint(Base):
+    """Core Task 2 & 3: AI Refined Clinical Blueprint (JSONB) for 1-Page Fast Render"""
+    __tablename__ = "clinical_blueprints"
 
     id = Column(UUIDType, primary_key=True, default=generate_id)
     patient_id = Column(UUIDType, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
@@ -123,3 +132,7 @@ class PatientClinicalProfile(Base):
 
     patient = relationship("Patient", back_populates="clinical_profiles")
     appointment = relationship("Appointment", back_populates="clinical_profile")
+
+# Alias for backwards compatibility
+PatientClinicalProfile = ClinicalBlueprint
+

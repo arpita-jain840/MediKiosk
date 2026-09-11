@@ -12,7 +12,9 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "firebase": "^12.19.0",
+    "html5-qrcode": "^2.3.8",
     "lucide-react": "^1.43.0",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.3",
