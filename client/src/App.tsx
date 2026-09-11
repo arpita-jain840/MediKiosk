@@ -13,8 +13,9 @@ import Profile from './app/Profile';
 import Settings from './app/Settings';
 import PrescriptionPage from './app/PrescriptionPage';
 
-// Patient Kiosk
+// Patient Kiosk & Access Submission
 import RoughInputTest from './Input_section';
+import SubmitAccess from './app/SubmitAccess';
 
 const DoctorLayout = () => {
   return (
@@ -48,8 +49,9 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Patient Intake Kiosk */}
+        {/* Patient Intake Kiosk & QR Access Submission */}
         <Route path="/kiosk" element={<KioskLayout />} />
+        <Route path="/submit" element={<SubmitAccess />} />
 
         {/* Doctor Clinical Suite */}
         <Route element={<DoctorLayout />}>

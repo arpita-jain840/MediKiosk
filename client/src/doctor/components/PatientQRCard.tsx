@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import qrCodeImage from '../app/qr_code.png';
 import { useNavigate } from 'react-router-dom';
 import { 
   QrCode, 
@@ -92,54 +93,8 @@ export const PatientQRCard: React.FC<{ onPatientSynced?: (patient: SyncedPatient
         {/* QR Code Container with Laser Scanning Effect */}
         <div className="relative mx-auto my-1 p-3 bg-slate-50/80 rounded-2xl border border-slate-100 flex flex-col items-center">
           <div className="relative w-36 h-36 bg-white p-2.5 rounded-xl shadow-xs flex items-center justify-center overflow-hidden">
-            {/* Realistic Crisp SVG QR Code */}
-            <svg className="w-full h-full text-slate-900" viewBox="0 0 100 100" fill="currentColor">
-              {/* Corner 1 Top-Left Eye */}
-              <rect x="5" y="5" width="26" height="26" rx="4" fill="none" stroke="currentColor" strokeWidth="4" />
-              <rect x="11" y="11" width="14" height="14" rx="2" />
-
-              {/* Corner 2 Top-Right Eye */}
-              <rect x="69" y="5" width="26" height="26" rx="4" fill="none" stroke="currentColor" strokeWidth="4" />
-              <rect x="75" y="11" width="14" height="14" rx="2" />
-
-              {/* Corner 3 Bottom-Left Eye */}
-              <rect x="5" y="69" width="26" height="26" rx="4" fill="none" stroke="currentColor" strokeWidth="4" />
-              <rect x="11" y="75" width="14" height="14" rx="2" />
-
-              {/* Data matrix dots */}
-              <rect x="36" y="8" width="5" height="5" rx="1" />
-              <rect x="46" y="8" width="5" height="5" rx="1" />
-              <rect x="56" y="8" width="5" height="5" rx="1" />
-              <rect x="36" y="18" width="5" height="5" rx="1" />
-              <rect x="56" y="18" width="5" height="5" rx="1" />
-              <rect x="46" y="24" width="5" height="5" rx="1" />
-
-              <rect x="8" y="36" width="5" height="5" rx="1" />
-              <rect x="18" y="36" width="5" height="5" rx="1" />
-              <rect x="8" y="46" width="5" height="5" rx="1" />
-              <rect x="24" y="52" width="5" height="5" rx="1" />
-              <rect x="15" y="56" width="5" height="5" rx="1" />
-
-              <rect x="36" y="36" width="28" height="28" rx="8" fill="#4f46e5" />
-              <path d="M 50 42 L 50 58 M 42 50 L 58 50" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-
-              <rect x="69" y="36" width="6" height="6" rx="1" />
-              <rect x="80" y="40" width="5" height="5" rx="1" />
-              <rect x="88" y="36" width="6" height="6" rx="1" />
-              <rect x="72" y="50" width="5" height="5" rx="1" />
-              <rect x="84" y="52" width="6" height="6" rx="1" />
-
-              <rect x="36" y="69" width="5" height="5" rx="1" />
-              <rect x="46" y="75" width="6" height="6" rx="1" />
-              <rect x="56" y="69" width="5" height="5" rx="1" />
-              <rect x="38" y="82" width="6" height="6" rx="1" />
-              <rect x="52" y="86" width="6" height="6" rx="1" />
-
-              <rect x="69" y="69" width="6" height="6" rx="1" />
-              <rect x="80" y="72" width="6" height="6" rx="1" />
-              <rect x="88" y="80" width="6" height="6" rx="1" />
-              <rect x="74" y="84" width="6" height="6" rx="1" />
-            </svg>
+            {/* Real QR Code Image */}
+            <img src={qrCodeImage} alt="Patient QR Code" className="w-full h-full object-contain" />
 
             {/* Pulsing Scan Line */}
             <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-indigo-500 to-transparent shadow-[0_0_8px_#6366f1] animate-[pulse_2s_ease-in-out_infinite]" />
@@ -256,37 +211,7 @@ export const PatientQRCard: React.FC<{ onPatientSynced?: (patient: SyncedPatient
             {/* Giant QR for Desk Screen */}
             <div className="p-4 bg-slate-50 rounded-3xl border-2 border-indigo-100 mb-5 relative">
               <div className="w-60 h-60 bg-white p-4 rounded-2xl shadow-sm flex items-center justify-center">
-                <svg className="w-full h-full text-slate-950" viewBox="0 0 100 100" fill="currentColor">
-                  {/* Corner Eyes */}
-                  <rect x="5" y="5" width="26" height="26" rx="4" fill="none" stroke="currentColor" strokeWidth="4" />
-                  <rect x="11" y="11" width="14" height="14" rx="2" />
-                  <rect x="69" y="5" width="26" height="26" rx="4" fill="none" stroke="currentColor" strokeWidth="4" />
-                  <rect x="75" y="11" width="14" height="14" rx="2" />
-                  <rect x="5" y="69" width="26" height="26" rx="4" fill="none" stroke="currentColor" strokeWidth="4" />
-                  <rect x="11" y="75" width="14" height="14" rx="2" />
-
-                  {/* Center Emblem */}
-                  <rect x="36" y="36" width="28" height="28" rx="8" fill="#4f46e5" />
-                  <path d="M 50 42 L 50 58 M 42 50 L 58 50" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" />
-
-                  {/* Data matrix dots */}
-                  <rect x="36" y="8" width="5" height="5" rx="1" />
-                  <rect x="46" y="8" width="5" height="5" rx="1" />
-                  <rect x="56" y="8" width="5" height="5" rx="1" />
-                  <rect x="36" y="18" width="5" height="5" rx="1" />
-                  <rect x="56" y="18" width="5" height="5" rx="1" />
-                  <rect x="8" y="36" width="5" height="5" rx="1" />
-                  <rect x="18" y="36" width="5" height="5" rx="1" />
-                  <rect x="8" y="46" width="5" height="5" rx="1" />
-                  <rect x="69" y="36" width="6" height="6" rx="1" />
-                  <rect x="80" y="40" width="5" height="5" rx="1" />
-                  <rect x="88" y="36" width="6" height="6" rx="1" />
-                  <rect x="36" y="69" width="5" height="5" rx="1" />
-                  <rect x="46" y="75" width="6" height="6" rx="1" />
-                  <rect x="56" y="69" width="5" height="5" rx="1" />
-                  <rect x="69" y="69" width="6" height="6" rx="1" />
-                  <rect x="80" y="72" width="6" height="6" rx="1" />
-                </svg>
+                <img src={qrCodeImage} alt="Patient QR Code" className="w-full h-full object-contain" />
               </div>
             </div>
 
