@@ -7,7 +7,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { TopBar } from "../components/TopBar";
-import { SUPPORTED_LANGUAGES } from "../components/LanguageModal";
 import { getTranslations } from "../utils/i18n";
 
 interface AIAssistantScreenProps {
@@ -22,13 +21,7 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
   onOpenProfile,
 }) => {
   const t = getTranslations(currentLang);
-  const activeLangObj =
-    SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
-
-  const initialGreeting =
-    currentLang === "hi"
-      ? "नमस्ते! मैं मेडिकियोस्क अस्पताल सहायक हूँ। आज मैं आपकी क्या सहायता कर सकता हूँ?"
-      : "Hello! I am your hospital guide. How can I assist you today?";
+  const initialGreeting = t.aiGuide.initialGreeting;
 
   const [messages, setMessages] = useState<Array<{ from: string; text: string }>>([
     {
@@ -53,14 +46,11 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
       setMessages([
         {
           from: "ai",
-          text:
-            currentLang === "hi"
-              ? "नमस्ते! मैं मेडिकियोस्क अस्पताल सहायक हूँ। आज मैं आपकी क्या सहायता कर सकता हूँ?"
-              : "Hello! I am your hospital guide. How can I assist you today?",
+          text: t.aiGuide.initialGreeting,
         },
       ]);
     }
-  }, [currentLang]);
+  }, [currentLang, t.aiGuide.initialGreeting]);
 
   // Bhashini TTS voice playback
   const playVoiceResponse = async (text: string) => {
@@ -170,7 +160,7 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
     <div className="flex-1 overflow-hidden flex flex-col h-full" style={{ background: "var(--bg)" }}>
       {/* Clean TopBar with Language and Top-Right Profile */}
       <TopBar
-        title="AI Hospital Guide"
+        title={t.aiGuide.title}
         currentLang={currentLang}
         onOpenLangModal={onOpenLangModal}
         onOpenProfile={onOpenProfile}
@@ -181,7 +171,6 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
             title={isMuted ? "Unmute Voice" : "Mute Voice"}
           >
             {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} className="text-primary" />}
-            <span className="hidden sm:inline">{isMuted ? "Muted" : "Voice On"}</span>
           </button>
         }
       />
@@ -200,15 +189,15 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-900">
-                AIIA Smart Kiosk Companion
+                {t.aiGuide.companionTitle}
               </h3>
               <p className="text-xs text-slate-500">
-                Supports speech & text in {activeLangObj.name} ({activeLangObj.native})
+                {t.aiGuide.companionSub}
               </p>
             </div>
           </div>
           <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-            Active Guide
+            {t.aiGuide.activeGuide}
           </span>
         </div>
 
@@ -244,7 +233,7 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
                       className="mt-2 text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <Volume2 size={12} />
-                      <span>Replay Voice</span>
+                      <span>{t.aiGuide.replay}</span>
                     </button>
                   )}
                 </div>
@@ -264,7 +253,7 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
                 <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" />
                 <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce delay-100" />
                 <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce delay-200" />
-                <span className="ml-1 text-slate-500 font-medium">Listening & Thinking...</span>
+                <span className="ml-1 text-slate-500 font-medium">{t.aiGuide.listening}</span>
               </div>
             </div>
           )}
@@ -318,7 +307,7 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
               placeholder={
                 isListening
-                  ? (currentLang === "hi" ? "हम सुन रहे हैं..." : "Listening to your voice...")
+                  ? t.aiGuide.listening
                   : t.aiGuide.placeholder
               }
               className="w-full pl-5 pr-12 py-3.5 text-xs md:text-sm rounded-2xl bg-slate-50 border border-slate-200/90 focus:outline-none focus:border-primary focus:bg-white text-slate-800 placeholder:text-slate-400 shadow-inner"

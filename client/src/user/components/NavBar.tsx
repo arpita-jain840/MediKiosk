@@ -85,7 +85,7 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, currentLang = "en" 
                           : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                       }`}
                     >
-                      Indic Voice
+                      {t.nav.indicBadge}
                     </span>
                   )}
                 </button>

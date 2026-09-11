@@ -1,6 +1,7 @@
 import React from "react";
 import { ArrowLeft, Globe, Search } from "lucide-react";
 import { SUPPORTED_LANGUAGES } from "./LanguageModal";
+import { getTranslations } from "../utils/i18n";
 
 interface TopBarProps {
   title: string;
@@ -20,16 +21,18 @@ export const TopBar: React.FC<TopBarProps> = ({
   title,
   onBack,
   right,
-  currentLang,
+  currentLang = "en",
   onOpenLangModal,
   showSearch,
   searchQuery = "",
   onSearchChange,
-  searchPlaceholder = "Search doctors, symptoms, departments, or records...",
+  searchPlaceholder,
   onOpenProfile,
   patientName = "Priya Sharma",
 }) => {
+  const t = getTranslations(currentLang);
   const activeLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === currentLang);
+  const resolvedPlaceholder = searchPlaceholder || t.topbar.searchPlaceholder;
 
   return (
     <div
@@ -63,7 +66,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-              placeholder={searchPlaceholder}
+              placeholder={resolvedPlaceholder}
               className="w-full pl-9.5 pr-4 py-2 text-xs md:text-sm rounded-xl bg-white border border-slate-200 shadow-2xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-800 placeholder:text-slate-400"
             />
           </div>
@@ -103,7 +106,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 {patientName.split(" ")[0]}
               </p>
               <p className="text-[10px] text-slate-400 font-mono leading-tight mt-0.5">
-                ABHA
+                {t.topbar.abhaActive}
               </p>
             </div>
           </button>

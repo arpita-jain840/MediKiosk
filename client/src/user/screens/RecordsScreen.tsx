@@ -96,7 +96,6 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
         showSearch={true}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        searchPlaceholder="Search records, medications, or tests..."
       />
 
       {/* Hidden file input */}
@@ -173,7 +172,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
             {RECORD_CATEGORIES.map((c) => {
               const active = cat === c.id;
-              const label = t.records.categories[c.id] || c.label;
+              const label = (t.records.categories as Record<string, string>)[c.id] || c.label;
               return (
                 <button
                   key={c.id}
@@ -191,7 +190,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
           </div>
 
           <span className="text-xs font-semibold text-slate-400">
-            {filtered.length} records
+            {filtered.length} {t.records.recordsCount}
           </span>
         </div>
 
@@ -201,8 +200,8 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
         {filtered.length === 0 ? (
           <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80">
             <FileText size={36} className="text-slate-300 mx-auto mb-2" />
-            <p className="text-sm font-bold text-slate-700">No records found.</p>
-            <p className="text-xs text-slate-400 mt-1">Upload your paper prescription or change filter.</p>
+            <p className="text-sm font-bold text-slate-700">{t.records.noRecords}</p>
+            <p className="text-xs text-slate-400 mt-1">{t.records.noRecordsSub}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -269,7 +268,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
                 <h3 className="text-base font-extrabold text-slate-900 truncate">
                   {viewingOcr.title}
                 </h3>
-                <p className="text-[11px] text-slate-400">Digitized Record Analysis</p>
+                <p className="text-[11px] text-slate-400">{t.records.modalSub}</p>
               </div>
               <button
                 onClick={() => setViewingOcr(null)}
@@ -281,7 +280,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
 
             <div>
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
-                Extracted Clinical Content (OCR)
+                {t.records.extractedTitle}
               </span>
               <pre className="text-xs bg-slate-50 p-4 rounded-2xl border border-slate-200 text-slate-700 whitespace-pre-wrap font-mono max-h-60 overflow-y-auto leading-relaxed">
                 {viewingOcr.ocr}
@@ -293,13 +292,13 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
                 onClick={() => window.print()}
                 className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors cursor-pointer"
               >
-                Print Document
+                {t.records.printDoc}
               </button>
               <button
                 onClick={() => setViewingOcr(null)}
                 className="flex-1 py-2.5 rounded-xl bg-primary hover:bg-[#204b77] text-white text-xs font-bold transition-colors cursor-pointer"
               >
-                Done
+                {t.records.close}
               </button>
             </div>
           </div>

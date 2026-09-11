@@ -30,11 +30,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
 
   const searchSuggestions = [
-    { label: "Book Token (Dr. John Smith · Room 4B)", tab: "appointments" },
-    { label: "Panchakarma Department", tab: "appointments" },
-    { label: "Upload Paper Prescription", tab: "records" },
-    { label: "Ask AI Assistant for Hospital Directions", tab: "ai-assistant" },
-    { label: "Emergency Desk & Reception", tab: "appointments" },
+    { label: `${t.home.btnBook} · Dr. John Smith (Room 4B)`, tab: "appointments" },
+    { label: t.appointments.depts.panchakarma, tab: "appointments" },
+    { label: t.home.btnRecords, tab: "records" },
+    { label: t.home.btnGuide, tab: "ai-assistant" },
+    { label: t.home.cardHelpTitle, tab: "appointments" },
   ];
 
   const filteredSuggestions = searchQuery.trim()
@@ -47,13 +47,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     <div className="flex-1 overflow-y-auto flex flex-col" style={{ background: "var(--bg)" }}>
       {/* Top Header with Global Search Bar, Language Selector & Top-Right Profile */}
       <TopBar
-        title="MediKiosk OPD"
+        title={t.topbar.homeTitle}
         currentLang={currentLang}
         onOpenLangModal={onOpenLangModal}
         showSearch={true}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        searchPlaceholder="Search doctors, departments, or records..."
         onOpenProfile={() => setTab("profile")}
         patientName={patient.name}
       />
@@ -63,7 +62,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <div className="px-6 md:px-12 py-2 max-w-5xl mx-auto w-full">
           <div className="bg-white rounded-2xl p-3 border border-slate-200 shadow-lg space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2">
-              Quick Suggestions
+              {t.topbar.quickSuggestions}
             </span>
             {filteredSuggestions.length > 0 ? (
               filteredSuggestions.map((s, idx) => (
@@ -77,13 +76,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 >
                   <span>{s.label}</span>
                   <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-                    Open {s.tab}
+                    →
                   </span>
                 </div>
               ))
             ) : (
               <p className="text-xs text-slate-500 p-2">
-                Press to consult AI Assistant for '{searchQuery}'.
+                {t.topbar.noMatch}
               </p>
             )}
           </div>
@@ -164,7 +163,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">
               {t.home.servicesHeader}
             </h3>
-            <span className="text-xs text-slate-400">AIIA New Delhi</span>
+            <span className="text-xs text-slate-400">{t.home.aiiaTag}</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

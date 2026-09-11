@@ -3,6 +3,7 @@ import { ShieldCheck, Globe, ChevronRight, Pill, LogOut, Stethoscope } from "luc
 import { TopBar } from "../components/TopBar";
 import { Section } from "../components/Section";
 import { SUPPORTED_LANGUAGES } from "../components/LanguageModal";
+import { getTranslations } from "../utils/i18n";
 import type { PatientProfile } from "../types";
 
 interface ProfileScreenProps {
@@ -18,12 +19,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   onOpenLangModal,
   onBack,
 }) => {
+  const t = getTranslations(currentLang);
   const activeLang = SUPPORTED_LANGUAGES.find((l) => l.code === currentLang);
 
   return (
     <div className="flex-1 overflow-y-auto px-5 md:px-10 pb-6 md:pb-10" style={{ background: "var(--bg)" }}>
       <TopBar
-        title="Patient Profile & ABHA"
+        title={t.profile.title}
         currentLang={currentLang}
         onOpenLangModal={onOpenLangModal}
         onBack={onBack}
@@ -39,7 +41,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         <div>
           <p className="text-[17px] md:text-[24px] font-extrabold text-slate-900">{patient.name}</p>
           <p className="text-[13px] md:text-[16px] text-slate-500">
-            {patient.age} yrs · {patient.gender}
+            {patient.age} {t.profile.years} · {patient.gender}
           </p>
         </div>
       </div>
@@ -53,13 +55,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             <ShieldCheck size={19} color="var(--primary)" className="md:w-6 md:h-6" />
             <div>
               <p className="text-[12px] md:text-[14px] font-bold" style={{ color: "var(--primary)" }}>
-                Ayushman Bharat (ABHA) Linked
+                {t.profile.abhaLinked}
               </p>
               <p className="text-[12px] md:text-[14px] text-slate-600 font-mono">{patient.abha}</p>
             </div>
           </div>
 
-          <Section title="Documented Allergies">
+          <Section title={t.profile.allergies}>
             <div className="flex flex-wrap gap-2 md:gap-3">
               {patient.allergies.map((a) => (
                 <span
@@ -94,7 +96,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         </div>
 
         <div>
-          <Section title="Current Active Medications">
+          <Section title={t.profile.medications}>
             {patient.medications.map((m) => (
               <div
                 key={m.name}
@@ -122,7 +124,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                 <div className="flex items-center gap-3">
                   <Stethoscope size={18} color="var(--primary)" />
                   <span className="text-xs md:text-sm font-bold text-slate-800">
-                    Switch to Doctor Portal (डॉक्टर पोर्टल)
+                    {t.profile.switchDoctor}
                   </span>
                 </div>
                 <ChevronRight size={16} color="var(--ink-soft)" />

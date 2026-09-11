@@ -125,7 +125,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
                 <span>•</span>
                 <span className="flex items-center gap-1 text-slate-500">
                   <MapPin size={13} />
-                  <span>Room 4B, 1st Floor</span>
+                  <span>{t.appointments.roomPrefix} 4B, {t.appointments.floorInfo}</span>
                 </span>
               </div>
             </div>
@@ -158,7 +158,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
             <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
               {t.appointments.deptTitle}
             </h3>
-            <span className="text-xs text-slate-400">All India Institute of Ayurveda</span>
+            <span className="text-xs text-slate-400">{t.home.aiiaTag}</span>
           </div>
 
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -228,7 +228,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
                   <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 mb-2">
                     <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-1.5">
                       <MapPin size={13} className="text-primary" />
-                      <span className="truncate">Room {d.id === 1 ? "4B" : "2A"}</span>
+                      <span className="truncate">{t.appointments.roomPrefix} {d.id === 1 ? "4B" : "2A"}</span>
                     </div>
                     <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-1.5">
                       <Clock size={13} className="text-primary" />
@@ -259,11 +259,11 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
                 {t.appointments.pastVisitsTitle}
               </h3>
               <p className="text-xs text-slate-400">
-                Linked to Ayushman Bharat Digital Mission (ABDM)
+                {t.profile.abhaLinked}
               </p>
             </div>
             <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
-              {pastVisits.length} Records
+              {pastVisits.length} {t.appointments.recordsCount}
             </span>
           </div>
 
@@ -277,7 +277,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-slate-900">{v.doctor}</span>
                     <span className="text-[10px] font-extrabold uppercase px-2 py-0.2 bg-emerald-100 text-emerald-800 rounded-md">
-                      Token {v.token}
+                      {t.appointments.tokenLabel} {v.token}
                     </span>
                     <span className="text-[11px] text-slate-400">• {v.date}</span>
                   </div>
@@ -288,10 +288,10 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
                 </div>
 
                 <button
-                  onClick={() => alert(`Showing digital prescription slip for ${v.doctor}`)}
+                  onClick={() => alert(`Prescription: ${v.doctor}`)}
                   className="px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:text-primary hover:border-primary/40 transition-colors cursor-pointer self-start sm:self-auto shadow-2xs"
                 >
-                  View Prescription
+                  {t.appointments.viewPrescription}
                 </button>
               </div>
             ))}
@@ -310,29 +310,29 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
             
             <div className="text-center space-y-1">
               <h3 className="text-lg font-extrabold text-slate-900">
-                OPD Token Confirmed!
+                {t.appointments.modalTitle}
               </h3>
               <p className="text-xs text-slate-500">
-                Your appointment slip has been issued & pushed to the hospital queue.
+                {t.appointments.modalSubtitle}
               </p>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
               <div className="flex justify-between">
-                <span className="text-slate-500">Token Number:</span>
+                <span className="text-slate-500">{t.appointments.tokenLabel}:</span>
                 <span className="font-black text-primary text-base">#{activeTokenNumber}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Doctor:</span>
+                <span className="text-slate-500">{t.appointments.modalDoctor}:</span>
                 <span className="font-bold text-slate-900">{bookedDoctor.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Department:</span>
+                <span className="text-slate-500">{t.appointments.modalDept}:</span>
                 <span className="font-bold text-slate-900">{bookedDoctor.spec}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">OPD Room:</span>
-                <span className="font-bold text-emerald-700">Room 4B (1st Floor)</span>
+                <span className="text-slate-500">{t.appointments.modalRoom}:</span>
+                <span className="font-bold text-emerald-700">{t.appointments.roomPrefix} 4B ({t.appointments.floorInfo})</span>
               </div>
             </div>
 
@@ -341,13 +341,13 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
                 onClick={() => window.print()}
                 className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors cursor-pointer"
               >
-                Print Slip
+                {t.appointments.printSlip}
               </button>
               <button
                 onClick={() => setShowBookingSuccess(false)}
                 className="flex-1 py-2.5 rounded-xl bg-primary hover:bg-[#204b77] text-white text-xs font-bold transition-colors cursor-pointer"
               >
-                Done
+                {t.appointments.modalDone}
               </button>
             </div>
           </div>
