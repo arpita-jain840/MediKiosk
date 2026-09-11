@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import qrCodeImage from '../app/qr_code.png';
+import qrCodeImage from '../../images/qr_code.png';
 import { useNavigate } from 'react-router-dom';
 import { 
   QrCode, 

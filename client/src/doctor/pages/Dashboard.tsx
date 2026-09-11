@@ -236,7 +236,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
-              onClick={() => navigate(`/patients/${lastScannedId || 'PAT-1001'}`)}
+              onClick={() => navigate(`/doctor/patients/${lastScannedId || 'PAT-1001'}`)}
               className="text-[11px] sm:text-xs font-black bg-white text-teal-800 px-2.5 sm:px-3 py-1 rounded-xl shadow-xs hover:bg-teal-50 transition-colors cursor-pointer"
             >
               Open profile
@@ -613,7 +613,7 @@ export const Dashboard: React.FC = () => {
             </div>
 
             <button
-              onClick={() => { closeDrawer(); navigate(`/patients/${drawerPatient.id}`); }}
+              onClick={() => { closeDrawer(); navigate(`/doctor/patients/${drawerPatient.id}`); }}
               className="mt-6 w-full py-3 rounded-2xl bg-teal-700 hover:bg-teal-800 text-white text-xs sm:text-sm font-bold transition-colors duration-200 cursor-pointer shadow-md"
             >
               Open full EHR profile

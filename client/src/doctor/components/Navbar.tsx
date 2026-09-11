@@ -1,17 +1,15 @@
-import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Bell, Settings, Sparkles, ArrowLeft } from 'lucide-react';
+import { Bell, Sparkles, ArrowLeft, Settings } from 'lucide-react';
 
 interface NavbarProps {
   doctorName?: string;
   role?: string;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({
-}) => {
+export const Navbar: React.FC<NavbarProps> = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isNotDashboard = location.pathname !== '/';
+  const isNotDashboard = location.pathname !== '/' && location.pathname !== '/doctor' && location.pathname !== '/doctor/dashboard';
 
   return (
     <header className="w-full flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-4 bg-transparent">
@@ -33,17 +31,27 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
           </div>
           <span className="text-lg sm:text-xl font-black tracking-wider text-slate-900 uppercase">
-            MEDIKIS
+            MEDIKIOSK
           </span>
         </div>
       </div>
 
       {/* Action Controls & Doctor Profile */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Patient Kiosk Terminal button */}
+        <button
+          title="Open Patient Intake Kiosk"
+          onClick={() => navigate('/patient')}
+          className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-white border border-teal-200 shadow-xs flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-semibold text-teal-700 hover:bg-teal-50 hover:border-teal-300 transition-all cursor-pointer"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Patient App</span>
+        </button>
+
         {/* Settings button */}
         <button
           title="Settings"
-          onClick={() => navigate('/settings')}
+          onClick={() => navigate('/doctor/settings')}
           className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 shadow-xs flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all cursor-pointer"
         >
           <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
