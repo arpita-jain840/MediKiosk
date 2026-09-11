@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Calendar,
   FileText,
@@ -7,7 +7,19 @@ import {
   UploadCloud,
   Stethoscope,
   ArrowRight,
+  Activity,
+  HeartPulse,
+  Thermometer,
+  Droplets,
+  ShieldCheck,
+  QrCode,
+  Download,
+  Sparkles,
+  X,
+  Pill,
+  AlertTriangle,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { TopBar } from "../components/TopBar";
 import { getTranslations } from "../utils/i18n";
 import type { PatientProfile } from "../types";
@@ -28,6 +40,82 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 }) => {
   const t = getTranslations(currentLang);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [isExportingFhir, setIsExportingFhir] = useState(false);
+
+  // Live WebSocket state for real-time queue handshake on Home
+  const [queueStatus, setQueueStatus] = useState<string>("waiting");
+  const [activeCallRoom, setActiveCallRoom] = useState<string>("Room 4B");
+  const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false);
+
+  const activeToken = 5;
+  const assignedDoctor = "Dr. John Smith";
+  const assignedRoom = activeCallRoom || "Room 4B";
+
+  // Subscribe to live WebSocket queue updates
+  useEffect(() => {
+    let ws: WebSocket | null = null;
+    try {
+      ws = new WebSocket("ws://127.0.0.1:8000/ws/queue");
+      ws.onopen = () => setIsLiveConnected(true);
+      ws.onclose = () => setIsLiveConnected(false);
+      ws.onmessage = (evt) => {
+        try {
+          const data = JSON.parse(evt.data);
+          if (data.type === "QUEUE_ADVANCED" || data.type === "QUEUE_UPDATED") {
+            if (data.token === activeToken) {
+              setQueueStatus(data.status);
+              if (data.room) setActiveCallRoom(data.room);
+            }
+          }
+        } catch {
+          // ignore ping
+        }
+      };
+    } catch {
+      setIsLiveConnected(false);
+    }
+
+    return () => {
+      if (ws) ws.close();
+    };
+  }, [activeToken]);
+
+  // QR Code payload for doctor scanner handshake
+  const qrData = JSON.stringify({
+    system: "MediKiosk",
+    token: activeToken,
+    patientName: patient.name,
+    abha: patient.abha,
+    room: assignedRoom,
+    doctor: assignedDoctor,
+    priority: "Routine",
+    generatedAt: new Date().toISOString(),
+  });
+
+  // Export ABDM FHIR JSON Bundle
+  const handleExportFhir = async () => {
+    setIsExportingFhir(true);
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/patient/demo-patient/fhir`);
+      if (res.ok) {
+        const bundle = await res.json();
+        const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `ABDM_FHIR_Bundle_Token_${activeToken}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        alert("FHIR export is generating from clinical blueprint...");
+      }
+    } catch (err) {
+      console.warn("Notice exporting FHIR bundle:", err);
+    } finally {
+      setIsExportingFhir(false);
+    }
+  };
 
   const searchSuggestions = [
     { label: `${t.home.btnBook} · Dr. John Smith (Room 4B)`, tab: "appointments" },
@@ -89,7 +177,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       )}
 
-      {/* Main Content Area - Clean, Spacious, Professional Layout */}
+      {/* Main Content Area */}
       <div className="flex-1 max-w-5xl mx-auto w-full px-6 md:px-12 py-8 space-y-8">
         
         {/* Clean Greeting Header */}
@@ -108,7 +196,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </p>
         </div>
 
-        {/* Primary Hero Banner - Generous breathing room, focused on core action */}
+        {/* Primary Hero Banner */}
         <div
           className="w-full rounded-3xl p-8 md:p-10 text-left text-white shadow-xl relative overflow-hidden"
           style={{
@@ -157,8 +245,216 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
         </div>
 
-        {/* 4 Clean Main Feature Cards with Breathing Room */}
-        <div className="space-y-4">
+        {/* ========================================================================= */}
+        {/* HEALTH PAGE SECTION (Directly below Hero Banner)                           */}
+        {/* ========================================================================= */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
+                  My Health Profile & Assessment
+                </h3>
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                  <ShieldCheck size={11} className="text-emerald-600" />
+                  ABHA Active
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">
+                Live vitals, AYUSH clinical assessment, and active consultation handshake
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowQRModal(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/95 transition-all shadow-2xs cursor-pointer"
+              >
+                <QrCode size={14} />
+                <span>Digital Pass</span>
+              </button>
+              <button
+                onClick={handleExportFhir}
+                disabled={isExportingFhir}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+              >
+                <Download size={14} />
+                <span>{isExportingFhir ? "Exporting..." : "FHIR R4"}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Live Vitals Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            {/* Vital 1: Blood Pressure */}
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500">Blood Pressure</span>
+                <Activity size={16} className="text-emerald-600" />
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-black text-slate-900">120/80</span>
+                <span className="text-[11px] font-semibold text-slate-400">mmHg</span>
+              </div>
+              <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                Normal Range
+              </span>
+            </div>
+
+            {/* Vital 2: Heart Rate */}
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500">Heart Rate</span>
+                <HeartPulse size={16} className="text-rose-500" />
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-black text-slate-900">74</span>
+                <span className="text-[11px] font-semibold text-slate-400">bpm</span>
+              </div>
+              <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                Regular Pulse
+              </span>
+            </div>
+
+            {/* Vital 3: SpO2 */}
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500">Oxygen (SpO2)</span>
+                <Droplets size={16} className="text-sky-500" />
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-black text-slate-900">98%</span>
+                <span className="text-[11px] font-semibold text-slate-400">Optimal</span>
+              </div>
+              <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                Sufficient O2
+              </span>
+            </div>
+
+            {/* Vital 4: Temperature */}
+            <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500">Body Temp</span>
+                <Thermometer size={16} className="text-amber-500" />
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-black text-slate-900">98.4</span>
+                <span className="text-[11px] font-semibold text-slate-400">°F</span>
+              </div>
+              <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                Afebrile
+              </span>
+            </div>
+          </div>
+
+          {/* Active Consultation & Live Token Card */}
+          <div className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-primary text-white flex flex-col items-center justify-center shadow-md shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider opacity-85">Token</span>
+                <span className="text-2xl font-black leading-none">#{activeToken}</span>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-base font-bold text-slate-900">
+                    {assignedRoom} · {assignedDoctor}
+                  </h4>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                    Cardiology & Ayush
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Pre-consultation clinical blueprint synthesized and sent to Doctor Cockpit.
+                </p>
+                <div className="mt-2 flex items-center gap-3 text-xs">
+                  <span className={`flex items-center gap-1.5 font-bold ${isLiveConnected ? "text-emerald-700" : "text-amber-700"}`}>
+                    <span className={`w-2 h-2 rounded-full ${isLiveConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-400"}`} />
+                    {queueStatus === "in_consultation" ? "Now In Consultation" : "Waiting in Queue"}
+                  </span>
+                  <span className="text-slate-300">·</span>
+                  <span className="text-slate-500 font-medium">Est. Wait: ~4-8 mins</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={() => setShowQRModal(true)}
+                className="w-full md:w-auto px-5 py-3 rounded-2xl bg-primary hover:bg-[#204b77] text-white text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <QrCode size={16} />
+                <span>Show QR Pass</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Ayush Prakriti & Health Overview Banner */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Prakriti Card */}
+            <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Ayush Pariksha
+                </span>
+                <Sparkles size={16} className="text-amber-500" />
+              </div>
+              <h4 className="text-base font-black text-slate-900">Vata-Pitta Balance</h4>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Agni: <span className="font-semibold text-slate-700">Samagni</span> · Koshtha: <span className="font-semibold text-slate-700">Madhyama</span>. Digestion and energy rhythm optimal.
+              </p>
+            </div>
+
+            {/* Active Medications Card */}
+            <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Active Medicines
+                </span>
+                <Pill size={16} className="text-primary" />
+              </div>
+              <div className="space-y-1.5">
+                {patient.medications && patient.medications.length > 0 ? (
+                  patient.medications.slice(0, 2).map((m, idx) => (
+                    <div key={idx} className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-slate-800">{m.name}</span>
+                      <span className="text-[11px] text-slate-400 font-medium">{m.schedule}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-400">No current prescriptions active</p>
+                )}
+              </div>
+            </div>
+
+            {/* Known Allergies Card */}
+            <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Allergies Guard
+                </span>
+                <AlertTriangle size={16} className="text-rose-500" />
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {patient.allergies && patient.allergies.length > 0 ? (
+                  patient.allergies.map((a, i) => (
+                    <span
+                      key={i}
+                      className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200"
+                    >
+                      {a}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-xs text-slate-400">No known drug allergies</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 4 Clean Main Feature Cards */}
+        <div className="space-y-4 pt-2">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">
               {t.home.servicesHeader}
@@ -277,6 +573,69 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
 
       </div>
+
+      {/* Interactive Consultation QR Pass Modal */}
+      {showQRModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-sm w-full p-6 space-y-5 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <QrCode size={20} className="text-primary" />
+                <h3 className="text-base font-bold text-slate-900">OPD Consultation Pass</h3>
+              </div>
+              <button
+                onClick={() => setShowQRModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col items-center justify-center text-center">
+              <div className="p-3 bg-white rounded-xl shadow-xs border border-slate-100">
+                <QRCodeSVG value={qrData} size={180} level="M" />
+              </div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mt-3">
+                Token #{activeToken} · Scan at Doctor Cockpit
+              </span>
+              <p className="text-xs font-bold text-slate-800 mt-1">
+                {assignedRoom} · {assignedDoctor}
+              </p>
+            </div>
+
+            <div className="text-xs text-slate-500 space-y-1 bg-slate-50/80 p-3 rounded-xl border border-slate-100">
+              <div className="flex justify-between">
+                <span>Patient:</span>
+                <span className="font-bold text-slate-800">{patient.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>ABHA ID:</span>
+                <span className="font-mono text-slate-700">{patient.abha}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Status:</span>
+                <span className="font-bold text-emerald-600">Verified & Ready</span>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleExportFhir}
+                className="flex-1 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Download size={14} />
+                <span>FHIR JSON</span>
+              </button>
+              <button
+                onClick={() => setShowQRModal(false)}
+                className="flex-1 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/95 text-xs font-bold transition-all cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
