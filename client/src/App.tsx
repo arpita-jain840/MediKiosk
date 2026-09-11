@@ -41,14 +41,25 @@ const DoctorLayout = () => {
 };
 
 function App() {
-  // Simple state-based auth for demo purposes
-  const [userRole, setUserRole] = useState<'doctor' | 'patient' | null>(null);
+  // Role-based authentication persisted in localStorage
+  const [userRole, setUserRole] = useState<'doctor' | 'patient' | null>(() => {
+    return (localStorage.getItem('medikiosk_role') as 'doctor' | 'patient') || null;
+  });
+
+  const handleSetRole = (role: 'doctor' | 'patient' | null) => {
+    setUserRole(role);
+    if (role) {
+      localStorage.setItem('medikiosk_role', role);
+    } else {
+      localStorage.removeItem('medikiosk_role');
+    }
+  };
 
   return (
     <BrowserRouter>
       <Routes>
         {/* Auth Route */}
-        <Route path="/login" element={<Login onLogin={setUserRole} />} />
+        <Route path="/login" element={<Login onLogin={handleSetRole} />} />
         
         {/* Base Route handles redirects based on auth */}
         <Route path="/" element={

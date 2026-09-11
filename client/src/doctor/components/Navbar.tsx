@@ -1,6 +1,5 @@
-import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Bell, Settings, Sparkles, ArrowLeft } from 'lucide-react';
+import { Bell, Sparkles, ArrowLeft, LogOut } from 'lucide-react';
 
 interface NavbarProps {
   doctorName?: string;
@@ -39,24 +38,30 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Action Controls & Doctor Profile */}
-      <div className="flex items-center gap-4">
-        {/* Patient Kiosk Terminal button */}
+      <div className="flex items-center gap-3">
+        {/* Switch to Patient Kiosk */}
         <button
           title="Open Patient Intake Kiosk"
-          onClick={() => navigate('/kiosk')}
+          onClick={() => {
+            localStorage.setItem('medikiosk_role', 'patient');
+            window.location.href = '/patient';
+          }}
           className="px-3.5 py-2 rounded-full bg-white border border-primary-light/30 shadow-xs flex items-center gap-2 text-xs font-semibold text-primary hover:bg-primary-tint/30 hover:border-primary-light/60 transition-all cursor-pointer"
         >
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           Patient Kiosk
         </button>
 
-        {/* Settings button */}
+        {/* Logout / Switch Role */}
         <button
-          title="Settings"
-          onClick={() => navigate('/settings')}
-          className="w-10 h-10 rounded-full bg-white border border-slate-200/80 shadow-xs flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all cursor-pointer"
+          title="Logout / Switch Portal"
+          onClick={() => {
+            localStorage.removeItem('medikiosk_role');
+            window.location.href = '/login';
+          }}
+          className="w-10 h-10 rounded-full bg-white border border-slate-200/80 shadow-xs flex items-center justify-center text-slate-600 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
         >
-          <Settings className="w-4 h-4" />
+          <LogOut className="w-4 h-4" />
         </button>
 
         {/* Notifications button */}
