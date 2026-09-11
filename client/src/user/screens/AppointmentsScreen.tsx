@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { TopBar } from "../components/TopBar";
 import { DOCTORS } from "../data/patientData";
+import { getTranslations } from "../utils/i18n";
 import type { DoctorDirectoryItem } from "../types";
 
 interface AppointmentsScreenProps {
@@ -24,18 +25,19 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
   onOpenProfile,
   onBookSuccess,
 }) => {
+  const t = getTranslations(currentLang);
   const [selectedDept, setSelectedDept] = useState("all");
   const [bookedDoctor, setBookedDoctor] = useState<DoctorDirectoryItem | null>(null);
   const [showBookingSuccess, setShowBookingSuccess] = useState(false);
   const [activeTokenNumber, setActiveTokenNumber] = useState<number>(2);
 
   const departments = [
-    { id: "all", label: "All Departments / सभी विभाग" },
-    { id: "kayachikitsa", label: "Kayachikitsa (कायाचिकित्सा)" },
-    { id: "panchakarma", label: "Panchakarma (पंचकर्म)" },
-    { id: "cardio", label: "Cardiology & General" },
-    { id: "shalya", label: "Shalya Tantra (शल्य तंत्र)" },
-    { id: "pediatrics", label: "Kaumarbhritya (बाल रोग)" },
+    { id: "all", label: t.appointments.depts.all || "All Departments" },
+    { id: "kayachikitsa", label: t.appointments.depts.kayachikitsa || "General Medicine" },
+    { id: "panchakarma", label: t.appointments.depts.panchakarma || "Panchakarma" },
+    { id: "cardio", label: t.appointments.depts.cardio || "Cardiology" },
+    { id: "shalya", label: t.appointments.depts.shalya || "Surgery" },
+    { id: "pediatrics", label: t.appointments.depts.pediatrics || "Pediatrics" },
   ];
 
   const pastVisits = [
@@ -43,9 +45,9 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
       id: "v-101",
       date: "28 Aug 2026",
       doctor: "Dr. Ananya Sharma",
-      dept: "Kayachikitsa · Room 2A",
+      dept: "General Medicine · Room 2A",
       token: "#14",
-      diagnosis: "Amlapitta (Hyperacidity) - Prescribed Avipattikar Churna",
+      diagnosis: "Hyperacidity - Prescribed Avipattikar Churna",
       status: "Completed",
     },
     {
@@ -54,7 +56,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
       doctor: "Dr. Rajesh Kulkarni",
       dept: "Panchakarma · Room 5B",
       token: "#8",
-      diagnosis: "Sandhivata (Osteoarthritis) - 7 Days Abhyanga & Janu Basti",
+      diagnosis: "Joint Pain - 7 Days Therapy",
       status: "Completed",
     },
   ];
@@ -70,7 +72,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
   return (
     <div className="flex-1 overflow-y-auto flex flex-col" style={{ background: "var(--bg)" }}>
       <TopBar
-        title="Appointments & OPD Token"
+        title={t.appointments.title}
         currentLang={currentLang}
         onOpenLangModal={onOpenLangModal}
         onOpenProfile={onOpenProfile}
@@ -81,7 +83,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
             title="Print Active Token Slip"
           >
             <Printer size={14} />
-            <span className="hidden sm:inline">Print Token Slip</span>
+            <span className="hidden sm:inline">{t.appointments.printSlip}</span>
           </button>
         }
       />
@@ -97,26 +99,28 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
               className="w-20 h-20 rounded-2xl flex flex-col items-center justify-center text-white shrink-0 shadow-sm"
               style={{ background: "var(--primary)" }}
             >
-              <span className="text-[10px] font-bold uppercase tracking-wider text-white/80">Token</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-white/80">
+                {t.appointments.tokenLabel}
+              </span>
               <span className="text-3xl font-black">#{activeTokenNumber}</span>
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                 <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                  You are next in line (आगे की बारी आपकी है)
+                  {t.appointments.nextInLine}
                 </span>
               </div>
               <h2 className="text-xl font-extrabold text-slate-900">
                 {bookedDoctor ? bookedDoctor.name : "Dr. John Smith"}
               </h2>
               <p className="text-xs text-slate-500">
-                {bookedDoctor ? `${bookedDoctor.spec} · ${bookedDoctor.hospital}` : "Cardiology & General Ayush · Room 4B (AIIA Main Block)"}
+                {bookedDoctor ? `${bookedDoctor.spec} · ${bookedDoctor.hospital}` : "Cardiology · Room 4B"}
               </p>
               <div className="flex items-center gap-3 mt-2 text-xs font-semibold text-slate-600">
                 <span className="flex items-center gap-1 text-primary">
                   <Clock size={13} />
-                  <span>Est. Wait: ~4 mins</span>
+                  <span>{t.appointments.estWait}</span>
                 </span>
                 <span>•</span>
                 <span className="flex items-center gap-1 text-slate-500">
@@ -132,7 +136,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
               onClick={() => window.print()}
               className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors cursor-pointer text-center"
             >
-              Print Token Slip
+              {t.appointments.printSlip}
             </button>
             <button
               onClick={() => {
@@ -141,7 +145,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
               }}
               className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-primary hover:bg-[#204b77] text-white text-xs font-bold transition-colors cursor-pointer text-center shadow-xs"
             >
-              Refresh Status
+              {t.appointments.refresh}
             </button>
           </div>
         </div>
@@ -152,7 +156,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
-              Select Department to Book Token
+              {t.appointments.deptTitle}
             </h3>
             <span className="text-xs text-slate-400">All India Institute of Ayurveda</span>
           </div>
@@ -183,10 +187,10 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
-              Available OPD Rooms & Doctors Today
+              {t.appointments.doctorsTitle}
             </h3>
             <span className="text-xs text-emerald-700 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              {DOCTORS.length} Rooms Operational
+              {DOCTORS.length} {t.appointments.operationalBadge}
             </span>
           </div>
 
@@ -224,7 +228,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
                   <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 mb-2">
                     <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-1.5">
                       <MapPin size={13} className="text-primary" />
-                      <span className="truncate">OPD Room {d.id === 1 ? "4B" : "2A"}</span>
+                      <span className="truncate">Room {d.id === 1 ? "4B" : "2A"}</span>
                     </div>
                     <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-1.5">
                       <Clock size={13} className="text-primary" />
@@ -238,7 +242,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
                   className="w-full py-2.5 rounded-xl bg-primary hover:bg-[#204b77] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Plus size={14} />
-                  <span>Get Token / Book Appointment</span>
+                  <span>{t.appointments.getToken}</span>
                 </button>
               </div>
             ))}
@@ -252,7 +256,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 className="text-sm font-bold text-slate-900">
-                Past Consultation History (पिछली OPD मुलाक़ातें)
+                {t.appointments.pastVisitsTitle}
               </h3>
               <p className="text-xs text-slate-400">
                 Linked to Ayushman Bharat Digital Mission (ABDM)

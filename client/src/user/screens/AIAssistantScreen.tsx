@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { TopBar } from "../components/TopBar";
 import { SUPPORTED_LANGUAGES } from "../components/LanguageModal";
+import { getTranslations } from "../utils/i18n";
 
 interface AIAssistantScreenProps {
   currentLang?: string;
@@ -20,13 +21,14 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
   onOpenLangModal,
   onOpenProfile,
 }) => {
+  const t = getTranslations(currentLang);
   const activeLangObj =
     SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
   const initialGreeting =
     currentLang === "hi"
-      ? "नमस्ते! मैं मेडिकियोस्क अस्पताल सहायक हूँ। मैं आपको डॉक्टर के कमरे, ओपीडी समय, या आपके लक्षणों के अनुसार सही विभाग चुनने में मदद कर सकता हूँ। बोलें या लिखें!"
-      : "Hello! I am your MediKiosk Hospital & Health Guide. I can help guide you to doctor rooms, check OPD timings, or suggest the right department for your symptoms. Speak or type below!";
+      ? "नमस्ते! मैं मेडिकियोस्क अस्पताल सहायक हूँ। आज मैं आपकी क्या सहायता कर सकता हूँ?"
+      : "Hello! I am your hospital guide. How can I assist you today?";
 
   const [messages, setMessages] = useState<Array<{ from: string; text: string }>>([
     {
@@ -53,8 +55,8 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
           from: "ai",
           text:
             currentLang === "hi"
-              ? "नमस्ते! मैं मेडिकियोस्क अस्पताल सहायक हूँ। मैं आपको डॉक्टर के कमरे, ओपीडी समय, या आपके लक्षणों के अनुसार सही विभाग चुनने में मदद कर सकता हूँ।"
-              : "Hello! I am your MediKiosk Hospital & Health Guide. How can I guide you today?",
+              ? "नमस्ते! मैं मेडिकियोस्क अस्पताल सहायक हूँ। आज मैं आपकी क्या सहायता कर सकता हूँ?"
+              : "Hello! I am your hospital guide. How can I assist you today?",
         },
       ]);
     }
@@ -163,13 +165,6 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
       handleSendMessage(sampleQuestion);
     }, 2800);
   };
-
-  const suggestionChips = [
-    { en: "Where is OPD Room 4B?", hi: "ओपीडी कक्ष 4B कहाँ है?" },
-    { en: "Which doctor should I see for fever?", hi: "बुखार के लिए कौन सा डॉक्टर देखना चाहिए?" },
-    { en: "Panchakarma department timings", hi: "पंचकर्म विभाग का समय क्या है?" },
-    { en: "How do I get my consultation token?", hi: "परामर्श टोकन कैसे प्राप्त करें?" },
-  ];
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col h-full" style={{ background: "var(--bg)" }}>
@@ -280,21 +275,18 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
         {/* Quick Suggestion Chips */}
         <div className="pt-2">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-            Suggested Questions / पूछें:
+            {t.aiGuide.suggestedHeader}
           </p>
           <div className="flex flex-wrap gap-2">
-            {suggestionChips.map((chip, i) => {
-              const text = currentLang === "hi" ? chip.hi : chip.en;
-              return (
-                <button
-                  key={i}
-                  onClick={() => handleSendMessage(text)}
-                  className="px-3.5 py-2 rounded-full bg-white hover:bg-slate-50 border border-slate-200/90 text-xs font-semibold text-slate-700 hover:text-primary hover:border-primary/40 transition-all cursor-pointer shadow-2xs"
-                >
-                  {text}
-                </button>
-              );
-            })}
+            {t.aiGuide.chips.map((chipText, i) => (
+              <button
+                key={i}
+                onClick={() => handleSendMessage(chipText)}
+                className="px-3.5 py-2 rounded-full bg-white hover:bg-slate-50 border border-slate-200/90 text-xs font-semibold text-slate-700 hover:text-primary hover:border-primary/40 transition-all cursor-pointer shadow-2xs"
+              >
+                {chipText}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -312,7 +304,7 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
                 ? "bg-rose-500 text-white animate-pulse ring-4 ring-rose-200"
                 : "bg-primary hover:bg-[#204b77] text-white active:scale-95"
             }`}
-            title={isListening ? "Listening... click to stop" : "Click to speak in your language"}
+            title={isListening ? "Listening... click to stop" : "Click to speak"}
           >
             <Mic size={24} />
           </button>
@@ -326,10 +318,8 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
               onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
               placeholder={
                 isListening
-                  ? "Listening to your voice... (बोलिए, हम सुन रहे हैं)"
-                  : currentLang === "hi"
-                  ? "यहाँ अपनी समस्या लिखें या माइक दबाकर बोलें..."
-                  : "Type your query here or click the microphone to speak..."
+                  ? (currentLang === "hi" ? "हम सुन रहे हैं..." : "Listening to your voice...")
+                  : t.aiGuide.placeholder
               }
               className="w-full pl-5 pr-12 py-3.5 text-xs md:text-sm rounded-2xl bg-slate-50 border border-slate-200/90 focus:outline-none focus:border-primary focus:bg-white text-slate-800 placeholder:text-slate-400 shadow-inner"
             />

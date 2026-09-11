@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { TopBar } from "../components/TopBar";
 import { RECORD_CATEGORIES, INITIAL_RECORDS } from "../data/patientData";
+import { getTranslations } from "../utils/i18n";
 import type { MedicalRecordItem } from "../types";
 
 interface RecordsScreenProps {
@@ -22,6 +23,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
   onOpenLangModal,
   onOpenProfile,
 }) => {
+  const t = getTranslations(currentLang);
   const [cat, setCat] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [recordsList, setRecordsList] = useState<MedicalRecordItem[]>(INITIAL_RECORDS);
@@ -49,14 +51,14 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
       if (res.ok) {
         const data = await res.json();
         const extracted = data.extractedSummary || "Document digitized successfully.";
-        setUploadSuccess(`Digitized: ${file.name}`);
+        setUploadSuccess(`Uploaded: ${file.name}`);
         setRecordsList((prev) => [
           {
             id: Date.now(),
             cat: "rx",
             title: file.name,
-            source: "Paper Prescription (पर्चा OCR Ingestion)",
-            date: "Today, Just now",
+            source: "Paper Prescription OCR",
+            date: "Today",
             icon: FileCheck2,
             ocr: extracted,
           },
@@ -87,14 +89,14 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
   return (
     <div className="flex-1 overflow-y-auto flex flex-col" style={{ background: "var(--bg)" }}>
       <TopBar
-        title="Digital Health Records & Parche"
+        title={t.records.title}
         currentLang={currentLang}
         onOpenLangModal={onOpenLangModal}
         onOpenProfile={onOpenProfile}
         showSearch={true}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        searchPlaceholder="Search records, medicine names, or test results..."
+        searchPlaceholder="Search records, medications, or tests..."
       />
 
       {/* Hidden file input */}
@@ -109,7 +111,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
       <div className="px-5 md:px-10 py-5 md:py-8 space-y-6 flex-1 max-w-7xl mx-auto w-full">
         
         {/* ========================================================== */}
-        {/* 1. DOCUMENT UPLOAD & PARCHE SCANNER (PS 26047 Focus)       */}
+        {/* 1. DOCUMENT UPLOAD & PARCHE SCANNER                        */}
         {/* ========================================================== */}
         <div className="rounded-3xl p-6 bg-white border border-primary/20 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
@@ -119,10 +121,10 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
               </div>
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">
-                  Paper Parche & Medical Document Scanner (पर्चा डिजिटलीकरण)
+                  {t.records.scannerTitle}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Point-of-entry OCR extraction linking paper prescriptions directly to your ABHA health record.
+                  {t.records.scannerDesc}
                 </p>
               </div>
             </div>
@@ -141,12 +143,10 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
               <UploadCloud size={24} />
             </div>
             <p className="text-sm font-bold text-slate-800">
-              {uploading
-                ? "Digitizing & Extracting Medications with Gemini OCR..."
-                : "Tap to Scan / Upload Paper Prescription, Lab Report, or Discharge Summary"}
+              {uploading ? t.records.analyzing : t.records.tapUpload}
             </p>
             <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
-              Supports handwritten Hindi and English doctor prescriptions (*parche*), PDF reports, and JPG/PNG images.
+              {t.records.uploadSub}
             </p>
 
             <button
@@ -154,14 +154,14 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
               className="mt-4 px-5 py-2 rounded-xl bg-primary hover:bg-[#204b77] text-white text-xs font-bold transition-all shadow-xs inline-flex items-center gap-2 cursor-pointer"
             >
               <UploadCloud size={14} />
-              <span>{uploading ? "Analyzing Document..." : "Choose File or Capture Photo"}</span>
+              <span>{uploading ? t.records.analyzing : t.records.btnUpload}</span>
             </button>
           </div>
 
           {uploadSuccess && (
             <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in">
               <CheckCircle2 size={18} className="shrink-0 text-emerald-600" />
-              <span>{uploadSuccess} — Extracted clinical entities linked to Doctor Cockpit!</span>
+              <span>{uploadSuccess}</span>
             </div>
           )}
         </div>
@@ -173,6 +173,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
             {RECORD_CATEGORIES.map((c) => {
               const active = cat === c.id;
+              const label = t.records.categories[c.id] || c.label;
               return (
                 <button
                   key={c.id}
@@ -183,14 +184,14 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
                       : "bg-white text-slate-600 hover:text-slate-900 border border-slate-200/90 hover:bg-slate-50"
                   }`}
                 >
-                  {c.label}
+                  {label}
                 </button>
               );
             })}
           </div>
 
           <span className="text-xs font-semibold text-slate-400">
-            Showing {filtered.length} Digital Records
+            {filtered.length} records
           </span>
         </div>
 
@@ -200,7 +201,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
         {filtered.length === 0 ? (
           <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80">
             <FileText size={36} className="text-slate-300 mx-auto mb-2" />
-            <p className="text-sm font-bold text-slate-700">No records found in this category.</p>
+            <p className="text-sm font-bold text-slate-700">No records found.</p>
             <p className="text-xs text-slate-400 mt-1">Upload your paper prescription or change filter.</p>
           </div>
         ) : (
@@ -234,7 +235,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
 
                     {r.ocr && (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
-                        OCR Active
+                        {t.records.ocrActive}
                       </span>
                     )}
                   </div>
@@ -249,7 +250,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-primary font-bold">
-                  <span>View Details & OCR</span>
+                  <span>{t.records.viewDetails}</span>
                   <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>

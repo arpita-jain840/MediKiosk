@@ -42,10 +42,10 @@ export const LanguageModal: React.FC<LanguageModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm md:text-base font-bold text-slate-900">
-                Choose Language / भाषा चुनें
+                {currentLang === "hi" ? "भाषा चुनें" : "Select Language"}
               </h3>
               <p className="text-[11px] text-slate-400">
-                Powered by Bhashini National Language Mission
+                Bhashini National Language Mission
               </p>
             </div>
           </div>

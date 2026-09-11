@@ -126,6 +126,7 @@ export default function PatientApp() {
       {!flow && (
         <NavBar
           tab={tab}
+          currentLang={lang}
           setTab={(t) => {
             setFlow(null);
             setTab(t);

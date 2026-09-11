@@ -9,6 +9,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { TopBar } from "../components/TopBar";
+import { getTranslations } from "../utils/i18n";
 import type { PatientProfile } from "../types";
 
 interface HomeScreenProps {
@@ -25,12 +26,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onOpenLangModal,
   setTab,
 }) => {
+  const t = getTranslations(currentLang);
   const [searchQuery, setSearchQuery] = useState("");
 
   const searchSuggestions = [
     { label: "Book Token (Dr. John Smith · Room 4B)", tab: "appointments" },
-    { label: "Panchakarma Department (पंचकर्म)", tab: "appointments" },
-    { label: "Upload Paper Prescription (पर्चा स्कैन)", tab: "records" },
+    { label: "Panchakarma Department", tab: "appointments" },
+    { label: "Upload Paper Prescription", tab: "records" },
     { label: "Ask AI Assistant for Hospital Directions", tab: "ai-assistant" },
     { label: "Emergency Desk & Reception", tab: "appointments" },
   ];
@@ -96,14 +98,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <div className="flex items-center gap-2 mb-1">
             <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/70">
-              All India Institute of Ayurveda · OPD Kiosk
+              {t.home.kioskTag}
             </span>
           </div>
           <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
-            Namaste, {patient.name.split(" ")[0]}
+            {t.home.greeting}, {patient.name.split(" ")[0]}
           </h2>
           <p className="text-sm md:text-base text-slate-500">
-            Welcome to the digital OPD self-service terminal. How can we help you today?
+            {t.home.welcomeSub}
           </p>
         </div>
 
@@ -116,11 +118,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         >
           <div className="relative z-10 space-y-4 max-w-2xl">
             <h3 className="text-2xl md:text-3xl font-black text-white leading-tight">
-              Hospital Self-Service Made Simple
+              {t.home.heroTitle}
             </h3>
             
             <p className="text-sm md:text-base text-white/85 leading-relaxed">
-              Book your OPD consultation token, scan physical prescriptions (*parche*) to your digital health records, or talk with our AI guide in your native language.
+              {t.home.heroDesc}
             </p>
 
             <div className="pt-3 flex flex-wrap items-center gap-3">
@@ -129,7 +131,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white text-primary text-sm font-bold shadow-md hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
               >
                 <Calendar size={18} />
-                <span>Book OPD Token</span>
+                <span>{t.home.btnBook}</span>
               </button>
 
               <button
@@ -137,7 +139,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 className="inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-sm font-bold border border-white/30 transition-colors cursor-pointer"
               >
                 <UploadCloud size={18} />
-                <span>Scan Prescription</span>
+                <span>{t.home.btnRecords}</span>
               </button>
 
               <button
@@ -145,7 +147,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 className="inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-sm font-bold border border-white/30 transition-colors cursor-pointer"
               >
                 <Mic size={18} />
-                <span>Ask AI Guide</span>
+                <span>{t.home.btnGuide}</span>
               </button>
             </div>
           </div>
@@ -160,7 +162,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">
-              Quick Services & Navigation
+              {t.home.servicesHeader}
             </h3>
             <span className="text-xs text-slate-400">AIIA New Delhi</span>
           </div>
@@ -181,15 +183,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </div>
                 <div>
                   <h4 className="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors">
-                    Appointments & Live Queue
+                    {t.home.cardApptsTitle}
                   </h4>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    Check your live token status (Token #2, Room 4B), find doctors on duty, and book OPD slots.
+                    {t.home.cardApptsDesc}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
-                <span>Open Appointments</span>
+                <span>{t.home.cardApptsTitle}</span>
                 <ArrowRight size={14} />
               </div>
             </div>
@@ -208,15 +210,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </div>
                 <div>
                   <h4 className="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors">
-                    Digital Records & Parche
+                    {t.home.cardRecordsTitle}
                   </h4>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    Scan your handwritten paper prescriptions (*parche*) with AI OCR or review previous lab reports.
+                    {t.home.cardRecordsDesc}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
-                <span>View Records & Upload</span>
+                <span>{t.home.cardRecordsTitle}</span>
                 <ArrowRight size={14} />
               </div>
             </div>
@@ -235,15 +237,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </div>
                 <div>
                   <h4 className="text-lg font-bold text-slate-900 group-hover:text-primary transition-colors">
-                    AI Voice Guide & Assistant
+                    {t.home.cardAiTitle}
                   </h4>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    Speak or chat in your language to ask about doctor rooms, OPD timings, or which department to visit.
+                    {t.home.cardAiDesc}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform">
-                <span>Start Conversation</span>
+                <span>{t.home.cardAiTitle}</span>
                 <ArrowRight size={14} />
               </div>
             </div>
@@ -259,15 +261,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </div>
                 <div>
                   <h4 className="text-lg font-bold text-slate-900 group-hover:text-rose-600 transition-colors">
-                    Emergency Desk & Reception
+                    {t.home.cardHelpTitle}
                   </h4>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                    Immediate assistance for emergency triage, wheelchair support, and hospital reception guidance.
+                    {t.home.cardHelpDesc}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 text-xs font-bold text-rose-600 group-hover:translate-x-1 transition-transform">
-                <span>Contact Helpdesk</span>
+                <span>{t.home.cardHelpTitle}</span>
                 <ArrowRight size={14} />
               </div>
             </div>

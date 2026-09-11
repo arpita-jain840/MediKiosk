@@ -8,18 +8,22 @@ import {
   Stethoscope,
 } from "lucide-react";
 
+import { getTranslations } from "../utils/i18n";
+
 interface NavBarProps {
   tab: string;
   setTab: (tab: string) => void;
+  currentLang?: string;
   onOpenIntake?: () => void;
 }
 
-export const NavBar: React.FC<NavBarProps> = ({ tab, setTab }) => {
+export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, currentLang = "en" }) => {
+  const t = getTranslations(currentLang);
   const items = [
-    { id: "home", label: "Home", icon: Home },
-    { id: "appointments", label: "Appointments & Token", icon: Calendar },
-    { id: "records", label: "Records & Parche", icon: FileText },
-    { id: "ai-assistant", label: "AI Assistant (Guide)", icon: Mic, isAi: true },
+    { id: "home", label: t.nav.home, icon: Home },
+    { id: "appointments", label: t.nav.appointments, icon: Calendar },
+    { id: "records", label: t.nav.records, icon: FileText },
+    { id: "ai-assistant", label: t.nav.ai, icon: Mic, isAi: true },
   ];
 
   return (
@@ -100,7 +104,7 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab }) => {
             className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-primary transition-colors cursor-pointer"
           >
             <Stethoscope size={15} />
-            <span>Switch to Doctor Cockpit →</span>
+            <span>{t.nav.doctorSwitch}</span>
           </button>
         </div>
       </aside>
@@ -122,7 +126,7 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab }) => {
         >
           <Home size={19} color={tab === "home" ? "var(--primary)" : "var(--ink-soft)"} />
           <span className={`text-[10.5px] ${tab === "home" ? "font-bold" : "font-medium"}`}>
-            Home
+            {t.nav.home}
           </span>
         </button>
 
@@ -133,7 +137,7 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab }) => {
         >
           <Calendar size={19} color={tab === "appointments" ? "var(--primary)" : "var(--ink-soft)"} />
           <span className={`text-[10.5px] ${tab === "appointments" ? "font-bold" : "font-medium"}`}>
-            Appts
+            {t.nav.appointments}
           </span>
         </button>
 
@@ -154,7 +158,7 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab }) => {
             <Mic size={22} color="#fff" />
           </div>
           <span className="text-[10.5px] font-bold text-slate-800">
-            AI Voice
+            {t.nav.ai}
           </span>
         </button>
 
@@ -165,7 +169,7 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab }) => {
         >
           <FileText size={19} color={tab === "records" ? "var(--primary)" : "var(--ink-soft)"} />
           <span className={`text-[10.5px] ${tab === "records" ? "font-bold" : "font-medium"}`}>
-            Records
+            {t.nav.records}
           </span>
         </button>
       </div>
