@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Stethoscope,
   ChevronRight,
@@ -6,6 +6,12 @@ import {
   Calendar,
   PhoneCall,
   Bell,
+  Mic,
+  UploadCloud,
+  ShieldCheck,
+  Leaf,
+  Clock,
+  Sparkles,
 } from "lucide-react";
 import { TopBar } from "../components/TopBar";
 import { QuickAction } from "../components/QuickAction";
@@ -13,158 +19,298 @@ import type { PatientProfile } from "../types";
 
 interface HomeScreenProps {
   patient: PatientProfile;
-  onOpenIntake: () => void;
-  setTab: (tab: string) => void;
   currentLang?: string;
   onOpenLangModal?: () => void;
+  onOpenIntake: () => void;
+  setTab: (tab: string) => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   patient,
+  currentLang = "en",
+  onOpenLangModal,
   onOpenIntake,
   setTab,
-  currentLang,
-  onOpenLangModal,
 }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const searchSuggestions = [
+    { label: "Chest pain / छाती में दर्द", tab: "ai-assistant" },
+    { label: "Ayurvedic Pariksha (प्रकृति जाँच)", tab: "ai-assistant" },
+    { label: "Upload Parche / पर्चा स्कैन", tab: "records" },
+    { label: "Dr. John Smith (Room 4B)", tab: "appointments" },
+    { label: "Panchakarma Department", tab: "appointments" },
+  ];
+
+  const filteredSuggestions = searchQuery.trim()
+    ? searchSuggestions.filter((s) =>
+        s.label.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
+
   return (
     <div className="flex-1 overflow-y-auto flex flex-col" style={{ background: "var(--bg)" }}>
+      {/* Top Header with Global Search Bar & Bhashini Language Selector */}
       <TopBar
-        title="MediKiosk AI Care"
+        title="MediKiosk OPD"
         currentLang={currentLang}
         onOpenLangModal={onOpenLangModal}
+        showSearch={true}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Search symptoms, doctors, departments, or records..."
         right={
           <button
-            className="tap-target flex items-center justify-center rounded-full md:w-10 md:h-10 cursor-pointer"
-            style={{ width: 34, height: 34, background: "var(--primary-tint)" }}
+            className="tap-target flex items-center justify-center rounded-full w-9 h-9 md:w-10 md:h-10 bg-white border border-slate-200 text-slate-600 hover:text-slate-900 cursor-pointer shadow-2xs"
             aria-label="Notifications"
           >
-            <Bell size={18} color="var(--primary)" className="md:w-5 md:h-5" />
+            <Bell size={17} className="text-slate-600" />
           </button>
         }
       />
 
-      <div className="px-5 md:px-10 pb-8 flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-        {/* Left / Main Column (2 columns on large screens) */}
-        <div className="lg:col-span-2 space-y-5 md:space-y-6">
-          {/* Greeting */}
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
-                OPD Kiosk Terminal Active
-              </span>
+      {/* Search dropdown suggestions if typing */}
+      {searchQuery.trim() && (
+        <div className="px-5 md:px-10 py-2">
+          <div className="bg-white rounded-2xl p-3 border border-slate-200 shadow-md max-w-xl space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2">
+              Quick Suggestions
+            </span>
+            {filteredSuggestions.length > 0 ? (
+              filteredSuggestions.map((s, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => {
+                    setTab(s.tab);
+                    setSearchQuery("");
+                  }}
+                  className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer text-xs font-semibold text-slate-800 transition-colors"
+                >
+                  <span>{s.label}</span>
+                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                    Open {s.tab}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-slate-500 p-2">
+                No direct match. Press below to consult the AI Voice Assistant for '{searchQuery}'.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <div className="px-5 md:px-10 py-5 md:py-8 flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        
+        {/* Left Column (2 cols on large screen) */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {/* Greeting & PS Badge */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/80">
+                  SIH'26 PS 26047 · Ayush & AIIA OPD
+                </span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+                Namaste, {patient.name.split(" ")[0]}
+              </h2>
+              <p className="text-xs md:text-sm text-slate-500 mt-0.5">
+                Ayushman Bharat linked digital case-taking kiosk terminal.
+              </p>
             </div>
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
-              Hello, {patient.name.split(" ")[0]}
-            </h2>
-            <p className="text-sm md:text-base text-slate-500 mt-1">
-              Welcome to the digital OPD clinical case-taking kiosk. Select a service below to get started.
-            </p>
+
+            {/* Quick Language pill */}
+            <button
+              onClick={onOpenLangModal}
+              className="self-start sm:self-auto px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs font-bold text-primary hover:bg-slate-50 transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>🌐 भाषा बदलें (Bhashini AI)</span>
+            </button>
           </div>
 
-          {/* Primary Health Check Hero CTA */}
+          {/* Primary Hero Banner (PS 26047 Core Focus: AI Case Taking) */}
           <div
-            onClick={onOpenIntake}
-            className="w-full rounded-2xl md:rounded-3xl p-6 md:p-8 text-left flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition-all hover:shadow-xl hover:scale-[1.005] active:scale-[0.995] cursor-pointer group"
+            className="w-full rounded-3xl p-6 md:p-8 text-left text-white shadow-xl relative overflow-hidden group"
             style={{
-              background: "linear-gradient(135deg, #3368a0 0%, #1c436b 100%)",
-              boxShadow: "0 14px 40px rgba(51, 104, 160, 0.22)",
+              background: "linear-gradient(135deg, #3368a0 0%, #173757 100%)",
             }}
           >
-            <div className="flex-1 space-y-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold tracking-wide">
-                <Stethoscope size={14} />
-                <span>AI Clinical Case-Taking</span>
-              </span>
-              <h3 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-white leading-tight">
+            <div className="relative z-10 space-y-3 max-w-xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold">
+                <Sparkles size={14} />
+                <span>One-Time AI Synthesis to PostgreSQL</span>
+              </div>
+
+              <h3 className="text-xl md:text-2xl lg:text-3xl font-black text-white leading-tight">
                 Not feeling well today?
               </h3>
-              <p className="text-sm md:text-base text-white/85 max-w-xl leading-relaxed">
-                Talk or touch your symptoms in your native language. Our AI engine builds a comprehensive 1-page Clinical Blueprint so your doctor can evaluate your condition in seconds.
+              
+              <p className="text-xs md:text-sm text-white/85 leading-relaxed">
+                Speak your symptoms in your native language or scan your paper prescriptions (*parche*). 
+                MediKiosk creates an instant **1-page Clinical Blueprint** so the doctor can examine you in seconds with zero delay.
               </p>
-              <div className="pt-2">
-                <span
-                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 transition-all group-hover:bg-white group-hover:text-primary"
-                  style={{ background: "rgba(255,255,255,0.18)", color: "#ffffff" }}
+
+              <div className="pt-2 flex flex-wrap items-center gap-3">
+                <button
+                  onClick={onOpenIntake}
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white text-primary text-xs md:text-sm font-bold shadow-md hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
                 >
-                  <span className="text-sm md:text-base font-bold">Start health check now</span>
-                  <ChevronRight size={17} />
-                </span>
+                  <Mic size={16} />
+                  <span>Start AI Voice Intake</span>
+                </button>
+
+                <button
+                  onClick={() => setTab("records")}
+                  className="inline-flex items-center gap-2 px-4 py-3 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs md:text-sm font-bold border border-white/30 transition-colors cursor-pointer"
+                >
+                  <UploadCloud size={16} />
+                  <span>Scan Paper Parche</span>
+                </button>
               </div>
             </div>
 
-            <div
-              className="shrink-0 rounded-3xl flex items-center justify-center w-16 h-16 md:w-24 md:h-24 shadow-inner"
-              style={{ background: "rgba(255,255,255,0.15)" }}
-            >
-              <Stethoscope size={36} color="#fff" className="md:w-12 md:h-12" />
+            {/* Decorative Stethoscope watermark */}
+            <div className="absolute right-4 bottom-2 opacity-15 pointer-events-none hidden sm:block">
+              <Stethoscope size={140} color="#ffffff" />
             </div>
           </div>
 
-          {/* Quick Actions Grid */}
+          {/* Core Services 4-Column Grid */}
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-              Essential Kiosk Services
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Hospital OPD Services
+              </p>
+              <span className="text-[11px] font-semibold text-primary">All India Institute of Ayurveda</span>
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
-              <QuickAction icon={FileText} label="Upload Records" onClick={() => setTab("records")} />
-              <QuickAction icon={Calendar} label="OPD Doctors" onClick={() => setTab("doctors")} />
-              <QuickAction icon={Stethoscope} label="AYUSH Check" onClick={onOpenIntake} />
-              <QuickAction icon={PhoneCall} label="Emergency Desk" onClick={() => {}} danger />
+              <QuickAction
+                icon={Calendar}
+                label="Appointments & Token"
+                onClick={() => setTab("appointments")}
+              />
+              <QuickAction
+                icon={FileText}
+                label="Digital Records & OCR"
+                onClick={() => setTab("records")}
+              />
+              <QuickAction
+                icon={Mic}
+                label="AI Voice Assistant"
+                onClick={() => setTab("ai-assistant")}
+              />
+              <QuickAction
+                icon={PhoneCall}
+                label="Emergency Desk"
+                onClick={() => {}}
+                danger
+              />
+            </div>
+          </div>
+
+          {/* AYUSH & Ayurvedic Clinical Pariksha Widget (PS Specific) */}
+          <div className="rounded-3xl p-5 md:p-6 bg-white border border-slate-200/90 shadow-2xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                  <Leaf size={18} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    AYUSH Clinical Pariksha Profile (आयुर्वेदिक परीक्षा)
+                  </h4>
+                  <p className="text-[11px] text-slate-400">
+                    Dashavidha & Trividha Pariksha for personalized care
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setTab("ai-assistant")}
+                className="text-xs font-bold text-primary hover:underline cursor-pointer"
+              >
+                Assess in AI Check →
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-3 rounded-2xl bg-emerald-50/50 border border-emerald-100">
+                <span className="text-[10px] font-bold text-emerald-800 uppercase block">Prakriti</span>
+                <span className="text-xs font-extrabold text-slate-900 mt-1 block">Vata - Pitta</span>
+                <span className="text-[10px] text-slate-500">वात्त-पित्त प्रकृति</span>
+              </div>
+              <div className="p-3 rounded-2xl bg-emerald-50/50 border border-emerald-100">
+                <span className="text-[10px] font-bold text-emerald-800 uppercase block">Agni</span>
+                <span className="text-xs font-extrabold text-slate-900 mt-1 block">Vishamagni</span>
+                <span className="text-[10px] text-slate-500">पाचन अग्नि क्षमता</span>
+              </div>
+              <div className="p-3 rounded-2xl bg-emerald-50/50 border border-emerald-100">
+                <span className="text-[10px] font-bold text-emerald-800 uppercase block">Koshtha</span>
+                <span className="text-xs font-extrabold text-slate-900 mt-1 block">Madhyama</span>
+                <span className="text-[10px] text-slate-500">कोष्ठ स्वभाव</span>
+              </div>
+              <div className="p-3 rounded-2xl bg-emerald-50/50 border border-emerald-100">
+                <span className="text-[10px] font-bold text-emerald-800 uppercase block">Ahara-Vihara</span>
+                <span className="text-xs font-extrabold text-slate-900 mt-1 block">Irregular Diet</span>
+                <span className="text-[10px] text-slate-500">आहार-विहार जीवनशैली</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Right Column (Hospital & Appointment Widgets) */}
-        <div className="space-y-5 md:space-y-6">
-          {/* Upcoming appointment card */}
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-              Today's OPD Queue
-            </p>
-            <div
-              className="rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm border border-primary/15 bg-white space-y-4"
-            >
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <span className="text-xs font-bold text-slate-500">Department</span>
-                <span className="text-xs font-extrabold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
-                  Cardiology & Ayush
-                </span>
+        {/* Right Column: Today's OPD Status & ABHA */}
+        <div className="space-y-6">
+          
+          {/* Today's Token & Live OPD Status */}
+          <div className="rounded-3xl p-5 md:p-6 bg-white border border-primary/20 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <span className="text-xs font-bold text-slate-500">Today's Active Queue</span>
+              <span className="text-xs font-extrabold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+                Token Active
+              </span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div
+                className="rounded-2xl flex flex-col items-center justify-center shrink-0 w-16 h-16 shadow-xs"
+                style={{ background: "var(--primary)", color: "#ffffff" }}
+              >
+                <span className="text-[9px] uppercase font-bold text-white/80">Token</span>
+                <span className="text-2xl font-black">#2</span>
               </div>
-              <div className="flex items-center gap-4">
-                <div
-                  className="rounded-2xl flex items-center justify-center shrink-0 w-14 h-14 font-black text-lg"
-                  style={{ background: "var(--primary-tint)", color: "var(--primary)" }}
-                >
-                  JS
+              <div className="flex-1 min-w-0">
+                <p className="text-base font-bold text-slate-900 truncate">
+                  Dr. John Smith
+                </p>
+                <p className="text-xs text-slate-500">
+                  Cardiology & Ayush · Room 4B
+                </p>
+                <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold mt-1">
+                  <Clock size={13} />
+                  <span>Est. Wait: ~4 mins</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-base font-bold text-slate-900 truncate">
-                    Dr. John Smith
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    OPD Room 4B · AIIA Hospital
-                  </p>
-                </div>
-                <div className="text-right shrink-0 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
-                  <p className="text-xs font-bold text-slate-400 uppercase">Token</p>
-                  <p className="text-base font-black text-primary">#2</p>
-                </div>
-              </div>
-              <div className="pt-1 flex items-center justify-between text-xs text-slate-500">
-                <span>Estimated Wait:</span>
-                <span className="font-bold text-slate-800">~4 minutes</span>
               </div>
             </div>
+
+            <button
+              onClick={() => setTab("appointments")}
+              className="w-full py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-800 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>View Appointment Slip & Queue</span>
+              <ChevronRight size={14} />
+            </button>
           </div>
 
-          {/* History completeness Gauge */}
-          <div
-            className="rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm bg-white border border-slate-200/80 space-y-3"
-          >
+          {/* Digital Health Completeness Gauge */}
+          <div className="rounded-3xl p-5 md:p-6 bg-white border border-slate-200/90 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-bold text-slate-900">Digital Health Profile</p>
-              <span className="text-xs font-black px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                 85% Complete
               </span>
             </div>
@@ -175,24 +321,36 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               />
             </div>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Paper prescriptions and Ayushman Bharat ID are linked. Complete the voice intake to reach 100%.
+              Prescriptions digitized. Complete the voice intake to reach 100% before seeing the doctor.
             </p>
           </div>
 
           {/* Ayushman Bharat (ABHA) Information Banner */}
           <div
             onClick={() => setTab("profile")}
-            className="rounded-2xl p-4 bg-linear-to-r from-teal-50 to-blue-50 border border-teal-200/70 flex items-center justify-between cursor-pointer hover:shadow-xs transition-shadow"
+            className="rounded-3xl p-5 bg-gradient-to-br from-teal-500/10 via-sky-500/10 to-transparent border border-teal-200 flex flex-col gap-3 cursor-pointer hover:shadow-xs transition-shadow"
           >
-            <div>
-              <p className="text-xs font-extrabold text-teal-900">Ayushman Bharat (ABHA)</p>
-              <p className="text-xs font-mono text-teal-700 mt-0.5">{patient.abha}</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={20} className="text-teal-700" />
+                <span className="text-xs font-extrabold text-teal-900">
+                  Ayushman Bharat Linked
+                </span>
+              </div>
+              <span className="text-[10px] font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full">
+                ABHA Active
+              </span>
             </div>
-            <span className="text-xs font-bold text-primary flex items-center gap-1">
-              <span>View Profile</span>
+            <div>
+              <p className="text-xs text-slate-500">ABHA Address:</p>
+              <p className="text-sm font-mono font-bold text-slate-900">{patient.abha}</p>
+            </div>
+            <span className="text-xs font-bold text-primary flex items-center gap-1 mt-1">
+              <span>Manage Profile & Medications</span>
               <ChevronRight size={14} />
             </span>
           </div>
+
         </div>
       </div>
     </div>

@@ -1,9 +1,8 @@
-import React from "react";
 import {
   Home,
+  Calendar,
   FileText,
-  Stethoscope,
-  Search,
+  Mic,
   User,
   Activity,
   ArrowRight,
@@ -14,14 +13,15 @@ import { DEFAULT_PATIENT } from "../data/patientData";
 interface NavBarProps {
   tab: string;
   setTab: (tab: string) => void;
-  onOpenIntake: () => void;
+  onOpenIntake?: () => void;
 }
 
 export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => {
   const items = [
     { id: "home", label: "Home", icon: Home },
-    { id: "records", label: "Medical Records & Parche", icon: FileText },
-    { id: "doctors", label: "OPD Doctors & Rooms", icon: Search },
+    { id: "appointments", label: "Appointments & Token", icon: Calendar },
+    { id: "records", label: "Records & Parche", icon: FileText },
+    { id: "ai-assistant", label: "AI Voice Assistant", icon: Mic, isAi: true },
     { id: "profile", label: "Profile & ABHA", icon: User },
   ];
 
@@ -52,33 +52,33 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => 
                 MediKiosk
               </h2>
               <p className="text-[11px] font-bold text-primary tracking-wide mt-1">
-                AI CLINICAL INTAKE
+                AI CLINICAL INTAKE (SIH 26047)
               </p>
             </div>
           </div>
 
           {/* Prominent Kiosk CTA Card for Health Intake */}
           <div
-            onClick={onOpenIntake}
+            onClick={() => (onOpenIntake ? onOpenIntake() : setTab("ai-assistant"))}
             className="p-4 rounded-2xl text-white shadow-lg cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] group"
             style={{
-              background: "linear-gradient(135deg, #3368a0 0%, #204b77 100%)",
+              background: "linear-gradient(135deg, #3368a0 0%, #1c436b 100%)",
             }}
           >
             <div className="flex items-center justify-between mb-2">
               <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <Stethoscope size={18} className="text-white" />
+                <Mic size={18} className="text-white" />
               </span>
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/20 text-white/90">
-                Kiosk Check
+                Voice Intake
               </span>
             </div>
-            <p className="text-sm font-bold leading-tight">Start AI Health Check</p>
+            <p className="text-sm font-bold leading-tight">AI Voice Assistant</p>
             <p className="text-[11px] text-white/80 mt-1 leading-snug">
-              Voice or touch clinical case-taking for your doctor.
+              Bhashini speech intake & clinical health conversation.
             </p>
             <div className="mt-3 flex items-center gap-1 text-[11px] font-bold text-white/95 group-hover:translate-x-1 transition-transform">
-              <span>Begin intake</span>
+              <span>Start conversation</span>
               <ArrowRight size={13} />
             </div>
           </div>
@@ -102,6 +102,11 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => 
                     className={active ? "text-primary" : "text-slate-400"}
                   />
                   <span>{it.label}</span>
+                  {it.isAi && (
+                    <span className="ml-auto text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      Indic
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -158,26 +163,26 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => 
           className="flex-1 flex flex-col items-center justify-center gap-1 py-2 tap-target cursor-pointer"
           style={{ color: tab === "home" ? "var(--primary)" : "var(--ink-soft)" }}
         >
-          <Home size={20} color={tab === "home" ? "var(--primary)" : "var(--ink-soft)"} />
-          <span className={`text-[11px] ${tab === "home" ? "font-bold" : "font-medium"}`}>
+          <Home size={19} color={tab === "home" ? "var(--primary)" : "var(--ink-soft)"} />
+          <span className={`text-[10.5px] ${tab === "home" ? "font-bold" : "font-medium"}`}>
             Home
           </span>
         </button>
 
         <button
-          onClick={() => setTab("records")}
+          onClick={() => setTab("appointments")}
           className="flex-1 flex flex-col items-center justify-center gap-1 py-2 tap-target cursor-pointer"
-          style={{ color: tab === "records" ? "var(--primary)" : "var(--ink-soft)" }}
+          style={{ color: tab === "appointments" ? "var(--primary)" : "var(--ink-soft)" }}
         >
-          <FileText size={20} color={tab === "records" ? "var(--primary)" : "var(--ink-soft)"} />
-          <span className={`text-[11px] ${tab === "records" ? "font-bold" : "font-medium"}`}>
-            Records
+          <Calendar size={19} color={tab === "appointments" ? "var(--primary)" : "var(--ink-soft)"} />
+          <span className={`text-[10.5px] ${tab === "appointments" ? "font-bold" : "font-medium"}`}>
+            Appts
           </span>
         </button>
 
         {/* Center Floating AI Check Button */}
         <button
-          onClick={onOpenIntake}
+          onClick={() => setTab("ai-assistant")}
           className="flex-1 flex flex-col items-center justify-center gap-1 py-1 tap-target cursor-pointer group"
         >
           <div
@@ -189,21 +194,21 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => 
               border: "4px solid var(--surface)",
             }}
           >
-            <Stethoscope size={22} color="#fff" />
+            <Mic size={22} color="#fff" />
           </div>
-          <span className="text-[11px] font-bold text-slate-800">
-            AI Check
+          <span className="text-[10.5px] font-bold text-slate-800">
+            AI Voice
           </span>
         </button>
 
         <button
-          onClick={() => setTab("doctors")}
+          onClick={() => setTab("records")}
           className="flex-1 flex flex-col items-center justify-center gap-1 py-2 tap-target cursor-pointer"
-          style={{ color: tab === "doctors" ? "var(--primary)" : "var(--ink-soft)" }}
+          style={{ color: tab === "records" ? "var(--primary)" : "var(--ink-soft)" }}
         >
-          <Search size={20} color={tab === "doctors" ? "var(--primary)" : "var(--ink-soft)"} />
-          <span className={`text-[11px] ${tab === "doctors" ? "font-bold" : "font-medium"}`}>
-            Doctors
+          <FileText size={19} color={tab === "records" ? "var(--primary)" : "var(--ink-soft)"} />
+          <span className={`text-[10.5px] ${tab === "records" ? "font-bold" : "font-medium"}`}>
+            Records
           </span>
         </button>
 
@@ -212,8 +217,8 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => 
           className="flex-1 flex flex-col items-center justify-center gap-1 py-2 tap-target cursor-pointer"
           style={{ color: tab === "profile" ? "var(--primary)" : "var(--ink-soft)" }}
         >
-          <User size={20} color={tab === "profile" ? "var(--primary)" : "var(--ink-soft)"} />
-          <span className={`text-[11px] ${tab === "profile" ? "font-bold" : "font-medium"}`}>
+          <User size={19} color={tab === "profile" ? "var(--primary)" : "var(--ink-soft)"} />
+          <span className={`text-[10.5px] ${tab === "profile" ? "font-bold" : "font-medium"}`}>
             Profile
           </span>
         </button>

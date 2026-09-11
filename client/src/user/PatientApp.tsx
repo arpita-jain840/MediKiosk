@@ -2,10 +2,10 @@ import { useState } from "react";
 import { NavBar } from "./components/NavBar";
 import { LanguageModal } from "./components/LanguageModal";
 import { HomeScreen } from "./screens/HomeScreen";
+import { AppointmentsScreen } from "./screens/AppointmentsScreen";
 import { RecordsScreen } from "./screens/RecordsScreen";
-import { IntakeScreen } from "./screens/IntakeScreen";
+import { AIAssistantScreen } from "./screens/AIAssistantScreen";
 import { ResultScreen } from "./screens/ResultScreen";
-import { DoctorsScreen } from "./screens/DoctorsScreen";
 import { ConfirmScreen } from "./screens/ConfirmScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { DEFAULT_PATIENT } from "./data/patientData";
@@ -13,41 +13,19 @@ import type { DoctorDirectoryItem, BlueprintSynthesisResult } from "./types";
 
 export default function PatientApp() {
   const [tab, setTab] = useState("home");
-  const [flow, setFlow] = useState<string | null>(null); // null | "intake" | "result" | "doctors" | "confirm"
+  const [flow, setFlow] = useState<string | null>(null); // null | "result" | "confirm"
   const [lang, setLang] = useState("en");
   const [isLangModalOpen, setIsLangModalOpen] = useState(false);
   const [bookedDoctor, setBookedDoctor] = useState<DoctorDirectoryItem | null>(null);
   const [blueprintResult, setBlueprintResult] = useState<BlueprintSynthesisResult | null>(null);
 
   let content;
-  if (flow === "intake") {
-    content = (
-      <IntakeScreen
-        lang={lang}
-        setLang={setLang}
-        onClose={() => setFlow(null)}
-        onFinish={(res) => {
-          setBlueprintResult(res);
-          setFlow("result");
-        }}
-      />
-    );
-  } else if (flow === "result") {
+  if (flow === "result") {
     content = (
       <ResultScreen
         blueprintResult={blueprintResult}
         onClose={() => setFlow(null)}
-        onFindDoctors={() => setFlow("doctors")}
-      />
-    );
-  } else if (flow === "doctors") {
-    content = (
-      <DoctorsScreen
-        onBack={() => setFlow("result")}
-        onBook={(d) => {
-          setBookedDoctor(d);
-          setFlow("confirm");
-        }}
+        onFindDoctors={() => setTab("appointments")}
       />
     );
   } else if (flow === "confirm") {
@@ -56,12 +34,38 @@ export default function PatientApp() {
         doctor={bookedDoctor}
         onDone={() => {
           setFlow(null);
-          setTab("home");
+          setTab("appointments");
+        }}
+      />
+    );
+  } else if (tab === "appointments") {
+    content = (
+      <AppointmentsScreen
+        currentLang={lang}
+        onOpenLangModal={() => setIsLangModalOpen(true)}
+        onBookSuccess={(doc) => {
+          setBookedDoctor(doc);
         }}
       />
     );
   } else if (tab === "records") {
-    content = <RecordsScreen />;
+    content = (
+      <RecordsScreen
+        currentLang={lang}
+        onOpenLangModal={() => setIsLangModalOpen(true)}
+      />
+    );
+  } else if (tab === "ai-assistant") {
+    content = (
+      <AIAssistantScreen
+        currentLang={lang}
+        onOpenLangModal={() => setIsLangModalOpen(true)}
+        onFinishCaseTaking={(res) => {
+          setBlueprintResult(res);
+          setFlow("result");
+        }}
+      />
+    );
   } else if (tab === "profile") {
     content = (
       <ProfileScreen
@@ -70,23 +74,13 @@ export default function PatientApp() {
         onOpenLangModal={() => setIsLangModalOpen(true)}
       />
     );
-  } else if (tab === "doctors") {
-    content = (
-      <DoctorsScreen
-        onBack={() => setTab("home")}
-        onBook={(d) => {
-          setBookedDoctor(d);
-          setFlow("confirm");
-        }}
-      />
-    );
   } else {
     content = (
       <HomeScreen
         patient={DEFAULT_PATIENT}
         currentLang={lang}
         onOpenLangModal={() => setIsLangModalOpen(true)}
-        onOpenIntake={() => setFlow("intake")}
+        onOpenIntake={() => setTab("ai-assistant")}
         setTab={setTab}
       />
     );
@@ -132,10 +126,17 @@ export default function PatientApp() {
       {!flow && (
         <NavBar
           tab={tab}
-          setTab={setTab}
-          onOpenIntake={() => setFlow("intake")}
+          setTab={(t) => {
+            setFlow(null);
+            setTab(t);
+          }}
+          onOpenIntake={() => {
+            setFlow(null);
+            setTab("ai-assistant");
+          }}
         />
       )}
+
       <main className="flex-1 flex flex-col overflow-y-auto relative h-full">
         <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col">
           {content}
