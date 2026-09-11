@@ -7,6 +7,7 @@ import {
   ListChecks,
 } from "lucide-react";
 import { getTranslations } from "../../user/utils/i18n";
+import NotificationCenter from "../../components/NotificationCenter";
 
 interface DoctorNavBarProps {
   tab: string;
@@ -93,6 +94,7 @@ export const DoctorNavBar: React.FC<DoctorNavBarProps> = ({
             </button>
           );
         })}
+        <NotificationCenter role="doctor" mobile />
       </nav>
     </>
   );

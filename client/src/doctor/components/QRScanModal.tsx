@@ -57,7 +57,7 @@ export const QRScanModal: React.FC<QRScanModalProps> = ({ isOpen, onClose }) => 
     }
 
     onClose();
-    navigate(`/doctor/patients/${resolvedId}`);
+    navigate(`/doctor/patient/${resolvedId}`);
   };
 
   const handleManualSubmit = (e: React.FormEvent) => {

@@ -16,9 +16,9 @@ export const Navbar: React.FC<NavbarProps> = () => {
 
   return (
     <header className="w-full flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-4 bg-transparent">
-      {/* Brand & Windows Back Button */}
+      
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Simple Windows-style Back button on all tabs except Dashboard */}
+       
         {isNotDashboard && (
           <button
             onClick={() => navigate(-1)}
@@ -39,9 +39,9 @@ export const Navbar: React.FC<NavbarProps> = () => {
         </div>
       </div>
 
-      {/* Action Controls & Doctor Profile */}
+    
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Scan Patient QR Code button */}
+  
         <button
           onClick={() => setIsQRModalOpen(true)}
           title="Scan Patient QR Code"
@@ -50,8 +50,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
           <QrCode size={14} />
           <span className="hidden xs:inline">Scan QR</span>
         </button>
-
-        {/* Patient Kiosk Terminal button */}
+   
         <button
           title="Open Patient Intake Kiosk"
           onClick={() => navigate('/patient')}
@@ -61,7 +60,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
           <span>Patient App</span>
         </button>
 
-        {/* Settings button */}
+  
         <button
           title="Settings"
           onClick={() => navigate('/doctor/settings')}
@@ -70,7 +69,6 @@ export const Navbar: React.FC<NavbarProps> = () => {
           <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
         </button>
 
-        {/* Notifications button */}
         <button
           title="Notifications"
           className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200/80 shadow-xs flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all relative cursor-pointer"
@@ -80,7 +78,6 @@ export const Navbar: React.FC<NavbarProps> = () => {
         </button>
       </div>
 
-      {/* QR Code Scanner / Token Modal */}
       <QRScanModal isOpen={isQRModalOpen} onClose={() => setIsQRModalOpen(false)} />
     </header>
   );

@@ -146,6 +146,9 @@ function App() {
         <Route path="/patient/:id" element={
           userRole === 'doctor' ? <PatientDetail /> : <Navigate to="/login" replace />
         } />
+        <Route path="/doctor/patient/:id" element={
+          userRole === 'doctor' ? <PatientDetail /> : <Navigate to="/login" replace />
+        } />
         {/* Keep kiosk as alias */}
         <Route path="/kiosk" element={<Navigate to="/patient" replace />} />
 

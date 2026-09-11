@@ -109,7 +109,7 @@ export const DoctorDashboard: React.FC = () => {
   }, [doctorId]);
 
   useEffect(() => {
-    if (submittedPatientId) navigate(`/patient/${submittedPatientId}`);
+    if (submittedPatientId) navigate(`/doctor/patients/${submittedPatientId}`);
   }, [navigate, submittedPatientId]);
 
   const visiblePatients = useMemo(() => {
@@ -170,7 +170,7 @@ export const DoctorDashboard: React.FC = () => {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => navigate(`/patient/${queuePatients[0].id}`)}
+              onClick={() => navigate(`/doctor/patient/${queuePatients[0].id}`)}
               className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-extrabold text-primary shadow-sm hover:bg-slate-50 cursor-pointer"
             >
               <Play size={15} />
@@ -327,7 +327,7 @@ export const DoctorDashboard: React.FC = () => {
                   <span className="text-xs font-bold text-slate-400">{patient.wait}</span>
                   <button
                     type="button"
-                    onClick={() => navigate(`/patient/${patient.id}`)}
+                    onClick={() => navigate(`/doctor/patient/${patient.id}`)}
                     className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-extrabold text-white hover:opacity-90 cursor-pointer"
                   >
                     <span>Start</span>

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import { getTranslations } from "../utils/i18n";
+import NotificationCenter from "../../components/NotificationCenter";
 
 interface NavBarProps {
   tab: string;
@@ -93,10 +94,6 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, currentLang = "en" 
           </nav>
         </div>
       </aside>
-
-      {/* ========================================================== */}
-      {/* 2. MOBILE BOTTOM NAVIGATION (hidden on md: and above)      */}
-      {/* ========================================================== */}
       <div
         className="md:hidden shrink-0 border-t flex flex-row items-stretch w-full py-1 sticky bottom-0 z-20"
         style={{
@@ -125,8 +122,6 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, currentLang = "en" 
             {t.nav.appointments}
           </span>
         </button>
-
-        {/* Center Floating AI Check Button */}
         <button
           onClick={() => setTab("ai-assistant")}
           className="flex-1 flex flex-col items-center justify-center gap-1 py-1 tap-target cursor-pointer group"
@@ -157,6 +152,8 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, currentLang = "en" 
             {t.nav.records}
           </span>
         </button>
+
+        <NotificationCenter  role="patient" mobile />
       </div>
     </>
   );

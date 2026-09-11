@@ -51,10 +51,7 @@ export const getLivePatients = (): PatientRecord[] => {
   }));
 };
 
-/**
- * Fetch real-time patient queue directly from FastAPI + PostgreSQL Layer 1/2/3
- * Falls back to local initialPatients if backend server is not reachable
- */
+
 export const fetchLiveCockpitPatients = async (): Promise<PatientRecord[]> => {
   try {
     const res = await fetch('http://127.0.0.1:8000/api/doctor/patients');
@@ -62,7 +59,8 @@ export const fetchLiveCockpitPatients = async (): Promise<PatientRecord[]> => {
       const data = await res.json();
       const completedIds = getCompletedPatientIds();
       return data.map((d: any, idx: number) => ({
-        id: d.id || `MK-${100 + idx}`,
+        // Keep the queue on the public kiosk IDs instead of exposing database UUIDs.
+        id: initialPatients[idx]?.id || `MK-${100 + idx}`,
         name: d.name,
         age: d.age,
         gender: d.gender,
@@ -78,7 +76,7 @@ export const fetchLiveCockpitPatients = async (): Promise<PatientRecord[]> => {
         history: d.clinicalEntities?.history || 'No prior surgeries',
         time: d.token ? `Token #${d.token}` : 'Just now',
         avatar: initialPatients[idx % initialPatients.length]?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80',
-        status: completedIds.includes(d.id) ? 'Done' : (d.status === 'in_consultation' ? 'In Consultation' : 'Waiting'),
+        status: completedIds.includes(initialPatients[idx]?.id || `MK-${100 + idx}`) ? 'Done' : (d.status === 'in_consultation' ? 'In Consultation' : 'Waiting'),
         insurance: 'ABHA Linked #14-MEDIX',
         token: d.token,
         triagePriority: d.triagePriority,

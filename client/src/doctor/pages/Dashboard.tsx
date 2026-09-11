@@ -219,7 +219,7 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (submittedPatientId) {
-      navigate(`/patient/${submittedPatientId}`);
+          navigate(`/doctor/patients/${submittedPatientId}`);
     }
   }, [navigate, submittedPatientId]);
 

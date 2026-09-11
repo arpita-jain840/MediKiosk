@@ -2,6 +2,7 @@ import React from "react";
 import { ArrowLeft, Globe, Search } from "lucide-react";
 import { SUPPORTED_LANGUAGES } from "../../user/components/LanguageModal";
 import { getTranslations } from "../../user/utils/i18n";
+import NotificationCenter from "../../components/NotificationCenter";
 
 interface DoctorTopBarProps {
   title: string;
@@ -38,7 +39,8 @@ export const DoctorTopBar: React.FC<DoctorTopBarProps> = ({
 
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-5 md:px-10 pt-5 md:pt-6 pb-3 md:pb-5 shrink-0 border-b border-slate-200/60 bg-[var(--bg)]">
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-start justify-between gap-3 md:contents">
+        <div className="flex items-center gap-3 min-w-0 md:order-1">
         {onBack && (
           <button type="button" onClick={onBack} aria-label="Back" className="tap-target -ml-1 text-slate-700 hover:text-slate-900 cursor-pointer transition-colors">
             <ArrowLeft size={20} color="var(--ink)" />
@@ -50,8 +52,27 @@ export const DoctorTopBar: React.FC<DoctorTopBarProps> = ({
         </div>
       </div>
 
+      <div className="flex items-center gap-2.5 shrink-0 md:order-3">
+        {onOpenLangModal && (
+          <button type="button" onClick={onOpenLangModal} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200/90 shadow-2xs text-xs font-bold text-primary hover:bg-slate-50 transition-all cursor-pointer">
+            <Globe size={14} />
+            <span>{activeLanguage?.native || "English"}</span>
+          </button>
+        )}
+        <NotificationCenter role="doctor" />
+        {right}
+        <button type="button" onClick={onOpenProfile} title="Doctor profile" className="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200/90 shadow-2xs transition-all cursor-pointer group">
+          <span className="w-7 h-7 rounded-full flex items-center justify-center text-white font-black text-xs shrink-0 shadow-2xs group-hover:scale-105 transition-transform bg-primary">{initials}</span>
+          <span className="text-left hidden sm:block pr-1">
+            <span className="text-xs font-bold text-slate-900 leading-none block">{doctorName.split(" ")[0]}</span>
+            <span className="text-[10px] text-slate-400 font-mono leading-tight mt-0.5 block">{t.doctorNav?.ai || "Clinical AI"} ready</span>
+          </span>
+        </button>
+      </div>
+      </div>
+
       {showSearch && (
-        <div className="flex-1 max-w-xl mx-0 md:mx-6 w-full">
+        <div className="hidden md:block flex-1 max-w-xl mx-0 md:mx-6 w-full md:order-2">
           <div className="relative flex items-center w-full">
             <Search size={16} className="absolute left-3.5 text-slate-400 pointer-events-none" />
             <input
@@ -65,22 +86,6 @@ export const DoctorTopBar: React.FC<DoctorTopBarProps> = ({
         </div>
       )}
 
-      <div className="flex items-center gap-2.5 self-end md:self-auto shrink-0">
-        {onOpenLangModal && (
-          <button type="button" onClick={onOpenLangModal} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200/90 shadow-2xs text-xs font-bold text-primary hover:bg-slate-50 transition-all cursor-pointer">
-            <Globe size={14} />
-            <span>{activeLanguage?.native || "English"}</span>
-          </button>
-        )}
-        {right}
-        <button type="button" onClick={onOpenProfile} title="Doctor profile" className="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200/90 shadow-2xs transition-all cursor-pointer group">
-          <span className="w-7 h-7 rounded-full flex items-center justify-center text-white font-black text-xs shrink-0 shadow-2xs group-hover:scale-105 transition-transform bg-primary">{initials}</span>
-          <span className="text-left hidden sm:block pr-1">
-            <span className="text-xs font-bold text-slate-900 leading-none block">{doctorName.split(" ")[0]}</span>
-            <span className="text-[10px] text-slate-400 font-mono leading-tight mt-0.5 block">{t.doctorNav?.ai || "Clinical AI"} ready</span>
-          </span>
-        </button>
-      </div>
     </header>
   );
 };

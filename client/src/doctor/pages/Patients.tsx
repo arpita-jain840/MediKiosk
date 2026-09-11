@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { getLivePatients, fetchLiveCockpitPatients } from '../data/patientsData';
 import type { PatientRecord } from '../data/patientsData';
-import { ArrowRight, QrCode, Clock, Activity, CheckCircle2 } from 'lucide-react';
+import { QrCode, Clock, Activity, CheckCircle2 } from 'lucide-react';
 
 export const Patients: React.FC = () => {
-  const navigate = useNavigate();
   const [patients, setPatients] = useState<PatientRecord[]>([]);
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>('active');
 
   useEffect(() => {
-    // Initial sync from local cache
     setPatients(getLivePatients());
-    // Live async update from PostgreSQL / FastAPI Layer 1/2/3
     fetchLiveCockpitPatients().then((data) => setPatients(data));
   }, []);
 
@@ -29,7 +25,7 @@ export const Patients: React.FC = () => {
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto pb-12">
       <div className="flex justify-end">
-        {/* Tab Controls */}
+        
         <div className="flex items-center gap-1.5 p-1 bg-white border border-slate-200 rounded-2xl shadow-xs self-start sm:self-auto overflow-x-auto max-w-full">
           <button
             onClick={() => setActiveTab('active')}
@@ -81,7 +77,7 @@ export const Patients: React.FC = () => {
             {displayedPatients.map((patient) => (
               <div
                 key={patient.id}
-                onClick={() => navigate(`/doctor/patients/${patient.id}`)}
+                
                 className="py-4 px-2 sm:px-3 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 hover:bg-slate-50/80 rounded-2xl transition-all cursor-pointer group"
               >
                 {/* Patient Basic Info */}
@@ -97,7 +93,7 @@ export const Patients: React.FC = () => {
                         {patient.name}
                       </h3>
                       
-                      {patient.id === 'PAT-1001' && (
+                      {patient.id === 'MK-9824' && (
                         <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1">
                           <QrCode className="w-2.5 h-2.5" />
                           Live QR
@@ -128,10 +124,6 @@ export const Patients: React.FC = () => {
                       Done
                     </span>
                   )}
-
-                  <button className="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-400 group-hover:text-indigo-600 group-hover:border-indigo-200 flex items-center justify-center transition-colors">
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
             ))}
