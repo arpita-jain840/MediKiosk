@@ -81,6 +81,8 @@ const triageStyles: Record<Triage, string> = {
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const doctorId = 'DOC-1001';
+  const [submittedPatientId, setSubmittedPatientId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'All' | 'New' | 'Insurance'>('All');
   const [selectedDay, setSelectedDay] = useState<number>(4);
   const [event1Active, setEvent1Active] = useState<boolean>(true);
@@ -182,6 +184,44 @@ export const Dashboard: React.FC = () => {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    let hasDetectedPatient = false;
+    let intervalId: number | undefined;
+
+    const pollForSubmittedPatient = async () => {
+      if (hasDetectedPatient) return;
+
+      try {
+        const response = await fetch(`http://localhost:8000/doctor/${doctorId}/patient`);
+        if (!response.ok || !isMounted) return;
+
+        const data: { success: boolean; patient_id: string | null } = await response.json();
+        if (data.success && data.patient_id) {
+          hasDetectedPatient = true;
+          if (intervalId !== undefined) window.clearInterval(intervalId);
+          setSubmittedPatientId(data.patient_id);
+        }
+      } catch (error) {
+        console.warn('[Dashboard] Patient submission polling failed:', error);
+      }
+    };
+
+    void pollForSubmittedPatient();
+    intervalId = window.setInterval(pollForSubmittedPatient, 1000);
+
+    return () => {
+      isMounted = false;
+      if (intervalId !== undefined) window.clearInterval(intervalId);
+    };
+  }, [doctorId]);
+
+  useEffect(() => {
+    if (submittedPatientId) {
+      navigate(`/patient/${submittedPatientId}`);
+    }
+  }, [navigate, submittedPatientId]);
 
   return (
     <div className="flex flex-col gap-5 md:gap-6 pb-6">

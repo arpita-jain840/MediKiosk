@@ -4,8 +4,19 @@
   --color-primary: #3368a0;
   --color-primary-light: #66a3bf;
   --color-primary-tint: #c8dfdb;
-  --color-bg-warm: #f2efe7;
+  --color-bg-warm: #f8fafc;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --primary: #3368a0;
+  --primary-tint: #e6eff5;
+  --primary-light: #66a3bf;
+  --ink: #0f172a;
+  --ink-soft: #64748b;
+  --border: rgba(51, 104, 160, 0.12);
 }
 
 @layer base {

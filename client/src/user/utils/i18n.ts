@@ -5,6 +5,15 @@
 export type SupportedLang = "en" | "hi" | "gu" | "mr" | "bn" | "ta" | "te" | "kn" | "ml" | "pa" | "or";
 
 export interface Translations {
+  doctorNav?: {
+    dashboard: string;
+    queue: string;
+    appointments: string;
+    prescriptions: string;
+    records: string;
+    ai: string;
+    aiBadge: string;
+  };
   topbar: {
     homeTitle: string;
     searchPlaceholder: string;
@@ -121,6 +130,15 @@ export interface Translations {
 }
 
 export const EN: Translations = {
+  doctorNav: {
+    dashboard: "Dashboard",
+    queue: "Patient Queue",
+    appointments: "Appointments",
+    prescriptions: "Prescriptions",
+    records: "Records",
+    ai: "Clinical AI",
+    aiBadge: "AI",
+  },
   topbar: {
     homeTitle: "MediKiosk OPD",
     searchPlaceholder: "Search doctors, departments, or records...",
@@ -1465,6 +1483,25 @@ const DICTIONARY: Record<string, Translations> = {
   or: OR,
 };
 
+type DoctorNavTranslation = NonNullable<Translations["doctorNav"]>;
+
+const DOCTOR_NAV_BY_LANG: Record<string, DoctorNavTranslation> = {
+  hi: { dashboard: "डैशबोर्ड", queue: "मरीज़ कतार", appointments: "अपॉइंटमेंट", prescriptions: "पर्चे", records: "रिकॉर्ड", ai: "क्लिनिकल एआई", aiBadge: "एआई" },
+  gu: { dashboard: "ડેશબોર્ડ", queue: "દર્દીઓની કતાર", appointments: "એપોઇન્ટમેન્ટ", prescriptions: "પ્રિસ્ક્રિપ્શન", records: "રેકોર્ડ્સ", ai: "ક્લિનિકલ AI", aiBadge: "AI" },
+  mr: { dashboard: "डॅशबोर्ड", queue: "रुग्णांची रांग", appointments: "अपॉइंटमेंट", prescriptions: "प्रिस्क्रिप्शन", records: "नोंदी", ai: "क्लिनिकल एआय", aiBadge: "एआय" },
+  bn: { dashboard: "ড্যাশবোর্ড", queue: "রোগীর সারি", appointments: "অ্যাপয়েন্টমেন্ট", prescriptions: "প্রেসক্রিপশন", records: "রেকর্ড", ai: "ক্লিনিক্যাল এআই", aiBadge: "এআই" },
+  ta: { dashboard: "டாஷ்போர்டு", queue: "நோயாளி வரிசை", appointments: "சந்திப்புகள்", prescriptions: "மருந்துச் சீட்டுகள்", records: "பதிவுகள்", ai: "மருத்துவ AI", aiBadge: "AI" },
+  te: { dashboard: "డాష్‌బోర్డ్", queue: "రోగుల క్యూ", appointments: "అపాయింట్‌మెంట్లు", prescriptions: "ప్రిస్క్రిప్షన్లు", records: "రికార్డులు", ai: "క్లినికల్ AI", aiBadge: "AI" },
+  kn: { dashboard: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್", queue: "ರೋಗಿಗಳ ಸರದಿ", appointments: "ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್‌ಗಳು", prescriptions: "ಪ್ರಿಸ್ಕ್ರಿಪ್ಷನ್‌ಗಳು", records: "ದಾಖಲೆಗಳು", ai: "ಕ್ಲಿನಿಕಲ್ AI", aiBadge: "AI" },
+  ml: { dashboard: "ഡാഷ്ബോർഡ്", queue: "രോഗികളുടെ ക്യൂ", appointments: "അപ്പോയിന്റ്മെന്റുകൾ", prescriptions: "കുറിപ്പുകൾ", records: "രേഖകൾ", ai: "ക്ലിനിക്കൽ AI", aiBadge: "AI" },
+  pa: { dashboard: "ਡੈਸ਼ਬੋਰਡ", queue: "ਮਰੀਜ਼ਾਂ ਦੀ ਕਤਾਰ", appointments: "ਮੁਲਾਕਾਤਾਂ", prescriptions: "ਨੁਸਖੇ", records: "ਰਿਕਾਰਡ", ai: "ਕਲੀਨਿਕਲ AI", aiBadge: "AI" },
+  or: { dashboard: "ଡ୍ୟାସବୋର୍ଡ", queue: "ରୋଗୀ ଧାଡ଼ି", appointments: "ନିଯୁକ୍ତି", prescriptions: "ପ୍ରେସକ୍ରିପସନ୍", records: "ରେକର୍ଡ", ai: "କ୍ଲିନିକାଲ AI", aiBadge: "AI" },
+};
+
 export function getTranslations(lang: string = "en"): Translations {
-  return DICTIONARY[lang] || EN;
+  const translation = DICTIONARY[lang] || EN;
+  return {
+    ...translation,
+    doctorNav: translation.doctorNav || DOCTOR_NAV_BY_LANG[lang] || EN.doctorNav,
+  };
 }

@@ -28,15 +28,7 @@ export const Patients: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 max-w-6xl mx-auto pb-12">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Patient Directory</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Real-time queue of waiting, consulting, and completed patient prescriptions.
-          </p>
-        </div>
-
+      <div className="flex justify-end">
         {/* Tab Controls */}
         <div className="flex items-center gap-1.5 p-1 bg-white border border-slate-200 rounded-2xl shadow-xs self-start sm:self-auto overflow-x-auto max-w-full">
           <button
@@ -104,9 +96,7 @@ export const Patients: React.FC = () => {
                       <h3 className="text-sm font-black text-slate-900 group-hover:text-indigo-600 transition-colors truncate">
                         {patient.name}
                       </h3>
-                      <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-[10px] font-bold">
-                        {patient.id}
-                      </span>
+                      
                       {patient.id === 'PAT-1001' && (
                         <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1">
                           <QrCode className="w-2.5 h-2.5" />
@@ -119,21 +109,6 @@ export const Patients: React.FC = () => {
                     </p>
                   </div>
                 </div>
-
-                {/* Vitals Summary */}
-                <div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold text-slate-600 flex-wrap">
-                  <span className="bg-slate-100/80 px-2.5 py-1 rounded-lg">
-                    BP: <strong className="text-slate-800">{patient.bp.split(' ')[0]}</strong>
-                  </span>
-                  <span className="bg-slate-100/80 px-2.5 py-1 rounded-lg">
-                    HR: <strong className="text-slate-800">{patient.pulse}</strong>
-                  </span>
-                  <span className="bg-slate-100/80 px-2.5 py-1 rounded-lg">
-                    SpO2: <strong className="text-slate-800">{patient.spO2}</strong>
-                  </span>
-                </div>
-
-                {/* Status & Action */}
                 <div className="flex items-center justify-between md:justify-end gap-3">
                   {patient.status === 'Waiting' && (
                     <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-bold flex items-center gap-1 border border-amber-200">

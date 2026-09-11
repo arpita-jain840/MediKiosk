@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 
 export type AppointmentStatus =
+  | 'Pending Review'
   | 'Registered'
   | 'Confirmed'
   | 'Checked In'
@@ -90,6 +91,8 @@ export interface DoctorSchedule {
   status: 'Available' | 'Break Time' | 'In Consultation' | 'On Leave';
   notAvailableSlots?: string[];
 }
+
+const TIME_SLOTS = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
 
 export const Appointments: React.FC = () => {
   // Staff role selector
@@ -381,12 +384,14 @@ export const Appointments: React.FC = () => {
   const [formSendConfirmation, setFormSendConfirmation] = useState(true);
   const [formSendReminder, setFormSendReminder] = useState(true);
 
-  // Time slots for schedule grid
-  const timeSlots = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+  // The grid and booking form both use this same slot source.
+  const timeSlots = TIME_SLOTS;
 
   // Status Badge Helper
   const getStatusBadge = (status: AppointmentStatus) => {
     switch (status) {
+      case 'Pending Review':
+        return 'bg-orange-50 text-orange-700 border-orange-200';
       case 'Registered':
         return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'Confirmed':
@@ -408,6 +413,8 @@ export const Appointments: React.FC = () => {
 
   const getStatusDotColor = (status: AppointmentStatus) => {
     switch (status) {
+      case 'Pending Review':
+        return 'bg-orange-500';
       case 'Registered':
         return 'bg-blue-600';
       case 'Confirmed':
@@ -428,6 +435,8 @@ export const Appointments: React.FC = () => {
   };
   const filteredAppointments = useMemo(() => {
     return appointments.filter((apt) => {
+    const isPendingForNonAdmin = apt.status === 'Pending Review' && activeRole !== 'Clinic Admin';
+    if (isPendingForNonAdmin) return false;
 
       const matchesSearch =
         searchQuery === '' ||
@@ -443,27 +452,45 @@ export const Appointments: React.FC = () => {
 
       return matchesSearch && matchesDoc && matchesStatus && matchesType && matchesPriority;
     });
-  }, [appointments, searchQuery, filterDoctor, filterStatus, filterType, filterPriority]);
+  }, [activeRole, appointments, searchQuery, filterDoctor, filterStatus, filterType, filterPriority]);
 
 
   const getDoctorAppointmentCount = (docId: string) => {
     return appointments.filter((a) => a.doctorId === docId).length;
   };
 
-  const availableSlotsForDoctor = useMemo(() => {
+  const getAvailableSlotsForDoctor = (doctorId: string) => {
     const booked = appointments
-      .filter((a) => a.doctorId === formDoctorId && a.status !== 'Cancelled')
+      .filter((a) => a.doctorId === doctorId && a.status !== 'Cancelled')
       .map((a) => a.timeSlot);
-    const doctorObj = doctors.find((d) => d.id === formDoctorId);
+    const doctorObj = doctors.find((d) => d.id === doctorId);
     const notAvailable = doctorObj?.notAvailableSlots || [];
 
     return timeSlots.filter((slot) => slot !== '12:00' && !booked.includes(slot) && !notAvailable.includes(slot));
-  }, [formDoctorId, appointments, timeSlots, doctors]);
+  };
+
+  const availableSlotsForDoctor = getAvailableSlotsForDoctor(formDoctorId);
+
+  const isSlotAvailable = (doctorId: string, timeSlot: string) => {
+    return getAvailableSlotsForDoctor(doctorId).includes(timeSlot);
+  };
+
+  const handleApproveAppointment = (aptId: string) => {
+    if (activeRole !== 'Clinic Admin') {
+      setToastMessage('Only Clinic Admin can approve pending appointments.');
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
+    handleUpdateStatus(aptId, 'Confirmed');
+  };
 
   const handleUpdateStatus = (aptId: string, newStatus: AppointmentStatus) => {
     setAppointments((prev) =>
       prev.map((apt) => {
         if (apt.id === aptId) {
+          if (apt.status === 'Pending Review' && newStatus === 'Confirmed' && activeRole !== 'Clinic Admin') {
+            return apt;
+          }
           const updated = {
             ...apt,
             status: newStatus,
@@ -490,7 +517,12 @@ export const Appointments: React.FC = () => {
 
   const handleCreateAppointment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formPatientName.trim()) return;
+    if (!formPatientName.trim() || !formReason.trim()) return;
+    if (!isSlotAvailable(formDoctorId, formTimeSlot)) {
+      setToastMessage('That doctor is not available at the selected time.');
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
 
     const startH = parseInt(formTimeSlot.split(':')[0]);
     const endH = startH + (formDuration.includes('45') ? 1 : 1);
@@ -510,14 +542,14 @@ export const Appointments: React.FC = () => {
       timeRange,
       duration: formDuration,
       type: formType,
-      status: 'Registered',
+      status: 'Pending Review',
       priority: formPriority,
       doctorId: formDoctorId,
       room: selectedDoc?.room || 'Room 101',
       paymentStatus: formPayment,
       vitalRequired: formType === 'General Checkup' || formType === 'Emergency Visit',
       formsCompleted: true,
-      reason: formReason.trim() || 'General medical consultation',
+      reason: formReason.trim(),
       allergies: ['None documented'],
       medications: ['None documented'],
       history: 'New intake file created.',
@@ -536,7 +568,7 @@ export const Appointments: React.FC = () => {
     setFormPatientName('');
     setFormPatientId('');
     setFormReason('');
-    setToastMessage(`Appointment created successfully for ${newApt.patientName}`);
+    setToastMessage(`Appointment submitted for Admin review: ${newApt.patientName}`);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -584,17 +616,7 @@ export const Appointments: React.FC = () => {
       )}
 
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
-            Doctor Appointment Schedule
-          </h1>
-          <p className="text-xs font-semibold text-slate-400 mt-1">
-            Internal clinical operational dashboard for scheduling, patient throughput, and multi-doctor coordination.
-          </p>
-        </div>
-
-
+      <div className="flex justify-end border-b border-slate-200/80 pb-4">
         <div className="flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-full border border-slate-200/90 shadow-xs self-start sm:self-auto">
           <User className="w-3.5 h-3.5 text-blue-600" />
           <span className="text-xs font-bold text-slate-500">Active Role:</span>
@@ -882,9 +904,10 @@ export const Appointments: React.FC = () => {
                     const isNotAvailable = doc.notAvailableSlots?.includes(slot);
 
                     // Find appointment matching doctor and slot
-                    const apt = filteredAppointments.find(
+                    const apt = (activeRole === 'Clinic Admin' ? appointments : filteredAppointments).find(
                       (a) => a.doctorId === doc.id && a.timeSlot === slot
                     );
+                    const slotAvailable = isSlotAvailable(doc.id, slot);
 
                     return (
                       <div
@@ -966,6 +989,19 @@ export const Appointments: React.FC = () => {
 
                               {/* Action Buttons */}
                               <div className="flex items-center gap-1">
+                                {apt.status === 'Pending Review' && activeRole === 'Clinic Admin' && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleApproveAppointment(apt.id);
+                                    }}
+                                    title="Approve Appointment"
+                                    className="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold flex items-center gap-1 shadow-xs cursor-pointer"
+                                  >
+                                    <Check className="w-3 h-3" /> Approve
+                                  </button>
+                                )}
+
                                 {apt.status === 'Registered' && (
                                   <button
                                     onClick={(e) => {
@@ -1024,13 +1060,14 @@ export const Appointments: React.FC = () => {
                           /* Empty Slot */
                           <div
                             onClick={() => {
+                              if (!slotAvailable) return;
                               setFormDoctorId(doc.id);
                               setFormTimeSlot(slot);
                               setShowAddModal(true);
                             }}
-                            className="h-full min-h-[95px] rounded-2xl flex items-center justify-center text-slate-300 hover:text-blue-600 hover:bg-blue-50/30 border border-transparent hover:border-blue-200 transition-all group cursor-pointer"
+                            className={`h-full min-h-[95px] rounded-2xl flex items-center justify-center text-slate-300 border border-transparent transition-all group ${slotAvailable ? 'hover:text-blue-600 hover:bg-blue-50/30 hover:border-blue-200 cursor-pointer' : 'cursor-not-allowed bg-slate-50/40'}`}
                           >
-                            <span className="text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white px-3 py-1 rounded-full shadow-xs border border-blue-200">
+                            <span className={`text-[11px] font-bold opacity-0 transition-opacity flex items-center gap-1 bg-white px-3 py-1 rounded-full shadow-xs border border-blue-200 ${slotAvailable ? 'group-hover:opacity-100' : ''}`}>
                               <Plus className="w-3 h-3" /> Book Slot
                             </span>
                           </div>
@@ -1106,6 +1143,7 @@ export const Appointments: React.FC = () => {
                     onChange={(e) => handleUpdateStatus(selectedAppointment.id, e.target.value as AppointmentStatus)}
                     className="text-xs font-bold p-2 bg-white rounded-xl border border-slate-200 shadow-xs cursor-pointer"
                   >
+                              <option value="Pending Review">Pending Review</option>
                     <option value="Registered">Registered</option>
                     <option value="Confirmed">Confirmed</option>
                     <option value="Checked In">Checked In</option>
@@ -1321,7 +1359,10 @@ export const Appointments: React.FC = () => {
                   <select
                     value={formDoctorId}
                     onChange={(e) => {
-                      setFormDoctorId(e.target.value);
+                      const nextDoctorId = e.target.value;
+                      const nextAvailableSlots = getAvailableSlotsForDoctor(nextDoctorId);
+                      setFormDoctorId(nextDoctorId);
+                      setFormTimeSlot(nextAvailableSlots[0] || '');
                       const docObj = doctors.find((d) => d.id === e.target.value);
                       if (docObj) setFormSpecialty(docObj.specialty);
                     }}
@@ -1435,6 +1476,7 @@ export const Appointments: React.FC = () => {
                 <label className="block font-bold text-slate-700 mb-1">Reason for Visit & Symptoms</label>
                 <textarea
                   rows={2}
+                    required
                   value={formReason}
                   onChange={(e) => setFormReason(e.target.value)}
                   placeholder="Primary complaint or clinical referral details..."

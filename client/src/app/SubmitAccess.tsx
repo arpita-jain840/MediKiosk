@@ -45,6 +45,17 @@ export const SubmitAccess: React.FC = () => {
         return;
       }
 
+      const notificationResponse = await fetch('http://localhost:8000/patient/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patient_id: patientId, doctor_id: doctorId }),
+      });
+
+      if (!notificationResponse.ok) {
+        setSubmitError('The patient was saved, but notifying the doctor failed. Please try again.');
+        return;
+      }
+
       const now = new Date();
       const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       setTransmittedTime(timeStr);

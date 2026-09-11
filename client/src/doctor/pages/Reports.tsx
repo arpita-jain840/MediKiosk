@@ -197,23 +197,7 @@ export const Reports: React.FC = () => {
         </div>
       )}
 
-      {/* ======================================================== */}
-      {/* PAGE HEADER                                              */}
-      {/* ======================================================== */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
-            Reports & Analytics
-          </h1>
-          <p className="text-xs font-medium text-slate-500 mt-1">
-            Review patient trends, consultation activity, outcomes, and clinical reports.
-          </p>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[11px] font-semibold text-slate-400">Last updated just now</span>
-          </div>
-        </div>
-
+      <div className="flex flex-col lg:flex-row lg:items-center justify-end gap-4 border-b border-slate-200/80 pb-5">
         {/* Right Header Controls */}
         <div className="flex items-center gap-2.5 flex-wrap self-start lg:self-auto">
           {/* Date Range Dropdown */}

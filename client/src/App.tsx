@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import Sidebar from './doctor/components/Sidebar';
-import Navbar from './doctor/components/Navbar';
+import DoctorNavBar from './doctor/components/DoctorNavBar';
+import DoctorTopBar from './doctor/components/DoctorTopBar';
 
 // Doctor Pages
-import Dashboard from './doctor/pages/Dashboard';
+import DoctorDashboard from './doctor/pages/DoctorDashboard';
 import Patients from './doctor/pages/Patients';
 import PatientDetail from './doctor/pages/PatientDetail';
 import Appointments from './doctor/pages/Appointments';
@@ -17,26 +18,92 @@ import PrescriptionPage from './doctor/pages/PrescriptionPage';
 // Patient App & Access Submission
 import PatientApp from './user/PatientApp';
 import SubmitAccess from './app/SubmitAccess';
+import { LanguageModal } from './user/components/LanguageModal';
 
 // Auth
 import Login from './auth/Login';
 
 const DoctorLayout = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [currentLang, setCurrentLang] = useState('en');
+  const [isLangModalOpen, setIsLangModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const currentTab = location.pathname.includes('/patients')
+    ? 'queue'
+    : location.pathname.includes('/appointments')
+      ? 'appointments'
+      : location.pathname.includes('/prescription')
+        ? 'prescriptions'
+        : location.pathname.includes('/reports')
+          ? 'records'
+          : 'dashboard';
+
+  const pageHeader = location.pathname.includes('/appointments')
+    ? {
+        title: 'Doctor Appointment Schedule',
+        subtitle: 'Internal clinical operational dashboard for scheduling, patient throughput, and multi-doctor coordination.',
+      }
+    : location.pathname.includes('/reports')
+      ? {
+          title: 'Reports & Analytics',
+          subtitle: 'Review patient trends, consultation activity, outcomes, and clinical reports.',
+        }
+      : location.pathname === '/doctor/patients'
+        ? {
+            title: 'Patient Directory',
+            subtitle: 'Real-time queue of waiting, consulting, and completed patient prescriptions.',
+          }
+        : {
+            title: 'MediKiosk OPD',
+            subtitle: 'Cardiology · On Duty',
+          };
+
+  const setTab = (tab: string) => {
+    const paths: Record<string, string> = {
+      dashboard: '/doctor/dashboard',
+      queue: '/doctor/patients',
+      appointments: '/doctor/appointments',
+      prescriptions: '/doctor/prescription/PAT-1001',
+      records: '/doctor/reports',
+      'ai-assistant': '/doctor/consultations',
+    };
+    navigate(paths[tab] || paths.dashboard);
+  };
+
   return (
-    <div className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-[#f4f6f9]">
-      {/* Modern Pill Sidebar */}
-      <Sidebar />
+    <div className="flex flex-col-reverse md:flex-row h-screen w-screen overflow-hidden bg-[var(--bg)]">
+      <DoctorNavBar tab={currentTab} setTab={setTab} currentLang={currentLang} />
 
-      {/* Main Content Viewport */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        {/* Top Modern Header / Navbar */}
-        <Navbar doctorName="Dr. Ananya Sharma" role="Admin" />
+        <DoctorTopBar
+          title={pageHeader.title}
+          subtitle={pageHeader.subtitle}
+          doctorName="Dr. Ananya Sharma"
+          currentLang={currentLang}
+          onOpenLangModal={() => setIsLangModalOpen(true)}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onBack={location.pathname === '/doctor/dashboard' ? undefined : () => navigate(-1)}
+          onOpenProfile={() => navigate('/doctor/profile')}
+        />
 
-        {/* Page Routing Container */}
         <main className="flex-1 overflow-y-auto px-3.5 sm:px-6 lg:px-8 pt-1 md:pt-2 pb-24 md:pb-6">
           <Outlet />
         </main>
       </div>
+
+      {isLangModalOpen && (
+        <LanguageModal
+          currentLang={currentLang}
+          onSelectLanguage={(language) => {
+            setCurrentLang(language);
+            setIsLangModalOpen(false);
+          }}
+          onClose={() => setIsLangModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
@@ -76,6 +143,9 @@ function App() {
         <Route path="/patient" element={
           userRole === 'patient' ? <PatientApp /> : <Navigate to="/login" replace />
         } />
+        <Route path="/patient/:id" element={
+          userRole === 'doctor' ? <PatientDetail /> : <Navigate to="/login" replace />
+        } />
         {/* Keep kiosk as alias */}
         <Route path="/kiosk" element={<Navigate to="/patient" replace />} />
 
@@ -86,8 +156,8 @@ function App() {
         <Route path="/doctor" element={
           userRole === 'doctor' ? <DoctorLayout /> : <Navigate to="/login" replace />
         }>
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route index element={<DoctorDashboard />} />
+          <Route path="dashboard" element={<DoctorDashboard />} />
           <Route path="patients" element={<Patients />} />
           <Route path="patients/:id" element={<PatientDetail />} />
           <Route path="prescription/:id" element={<PrescriptionPage />} />
