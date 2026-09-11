@@ -1,14 +1,12 @@
+import React from "react";
 import {
   Home,
   Calendar,
   FileText,
   Mic,
-  User,
   Activity,
-  ArrowRight,
-  ShieldCheck,
+  Stethoscope,
 } from "lucide-react";
-import { DEFAULT_PATIENT } from "../data/patientData";
 
 interface NavBarProps {
   tab: string;
@@ -16,13 +14,12 @@ interface NavBarProps {
   onOpenIntake?: () => void;
 }
 
-export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => {
+export const NavBar: React.FC<NavBarProps> = ({ tab, setTab }) => {
   const items = [
     { id: "home", label: "Home", icon: Home },
     { id: "appointments", label: "Appointments & Token", icon: Calendar },
     { id: "records", label: "Records & Parche", icon: FileText },
-    { id: "ai-assistant", label: "AI Voice Assistant", icon: Mic, isAi: true },
-    { id: "profile", label: "Profile & ABHA", icon: User },
+    { id: "ai-assistant", label: "AI Assistant (Guide)", icon: Mic, isAi: true },
   ];
 
   return (
@@ -42,7 +39,7 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => 
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <div
-              className="w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-md"
+              className="w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-md shrink-0"
               style={{ background: "var(--primary)" }}
             >
               <Activity size={24} />
@@ -52,59 +49,39 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => 
                 MediKiosk
               </h2>
               <p className="text-[11px] font-bold text-primary tracking-wide mt-1">
-                AI CLINICAL INTAKE (SIH 26047)
+                AIIA OPD KIOSK (PS 26047)
               </p>
             </div>
           </div>
 
-          {/* Prominent Kiosk CTA Card for Health Intake */}
-          <div
-            onClick={() => (onOpenIntake ? onOpenIntake() : setTab("ai-assistant"))}
-            className="p-4 rounded-2xl text-white shadow-lg cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] group"
-            style={{
-              background: "linear-gradient(135deg, #3368a0 0%, #1c436b 100%)",
-            }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <Mic size={18} className="text-white" />
-              </span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/20 text-white/90">
-                Voice Intake
-              </span>
-            </div>
-            <p className="text-sm font-bold leading-tight">AI Voice Assistant</p>
-            <p className="text-[11px] text-white/80 mt-1 leading-snug">
-              Bhashini speech intake & clinical health conversation.
-            </p>
-            <div className="mt-3 flex items-center gap-1 text-[11px] font-bold text-white/95 group-hover:translate-x-1 transition-transform">
-              <span>Start conversation</span>
-              <ArrowRight size={13} />
-            </div>
-          </div>
-
-          {/* Navigation Links */}
-          <nav className="space-y-1.5">
+          {/* Clean Navigation Links with breathing space */}
+          <nav className="space-y-2 pt-2">
             {items.map((it) => {
               const active = tab === it.id;
               return (
                 <button
                   key={it.id}
                   onClick={() => setTab(it.id)}
-                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer text-left ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all cursor-pointer text-left ${
                     active
-                      ? "bg-primary/10 text-primary font-bold shadow-2xs border-l-4 border-primary"
+                      ? "bg-primary text-white shadow-sm"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   <it.icon
-                    size={19}
-                    className={active ? "text-primary" : "text-slate-400"}
+                    size={20}
+                    className={active ? "text-white" : "text-slate-400"}
                   />
                   <span>{it.label}</span>
                   {it.isAi && (
-                    <span className="ml-auto text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      Indic
+                    <span
+                      className={`ml-auto text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                        active
+                          ? "bg-white/20 text-white"
+                          : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                      }`}
+                    >
+                      Indic Voice
                     </span>
                   )}
                 </button>
@@ -113,37 +90,17 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => 
           </nav>
         </div>
 
-        {/* Bottom: Patient info & Doctor quick switch */}
-        <div className="pt-4 border-t border-slate-100 space-y-3">
-          <div
-            onClick={() => setTab("profile")}
-            className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-3 cursor-pointer hover:bg-slate-100 transition-colors"
-          >
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center text-white font-black text-xs shrink-0"
-              style={{ background: "var(--primary)" }}
-            >
-              {DEFAULT_PATIENT.name.split(" ").map((n) => n[0]).join("")}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-slate-900 truncate">
-                {DEFAULT_PATIENT.name}
-              </p>
-              <div className="flex items-center gap-1 text-[10.5px] text-slate-500 font-mono truncate">
-                <ShieldCheck size={11} className="text-emerald-600 shrink-0" />
-                <span className="truncate">{DEFAULT_PATIENT.abha}</span>
-              </div>
-            </div>
-          </div>
-
+        {/* Bottom: Doctor quick switch with clean card */}
+        <div className="pt-4 border-t border-slate-100">
           <button
             onClick={() => {
               localStorage.setItem("medikiosk_role", "doctor");
               window.location.href = "/doctor";
             }}
-            className="w-full text-center py-2 text-xs font-bold text-primary hover:text-[#204b77] hover:underline cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-primary transition-colors cursor-pointer"
           >
-            Switch to Doctor Cockpit →
+            <Stethoscope size={15} />
+            <span>Switch to Doctor Cockpit →</span>
           </button>
         </div>
       </aside>
@@ -209,17 +166,6 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, onOpenIntake }) => 
           <FileText size={19} color={tab === "records" ? "var(--primary)" : "var(--ink-soft)"} />
           <span className={`text-[10.5px] ${tab === "records" ? "font-bold" : "font-medium"}`}>
             Records
-          </span>
-        </button>
-
-        <button
-          onClick={() => setTab("profile")}
-          className="flex-1 flex flex-col items-center justify-center gap-1 py-2 tap-target cursor-pointer"
-          style={{ color: tab === "profile" ? "var(--primary)" : "var(--ink-soft)" }}
-        >
-          <User size={19} color={tab === "profile" ? "var(--primary)" : "var(--ink-soft)"} />
-          <span className={`text-[10.5px] ${tab === "profile" ? "font-bold" : "font-medium"}`}>
-            Profile
           </span>
         </button>
       </div>

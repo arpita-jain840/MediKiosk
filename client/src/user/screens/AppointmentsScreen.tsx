@@ -14,12 +14,14 @@ import type { DoctorDirectoryItem } from "../types";
 interface AppointmentsScreenProps {
   currentLang?: string;
   onOpenLangModal?: () => void;
+  onOpenProfile?: () => void;
   onBookSuccess?: (doc: DoctorDirectoryItem) => void;
 }
 
 export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
   currentLang = "en",
   onOpenLangModal,
+  onOpenProfile,
   onBookSuccess,
 }) => {
   const [selectedDept, setSelectedDept] = useState("all");
@@ -71,6 +73,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
         title="Appointments & OPD Token"
         currentLang={currentLang}
         onOpenLangModal={onOpenLangModal}
+        onOpenProfile={onOpenProfile}
         right={
           <button
             onClick={() => window.print()}

@@ -14,11 +14,13 @@ import type { MedicalRecordItem } from "../types";
 interface RecordsScreenProps {
   currentLang?: string;
   onOpenLangModal?: () => void;
+  onOpenProfile?: () => void;
 }
 
 export const RecordsScreen: React.FC<RecordsScreenProps> = ({
   currentLang = "en",
   onOpenLangModal,
+  onOpenProfile,
 }) => {
   const [cat, setCat] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -88,6 +90,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
         title="Digital Health Records & Parche"
         currentLang={currentLang}
         onOpenLangModal={onOpenLangModal}
+        onOpenProfile={onOpenProfile}
         showSearch={true}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}

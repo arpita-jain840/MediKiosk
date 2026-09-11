@@ -2,110 +2,67 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   Mic,
   Send,
-  Sparkles,
   Volume2,
-  Globe,
-  ChevronRight,
+  VolumeX,
+  Sparkles,
 } from "lucide-react";
 import { TopBar } from "../components/TopBar";
 import { SUPPORTED_LANGUAGES } from "../components/LanguageModal";
-import { INTAKE_SCRIPT } from "../data/patientData";
-import type { BlueprintSynthesisResult } from "../types";
 
 interface AIAssistantScreenProps {
   currentLang?: string;
   onOpenLangModal?: () => void;
-  onFinishCaseTaking: (result: BlueprintSynthesisResult | null) => void;
+  onOpenProfile?: () => void;
 }
 
 export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
   currentLang = "en",
   onOpenLangModal,
-  onFinishCaseTaking,
+  onOpenProfile,
 }) => {
-  const [mode, setMode] = useState<"intake" | "general">("intake");
+  const activeLangObj =
+    SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
+
+  const initialGreeting =
+    currentLang === "hi"
+      ? "नमस्ते! मैं मेडिकियोस्क अस्पताल सहायक हूँ। मैं आपको डॉक्टर के कमरे, ओपीडी समय, या आपके लक्षणों के अनुसार सही विभाग चुनने में मदद कर सकता हूँ। बोलें या लिखें!"
+      : "Hello! I am your MediKiosk Hospital & Health Guide. I can help guide you to doctor rooms, check OPD timings, or suggest the right department for your symptoms. Speak or type below!";
+
   const [messages, setMessages] = useState<Array<{ from: string; text: string }>>([
     {
       from: "ai",
-      text:
-        currentLang === "hi"
-          ? "नमस्ते! मैं मेडिकियोस्क एआई सहायक हूँ। आपको क्या स्वास्थ्य समस्या या लक्षण महसूस हो रहे हैं? बोलें या लिखें।"
-          : "Hello! I am your MediKiosk AI Assistant. What health symptoms or concerns are you experiencing today? You can speak or type.",
+      text: initialGreeting,
     },
   ]);
+
   const [isListening, setIsListening] = useState(false);
   const [typing, setTyping] = useState(false);
   const [userInput, setUserInput] = useState("");
-  const [step, setStep] = useState(0);
-  const [isDone, setIsDone] = useState(false);
-  const [isSynthesizing, setIsSynthesizing] = useState(false);
-  const [playingTtsIndex, setPlayingTtsIndex] = useState<number | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
-
-  const activeLangObj =
-    SUPPORTED_LANGUAGES.find((l) => l.code === currentLang) || SUPPORTED_LANGUAGES[0];
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typing]);
 
-  // Translate active question dynamically if non-English/non-Hindi Indic language is chosen
+  // Update greeting when language changes
   useEffect(() => {
-    let isCancelled = false;
-    async function translateQuestionForLang() {
-      if (isDone || messages.length === 0 || mode !== "intake") return;
-      const currentQEnglish = INTAKE_SCRIPT[step]?.q.en;
-      if (!currentQEnglish) return;
-
-      if (currentLang === "en") {
-        setMessages((prev) => {
-          const next = [...prev];
-          next[next.length - 1] = { from: "ai", text: currentQEnglish };
-          return next;
-        });
-      } else if (currentLang === "hi") {
-        setMessages((prev) => {
-          const next = [...prev];
-          next[next.length - 1] = { from: "ai", text: INTAKE_SCRIPT[step]?.q.hi };
-          return next;
-        });
-      } else {
-        // Use Bhashini NMT for regional translation
-        try {
-          const res = await fetch("http://127.0.0.1:8000/api/bhashini/translate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              text: currentQEnglish,
-              source_lang: "en",
-              target_lang: currentLang,
-            }),
-          });
-          if (res.ok && !isCancelled) {
-            const data = await res.json();
-            if (data.translated_text) {
-              setMessages((prev) => {
-                const next = [...prev];
-                next[next.length - 1] = { from: "ai", text: data.translated_text };
-                return next;
-              });
-            }
-          }
-        } catch (e) {
-          console.warn("[Bhashini NMT] Translation error:", e);
-        }
-      }
+    if (messages.length === 1 && messages[0].from === "ai") {
+      setMessages([
+        {
+          from: "ai",
+          text:
+            currentLang === "hi"
+              ? "नमस्ते! मैं मेडिकियोस्क अस्पताल सहायक हूँ। मैं आपको डॉक्टर के कमरे, ओपीडी समय, या आपके लक्षणों के अनुसार सही विभाग चुनने में मदद कर सकता हूँ।"
+              : "Hello! I am your MediKiosk Hospital & Health Guide. How can I guide you today?",
+        },
+      ]);
     }
+  }, [currentLang]);
 
-    translateQuestionForLang();
-    return () => {
-      isCancelled = true;
-    };
-  }, [currentLang, step, mode]);
-
-  // Bhashini TTS Voice Synthesis (female Indic voice)
-  const handlePlayTts = async (text: string, index: number) => {
-    setPlayingTtsIndex(index);
+  // Bhashini TTS voice playback
+  const playVoiceResponse = async (text: string) => {
+    if (isMuted) return;
     try {
       const res = await fetch("http://127.0.0.1:8000/api/bhashini/tts", {
         method: "POST",
@@ -120,16 +77,73 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
         const data = await res.json();
         if (data.audio_base64) {
           const audio = new Audio("data:audio/wav;base64," + data.audio_base64);
-          audio.onended = () => setPlayingTtsIndex(null);
-          audio.onerror = () => setPlayingTtsIndex(null);
           await audio.play();
-          return;
         }
       }
-    } catch (e) {
-      console.warn("[Bhashini TTS] Playback error:", e);
+    } catch (err) {
+      console.warn("[AIAssistant] TTS playback notice:", err);
     }
-    setPlayingTtsIndex(null);
+  };
+
+  // Natural guidance response engine
+  const getGuidanceReply = (q: string): string => {
+    const query = q.toLowerCase();
+
+    if (query.includes("cardio") || query.includes("heart") || query.includes("john") || query.includes("chest") || query.includes("दिल")) {
+      return currentLang === "hi"
+        ? "डॉ. जॉन स्मिथ (हृदय रोग एवं कायचिकित्सा) ओपीडी कक्ष 4B (प्रथम तल, मुख्य ब्लॉक) में उपलब्ध हैं। अनुमानित प्रतीक्षा समय लगभग 4 मिनट है।"
+        : "Dr. John Smith (Cardiology & General Ayush) is currently consulting in OPD Room 4B, 1st Floor Main Block. Estimated wait time is ~4 minutes.";
+    }
+
+    if (query.includes("panchakarma") || query.includes("पंचकर्म") || query.includes("therapy")) {
+      return currentLang === "hi"
+        ? "पंचकर्म विभाग भूतल पर ईस्ट विंग (कमरा 101-106) में स्थित है। यह सुबह 8:30 बजे से दोपहर 3:00 बजे तक खुला रहता है।"
+        : "The Panchakarma Therapy Department is located on the Ground Floor, East Wing (Rooms 101-106). Open from 8:30 AM to 3:00 PM.";
+    }
+
+    if (query.includes("fever") || query.includes("cough") || query.includes("बुखार") || query.includes("खांसी") || query.includes("headache") || query.includes("दर्द")) {
+      return currentLang === "hi"
+        ? "बुखार, सर्दी, या सामान्य स्वास्थ्य समस्याओं के लिए कायाचिकित्सा (जनरल मेडिसिन) ओपीडी कक्ष 2A और 2B में परामर्श लें। आप अपॉइंटमेंट टैब में जाकर तुरंत टोकन ले सकते हैं।"
+        : "For fever, cough, or general illness, please visit the Kayachikitsa (General Medicine) OPD in Rooms 2A-2B. You can also generate a token directly from the Appointments section.";
+    }
+
+    if (query.includes("token") || query.includes("टोकन") || query.includes("queue") || query.includes("लाइन")) {
+      return currentLang === "hi"
+        ? "आप 'Appointments & Token' टैब में जाकर अपनी पसंद के विभाग या डॉक्टर के लिए डिजिटल टोकन पर्ची तुरंत प्राप्त कर सकते हैं।"
+        : "You can view the real-time queue or book a new OPD consultation token directly in the 'Appointments & Token' tab.";
+    }
+
+    if (query.includes("timing") || query.includes("time") || query.includes("समय") || query.includes("open")) {
+      return currentLang === "hi"
+        ? "एआईआईए ओपीडी पंजीकरण सोमवार से शनिवार सुबह 8:00 बजे से दोपहर 1:00 बजे तक खुला रहता है। चिकित्सक परामर्श 2:00 बजे तक चलता है।"
+        : "AIIA OPD registration is open Monday to Saturday from 8:00 AM to 1:00 PM. Consultations continue until 2:00 PM.";
+    }
+
+    if (query.includes("parche") || query.includes("prescription") || query.includes("पर्चा") || query.includes("report")) {
+      return currentLang === "hi"
+        ? "आप 'Records & Parche' टैब में जाकर अपने हाथ से लिखे पर्चे या लैब रिपोर्ट का फोटो खींचकर सीधे डिजिटल स्वास्थ्य रिकॉर्ड में जोड़ सकते हैं।"
+        : "You can scan your paper prescription (*parche*) or upload lab reports in the 'Records & Parche' tab using our AI camera scanner.";
+    }
+
+    return currentLang === "hi"
+      ? "मैं आपकी सहायता के लिए यहाँ हूँ। आप मुझसे किसी भी डॉक्टर के कमरे का स्थान, विभाग, ओपीडी समय या लक्षणों के बारे में पूछ सकते हैं।"
+      : "I'm here to guide you. You can ask me about doctor rooms, OPD departments, consultation timings, or which specialist to see for your symptoms.";
+  };
+
+  const handleSendMessage = (textToSend?: string) => {
+    const text = textToSend || userInput;
+    if (!text.trim()) return;
+
+    setMessages((prev) => [...prev, { from: "user", text }]);
+    setUserInput("");
+    setTyping(true);
+
+    setTimeout(() => {
+      setTyping(false);
+      const reply = getGuidanceReply(text);
+      setMessages((prev) => [...prev, { from: "ai", text: reply }]);
+      playVoiceResponse(reply);
+    }, 600);
   };
 
   const handleVoiceToggle = () => {
@@ -139,298 +153,195 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
     }
 
     setIsListening(true);
-    // Simulate voice listening cycle with auto-completion for kiosk
+    // Voice intake simulation for Kiosk
     setTimeout(() => {
       setIsListening(false);
-      const current = INTAKE_SCRIPT[step];
-      const answer = currentLang === "hi" ? current?.a.hi : current?.a.en;
-      sendAnswer(answer || "I have chest discomfort with sweating since morning.");
-    }, 2500);
+      const sampleQuestion =
+        currentLang === "hi"
+          ? "डॉ. जॉन स्मिथ का कमरा कहाँ है?"
+          : "Where is Dr. John Smith's OPD room?";
+      handleSendMessage(sampleQuestion);
+    }, 2800);
   };
 
-  const sendAnswer = (textToSend?: string) => {
-    const text = textToSend || userInput;
-    if (!text.trim() || isDone) return;
-
-    setMessages((m) => [...m, { from: "user", text }]);
-    setUserInput("");
-    setTyping(true);
-
-    if (mode === "intake") {
-      setTimeout(() => {
-        setTyping(false);
-        const nextStep = step + 1;
-        if (nextStep < INTAKE_SCRIPT.length) {
-          const nextQ =
-            currentLang === "hi"
-              ? INTAKE_SCRIPT[nextStep].q.hi
-              : INTAKE_SCRIPT[nextStep].q.en;
-          setMessages((m) => [...m, { from: "ai", text: nextQ }]);
-          setStep(nextStep);
-        } else {
-          setMessages((m) => [
-            ...m,
-            {
-              from: "ai",
-              text:
-                currentLang === "hi"
-                  ? "धन्यवाद! आपका पूरा नैदानिक इतिहास दर्ज हो चुका है। डॉक्टर के लिए ब्लूप्रिंट तैयार करने हेतु नीचे बटन दबाएँ।"
-                  : "Thank you! Sufficient clinical details gathered. Press below to synthesize your 1-page doctor blueprint.",
-            },
-          ]);
-          setIsDone(true);
-        }
-      }, 700);
-    } else {
-      // General OPD queries
-      setTimeout(() => {
-        setTyping(false);
-        setMessages((m) => [
-          ...m,
-          {
-            from: "ai",
-            text:
-              currentLang === "hi"
-                ? "ओपीडी कक्ष 4B में डॉ. जॉन स्मिथ उपलब्ध हैं। ब्लड टेस्ट के लिए 10-12 घंटे का उपवास आवश्यक है। आप टोकन बुक कर सकते हैं।"
-                : "Dr. John Smith is available in OPD Room 4B. For fasting blood sugar tests, 10-12 hours overnight fasting is advised.",
-          },
-        ]);
-      }, 700);
-    }
-  };
-
-  const handleSynthesizeBlueprint = async () => {
-    setIsSynthesizing(true);
-    const intakeSummary = messages
-      .map((m) => `${m.from === "user" ? "Patient" : "Kiosk AI"}: ${m.text}`)
-      .join("\n");
-
-    try {
-      const res = await fetch(
-        `http://127.0.0.1:8000/api/clinical/generate-blueprint?patient_id=227107b6-d738-4acd-ad21-8c88430acbd9&intake_narration=${encodeURIComponent(intakeSummary)}`,
-        { method: "POST" }
-      );
-      if (res.ok) {
-        const data: BlueprintSynthesisResult = await res.json();
-        onFinishCaseTaking(data);
-        return;
-      }
-    } catch (err) {
-      console.warn("[AIAssistantScreen] Server synthesis error, proceeding:", err);
-    } finally {
-      setIsSynthesizing(false);
-    }
-    onFinishCaseTaking(null);
-  };
+  const suggestionChips = [
+    { en: "Where is OPD Room 4B?", hi: "ओपीडी कक्ष 4B कहाँ है?" },
+    { en: "Which doctor should I see for fever?", hi: "बुखार के लिए कौन सा डॉक्टर देखना चाहिए?" },
+    { en: "Panchakarma department timings", hi: "पंचकर्म विभाग का समय क्या है?" },
+    { en: "How do I get my consultation token?", hi: "परामर्श टोकन कैसे प्राप्त करें?" },
+  ];
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col h-full" style={{ background: "var(--bg)" }}>
+      {/* Clean TopBar with Language and Top-Right Profile */}
       <TopBar
-        title="AI Voice Assistant & Clinical Case-Taking"
+        title="AI Hospital Guide"
         currentLang={currentLang}
         onOpenLangModal={onOpenLangModal}
+        onOpenProfile={onOpenProfile}
         right={
-          <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
-            <button
-              onClick={() => setMode("intake")}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                mode === "intake"
-                  ? "bg-primary text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Case-Taking Intake
-            </button>
-            <button
-              onClick={() => setMode("general")}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                mode === "general"
-                  ? "bg-primary text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              General OPD Chat
-            </button>
-          </div>
+          <button
+            onClick={() => setIsMuted(!isMuted)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+            title={isMuted ? "Unmute Voice" : "Mute Voice"}
+          >
+            {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} className="text-primary" />}
+            <span className="hidden sm:inline">{isMuted ? "Muted" : "Voice On"}</span>
+          </button>
         }
       />
 
-      {/* Main Conversation Container */}
-      <div className="flex-1 overflow-y-auto px-5 md:px-10 py-4 max-w-4xl mx-auto w-full space-y-4">
+      {/* Spacious Conversation Container */}
+      <div className="flex-1 overflow-y-auto px-6 md:px-12 py-6 max-w-4xl mx-auto w-full space-y-6">
         
-        {/* Mode & Accessibility Guidance Banner */}
-        <div className="p-3.5 rounded-2xl bg-white border border-primary/20 shadow-2xs flex items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-slate-700">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-semibold">
-              {mode === "intake"
-                ? "Bhashini Voice Intake Active · Speaking in " + activeLangObj.native
-                : "General Hospital OPD Assistant Active"}
-            </span>
+        {/* Friendly AI Intro Pill */}
+        <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xs"
+              style={{ background: "var(--primary)" }}
+            >
+              <Sparkles size={20} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">
+                AIIA Smart Kiosk Companion
+              </h3>
+              <p className="text-xs text-slate-500">
+                Supports speech & text in {activeLangObj.name} ({activeLangObj.native})
+              </p>
+            </div>
           </div>
-
-          <button
-            onClick={onOpenLangModal}
-            className="text-xs font-bold text-primary hover:underline cursor-pointer flex items-center gap-1"
-          >
-            <Globe size={13} />
-            <span>{activeLangObj.native}</span>
-          </button>
+          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            Active Guide
+          </span>
         </div>
 
-        {/* Message Bubble Stream */}
-        <div className="space-y-4 pt-2">
-          {messages.map((m, i) => (
-            <div
-              key={i}
-              className={"flex " + (m.from === "user" ? "justify-end" : "justify-start")}
-            >
-              <div className="flex items-end gap-2 max-w-[85%] md:max-w-[75%]">
+        {/* Message Stream */}
+        <div className="space-y-4">
+          {messages.map((m, idx) => {
+            const isAi = m.from === "ai";
+            return (
+              <div
+                key={idx}
+                className={`flex gap-3 items-end ${isAi ? "justify-start" : "justify-end"}`}
+              >
+                {isAi && (
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black text-xs shrink-0 shadow-2xs"
+                    style={{ background: "var(--primary)" }}
+                  >
+                    AI
+                  </div>
+                )}
+                
                 <div
-                  className={`rounded-3xl px-5 py-3.5 text-sm md:text-base leading-relaxed shadow-2xs ${
-                    m.from === "user"
-                      ? "bg-primary text-white rounded-br-xs"
-                      : "bg-white text-slate-800 border border-slate-200/90 rounded-bl-xs"
+                  className={`max-w-xl p-4 rounded-3xl text-sm leading-relaxed ${
+                    isAi
+                      ? "bg-white border border-slate-200/90 text-slate-800 shadow-2xs rounded-bl-xs"
+                      : "bg-primary text-white shadow-xs rounded-br-xs font-medium"
                   }`}
                 >
-                  {m.text}
+                  <p>{m.text}</p>
+                  {isAi && (
+                    <button
+                      onClick={() => playVoiceResponse(m.text)}
+                      className="mt-2 text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Volume2 size={12} />
+                      <span>Replay Voice</span>
+                    </button>
+                  )}
                 </div>
-
-                {/* Speaker Audio Playback (Bhashini TTS) */}
-                {m.from === "ai" && (
-                  <button
-                    onClick={() => handlePlayTts(m.text, i)}
-                    className={`p-2 rounded-full border transition-all cursor-pointer shrink-0 ${
-                      playingTtsIndex === i
-                        ? "bg-primary text-white border-primary animate-pulse"
-                        : "bg-white text-slate-500 hover:text-primary border-slate-200 hover:bg-slate-50"
-                    }`}
-                    title="Listen in your language (Bhashini TTS Voice)"
-                    aria-label="Play audio"
-                  >
-                    <Volume2 size={16} />
-                  </button>
-                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {typing && (
-            <div className="flex justify-start">
-              <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 shadow-2xs flex items-center gap-1.5">
-                <span className="dot" />
-                <span className="dot" style={{ animationDelay: "0.2s" }} />
-                <span className="dot" style={{ animationDelay: "0.4s" }} />
+            <div className="flex gap-3 items-center">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black text-xs shrink-0"
+                style={{ background: "var(--primary)" }}
+              >
+                AI
+              </div>
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200 text-slate-400 text-xs flex items-center gap-1.5 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" />
+                <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce delay-100" />
+                <span className="w-2 h-2 rounded-full bg-primary/60 animate-bounce delay-200" />
+                <span className="ml-1 text-slate-500 font-medium">Listening & Thinking...</span>
               </div>
             </div>
           )}
+
           <div ref={chatEndRef} />
         </div>
+
+        {/* Quick Suggestion Chips */}
+        <div className="pt-2">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+            Suggested Questions / पूछें:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {suggestionChips.map((chip, i) => {
+              const text = currentLang === "hi" ? chip.hi : chip.en;
+              return (
+                <button
+                  key={i}
+                  onClick={() => handleSendMessage(text)}
+                  className="px-3.5 py-2 rounded-full bg-white hover:bg-slate-50 border border-slate-200/90 text-xs font-semibold text-slate-700 hover:text-primary hover:border-primary/40 transition-all cursor-pointer shadow-2xs"
+                >
+                  {text}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
       </div>
 
-      {/* Large Voice Microphone & Interactive Control Dock */}
-      <div className="p-4 md:p-6 bg-white border-t border-slate-200/80 shrink-0 shadow-lg">
-        <div className="max-w-4xl mx-auto w-full space-y-3">
+      {/* Bottom Voice & Text Input Bar */}
+      <div className="shrink-0 p-4 md:p-6 bg-white border-t border-slate-200/80 shadow-lg">
+        <div className="max-w-4xl mx-auto flex items-center gap-3">
           
-          {/* Quick Suggestion Pills */}
-          {!isDone && (
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-              {mode === "intake" ? (
-                <button
-                  onClick={() =>
-                    sendAnswer(
-                      currentLang === "hi"
-                        ? INTAKE_SCRIPT[step]?.a.hi
-                        : INTAKE_SCRIPT[step]?.a.en
-                    )
-                  }
-                  className="shrink-0 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-semibold text-slate-800 transition-colors cursor-pointer truncate max-w-sm"
-                >
-                  👉 {currentLang === "hi" ? INTAKE_SCRIPT[step]?.a.hi : INTAKE_SCRIPT[step]?.a.en}
-                </button>
-              ) : (
-                <>
-                  {["OPD Timings", "Fasting Requirements", "Panchakarma Therapies"].map((q) => (
-                    <button
-                      key={q}
-                      onClick={() => sendAnswer(q)}
-                      className="shrink-0 px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-semibold text-slate-800 transition-colors cursor-pointer"
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </>
-              )}
-            </div>
-          )}
+          {/* Animated Large Microphone Button for Kiosk */}
+          <button
+            onClick={handleVoiceToggle}
+            className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all cursor-pointer shadow-md shrink-0 ${
+              isListening
+                ? "bg-rose-500 text-white animate-pulse ring-4 ring-rose-200"
+                : "bg-primary hover:bg-[#204b77] text-white active:scale-95"
+            }`}
+            title={isListening ? "Listening... click to stop" : "Click to speak in your language"}
+          >
+            <Mic size={24} />
+          </button>
 
-          {/* Voice Mic + Text Input Area */}
-          <div className="flex items-center gap-3">
-            {/* Primary Large Animated Voice Wave Microphone */}
-            <button
-              onClick={handleVoiceToggle}
-              className={`relative flex items-center justify-center rounded-2xl shrink-0 transition-all cursor-pointer shadow-md ${
+          {/* Text Input Box */}
+          <div className="flex-1 relative flex items-center">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+              placeholder={
                 isListening
-                  ? "w-16 h-16 bg-rose-500 text-white animate-pulse ring-4 ring-rose-200"
-                  : "w-14 h-14 bg-primary hover:bg-[#204b77] text-white hover:scale-105 active:scale-95"
-              }`}
-              title="Speak in your native language (Bhashini Indic Voice)"
-            >
-              <Mic size={24} />
-              {isListening && (
-                <span className="absolute -top-2 -right-1 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500" />
-                </span>
-              )}
-            </button>
+                  ? "Listening to your voice... (बोलिए, हम सुन रहे हैं)"
+                  : currentLang === "hi"
+                  ? "यहाँ अपनी समस्या लिखें या माइक दबाकर बोलें..."
+                  : "Type your query here or click the microphone to speak..."
+              }
+              className="w-full pl-5 pr-12 py-3.5 text-xs md:text-sm rounded-2xl bg-slate-50 border border-slate-200/90 focus:outline-none focus:border-primary focus:bg-white text-slate-800 placeholder:text-slate-400 shadow-inner"
+            />
 
-            {/* Natural Text input */}
-            <div className="flex-1 relative flex items-center">
-              <input
-                type="text"
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") sendAnswer();
-                }}
-                placeholder={
-                  isListening
-                    ? "Listening to speech in " + activeLangObj.native + "..."
-                    : currentLang === "hi"
-                    ? "बोलें या यहाँ अपना जवाब लिखें..."
-                    : "Speak or type your clinical symptom / query..."
-                }
-                className="w-full px-4 py-3.5 md:py-4 rounded-2xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-2xs placeholder:text-slate-400"
-              />
-            </div>
-
-            {/* Send Button */}
             <button
-              onClick={() => sendAnswer()}
-              className="p-3.5 md:p-4 rounded-2xl bg-primary hover:bg-[#204b77] text-white transition-all shadow-xs cursor-pointer shrink-0"
-              aria-label="Send answer"
+              onClick={() => handleSendMessage()}
+              disabled={!userInput.trim()}
+              className="absolute right-2.5 p-2 rounded-xl bg-primary hover:bg-[#204b77] disabled:opacity-30 disabled:pointer-events-none text-white transition-colors cursor-pointer"
             >
-              <Send size={18} />
+              <Send size={16} />
             </button>
           </div>
-
-          {/* Finish & Synthesize Blueprint Button */}
-          {(isDone || step >= 2) && (
-            <button
-              onClick={handleSynthesizeBlueprint}
-              disabled={isSynthesizing}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#3368a0] to-[#1c436b] text-white font-extrabold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
-            >
-              <Sparkles size={16} />
-              <span>
-                {isSynthesizing
-                  ? "Storing 1-Page Blueprint in PostgreSQL..."
-                  : "Finish Intake & Generate Doctor Clinical Blueprint (तुरंत ब्लूप्रिंट बनाएँ)"}
-              </span>
-              <ChevronRight size={16} />
-            </button>
-          )}
 
         </div>
       </div>

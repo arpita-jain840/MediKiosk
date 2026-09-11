@@ -17,7 +17,7 @@ export default function PatientApp() {
   const [lang, setLang] = useState("en");
   const [isLangModalOpen, setIsLangModalOpen] = useState(false);
   const [bookedDoctor, setBookedDoctor] = useState<DoctorDirectoryItem | null>(null);
-  const [blueprintResult, setBlueprintResult] = useState<BlueprintSynthesisResult | null>(null);
+  const [blueprintResult] = useState<BlueprintSynthesisResult | null>(null);
 
   let content;
   if (flow === "result") {
@@ -43,6 +43,7 @@ export default function PatientApp() {
       <AppointmentsScreen
         currentLang={lang}
         onOpenLangModal={() => setIsLangModalOpen(true)}
+        onOpenProfile={() => setTab("profile")}
         onBookSuccess={(doc) => {
           setBookedDoctor(doc);
         }}
@@ -53,6 +54,7 @@ export default function PatientApp() {
       <RecordsScreen
         currentLang={lang}
         onOpenLangModal={() => setIsLangModalOpen(true)}
+        onOpenProfile={() => setTab("profile")}
       />
     );
   } else if (tab === "ai-assistant") {
@@ -60,10 +62,7 @@ export default function PatientApp() {
       <AIAssistantScreen
         currentLang={lang}
         onOpenLangModal={() => setIsLangModalOpen(true)}
-        onFinishCaseTaking={(res) => {
-          setBlueprintResult(res);
-          setFlow("result");
-        }}
+        onOpenProfile={() => setTab("profile")}
       />
     );
   } else if (tab === "profile") {
@@ -72,6 +71,7 @@ export default function PatientApp() {
         patient={DEFAULT_PATIENT}
         currentLang={lang}
         onOpenLangModal={() => setIsLangModalOpen(true)}
+        onBack={() => setTab("home")}
       />
     );
   } else {

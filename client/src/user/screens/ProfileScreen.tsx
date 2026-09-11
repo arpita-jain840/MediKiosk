@@ -9,12 +9,14 @@ interface ProfileScreenProps {
   patient: PatientProfile;
   currentLang?: string;
   onOpenLangModal?: () => void;
+  onBack?: () => void;
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({
   patient,
   currentLang = "en",
   onOpenLangModal,
+  onBack,
 }) => {
   const activeLang = SUPPORTED_LANGUAGES.find((l) => l.code === currentLang);
 
@@ -24,6 +26,8 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
         title="Patient Profile & ABHA"
         currentLang={currentLang}
         onOpenLangModal={onOpenLangModal}
+        onBack={onBack}
+        patientName={patient.name}
       />
       <div className="flex items-center gap-3.5 md:gap-6 mb-5 md:mb-8 mt-1">
         <div

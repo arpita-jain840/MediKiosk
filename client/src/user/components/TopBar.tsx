@@ -12,6 +12,8 @@ interface TopBarProps {
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
   searchPlaceholder?: string;
+  onOpenProfile?: () => void;
+  patientName?: string;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -24,12 +26,14 @@ export const TopBar: React.FC<TopBarProps> = ({
   searchQuery = "",
   onSearchChange,
   searchPlaceholder = "Search doctors, symptoms, departments, or records...",
+  onOpenProfile,
+  patientName = "Priya Sharma",
 }) => {
   const activeLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === currentLang);
 
   return (
     <div
-      className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-5 md:px-10 pt-5 md:pt-7 pb-3 md:pb-5 shrink-0 border-b border-slate-200/50"
+      className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-5 md:px-10 pt-5 md:pt-6 pb-3 md:pb-5 shrink-0 border-b border-slate-200/60"
       style={{ background: "var(--bg)" }}
     >
       <div className="flex items-center gap-3">
@@ -66,8 +70,8 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
       )}
 
-      {/* Action Buttons & Language Selector */}
-      <div className="flex items-center gap-2.5 self-end md:self-auto">
+      {/* Action Buttons, Language Selector & Profile Avatar on Top Right */}
+      <div className="flex items-center gap-2.5 self-end md:self-auto shrink-0">
         {currentLang && onOpenLangModal && (
           <button
             onClick={onOpenLangModal}
@@ -78,7 +82,32 @@ export const TopBar: React.FC<TopBarProps> = ({
             <span>{activeLangObj ? activeLangObj.native : "English"}</span>
           </button>
         )}
+
         {right}
+
+        {/* Profile Avatar Pill on Top Right */}
+        {onOpenProfile && (
+          <button
+            onClick={onOpenProfile}
+            title="Patient Profile & ABHA"
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200/90 shadow-2xs transition-all cursor-pointer group"
+          >
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center text-white font-black text-xs shrink-0 shadow-2xs group-hover:scale-105 transition-transform"
+              style={{ background: "var(--primary)" }}
+            >
+              {patientName.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+            </div>
+            <div className="text-left hidden sm:block pr-1">
+              <p className="text-xs font-bold text-slate-900 leading-none">
+                {patientName.split(" ")[0]}
+              </p>
+              <p className="text-[10px] text-slate-400 font-mono leading-tight mt-0.5">
+                ABHA
+              </p>
+            </div>
+          </button>
+        )}
       </div>
     </div>
   );
