@@ -15,17 +15,23 @@ interface HomeScreenProps {
   patient: PatientProfile;
   onOpenIntake: () => void;
   setTab: (tab: string) => void;
+  currentLang?: string;
+  onOpenLangModal?: () => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   patient,
   onOpenIntake,
   setTab,
+  currentLang,
+  onOpenLangModal,
 }) => {
   return (
     <div className="flex-1 overflow-y-auto flex flex-col" style={{ background: "var(--bg)" }}>
       <TopBar
         title="MediKiosk AI Care"
+        currentLang={currentLang}
+        onOpenLangModal={onOpenLangModal}
         right={
           <button
             className="tap-target flex items-center justify-center rounded-full md:w-10 md:h-10 cursor-pointer"

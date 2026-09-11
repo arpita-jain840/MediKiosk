@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavBar } from "./components/NavBar";
+import { LanguageModal } from "./components/LanguageModal";
 import { HomeScreen } from "./screens/HomeScreen";
 import { RecordsScreen } from "./screens/RecordsScreen";
 import { IntakeScreen } from "./screens/IntakeScreen";
@@ -14,6 +15,7 @@ export default function PatientApp() {
   const [tab, setTab] = useState("home");
   const [flow, setFlow] = useState<string | null>(null); // null | "intake" | "result" | "doctors" | "confirm"
   const [lang, setLang] = useState("en");
+  const [isLangModalOpen, setIsLangModalOpen] = useState(false);
   const [bookedDoctor, setBookedDoctor] = useState<DoctorDirectoryItem | null>(null);
   const [blueprintResult, setBlueprintResult] = useState<BlueprintSynthesisResult | null>(null);
 
@@ -61,7 +63,13 @@ export default function PatientApp() {
   } else if (tab === "records") {
     content = <RecordsScreen />;
   } else if (tab === "profile") {
-    content = <ProfileScreen patient={DEFAULT_PATIENT} />;
+    content = (
+      <ProfileScreen
+        patient={DEFAULT_PATIENT}
+        currentLang={lang}
+        onOpenLangModal={() => setIsLangModalOpen(true)}
+      />
+    );
   } else if (tab === "doctors") {
     content = (
       <DoctorsScreen
@@ -76,6 +84,8 @@ export default function PatientApp() {
     content = (
       <HomeScreen
         patient={DEFAULT_PATIENT}
+        currentLang={lang}
+        onOpenLangModal={() => setIsLangModalOpen(true)}
         onOpenIntake={() => setFlow("intake")}
         setTab={setTab}
       />
@@ -134,6 +144,17 @@ export default function PatientApp() {
           {content}
         </div>
       </div>
+
+      {isLangModalOpen && (
+        <LanguageModal
+          currentLang={lang}
+          onSelectLanguage={(chosen) => {
+            setLang(chosen);
+            setIsLangModalOpen(false);
+          }}
+          onClose={() => setIsLangModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

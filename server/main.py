@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from routers import ingest_routes
 from routers import clinical_routes
+from routers import bhashini_routes
 from init_db import init_db_and_seed
 
 @asynccontextmanager
@@ -36,3 +37,4 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.include_router(ingest_routes.router)
 app.include_router(clinical_routes.router)
+app.include_router(bhashini_routes.router)

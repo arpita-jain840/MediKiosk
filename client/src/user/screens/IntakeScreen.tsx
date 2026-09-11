@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Mic, Send, Sparkles, ChevronRight } from "lucide-react";
+import { Mic, Send, Sparkles, ChevronRight, Volume2, Globe } from "lucide-react";
 import { TopBar } from "../components/TopBar";
+import { LanguageModal, SUPPORTED_LANGUAGES } from "../components/LanguageModal";
 import { INTAKE_SCRIPT } from "../data/patientData";
 import type { BlueprintSynthesisResult } from "../types";
 
@@ -17,31 +18,133 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
   lang,
   setLang,
 }) => {
-  const [messages, setMessages] = useState([
-    { from: "ai", text: INTAKE_SCRIPT[0].q[lang as keyof typeof INTAKE_SCRIPT[0]["q"]] },
+  const [messages, setMessages] = useState<Array<{ from: string; text: string }>>([
+    {
+      from: "ai",
+      text: lang === "hi" ? INTAKE_SCRIPT[0].q.hi : INTAKE_SCRIPT[0].q.en,
+    },
   ]);
   const [step, setStep] = useState(0);
   const [typing, setTyping] = useState(false);
   const [done, setDone] = useState(false);
   const [isSynthesizing, setIsSynthesizing] = useState(false);
+  const [playingTtsIndex, setPlayingTtsIndex] = useState<number | null>(null);
+  const [isLangModalOpen, setIsLangModalOpen] = useState(false);
+  const [userInputText, setUserInputText] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
+
+  const activeLangObj = SUPPORTED_LANGUAGES.find((l) => l.code === lang) || SUPPORTED_LANGUAGES[0];
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typing]);
 
+  // Translate active question dynamically if a non-English/non-Hindi Indic language is chosen
+  useEffect(() => {
+    let isCancelled = false;
+    async function translateQuestionForLang() {
+      if (done || messages.length === 0) return;
+      const currentQEnglish = INTAKE_SCRIPT[step]?.q.en;
+      if (!currentQEnglish) return;
+
+      if (lang === "en") {
+        setMessages((prev) => {
+          const next = [...prev];
+          next[next.length - 1] = { from: "ai", text: currentQEnglish };
+          return next;
+        });
+      } else if (lang === "hi") {
+        setMessages((prev) => {
+          const next = [...prev];
+          next[next.length - 1] = { from: "ai", text: INTAKE_SCRIPT[step]?.q.hi };
+          return next;
+        });
+      } else {
+        // Use Bhashini NMT for regional translation (Bengali, Tamil, Telugu, Marathi, etc.)
+        try {
+          const res = await fetch("http://127.0.0.1:8000/api/bhashini/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: currentQEnglish,
+              source_lang: "en",
+              target_lang: lang,
+            }),
+          });
+          if (res.ok && !isCancelled) {
+            const data = await res.json();
+            if (data.translated_text) {
+              setMessages((prev) => {
+                const next = [...prev];
+                next[next.length - 1] = { from: "ai", text: data.translated_text };
+                return next;
+              });
+            }
+          }
+        } catch (e) {
+          console.warn("[Bhashini NMT] Translation error:", e);
+        }
+      }
+    }
+
+    translateQuestionForLang();
+    return () => {
+      isCancelled = true;
+    };
+  }, [lang, step]);
+
   const completeness = Math.min(100, Math.round(((step) / INTAKE_SCRIPT.length) * 100));
 
-  function sendAnswer() {
+  // Audio Guidance via Bhashini TTS (Voice Accessibility for low-literacy / elderly)
+  const handlePlayTts = async (text: string, index: number) => {
+    setPlayingTtsIndex(index);
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/bhashini/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text,
+          lang: lang === "en" ? "hi" : lang,
+          gender: "female",
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.audio_base64) {
+          const audio = new Audio("data:audio/wav;base64," + data.audio_base64);
+          audio.onended = () => setPlayingTtsIndex(null);
+          audio.onerror = () => setPlayingTtsIndex(null);
+          await audio.play();
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("[Bhashini TTS] Audio playback error:", e);
+    }
+    setPlayingTtsIndex(null);
+  };
+
+  function sendAnswer(answerText?: string) {
     if (done) return;
     const current = INTAKE_SCRIPT[step];
-    setMessages((m) => [...m, { from: "user", text: current.a[lang as keyof typeof current["a"]] }]);
+    const textToSend =
+      answerText ||
+      userInputText ||
+      (lang === "hi" ? current.a.hi : current.a.en);
+
+    setMessages((m) => [...m, { from: "user", text: textToSend }]);
+    setUserInputText("");
     setTyping(true);
+
     setTimeout(() => {
       setTyping(false);
       const nextStep = step + 1;
       if (nextStep < INTAKE_SCRIPT.length) {
-        setMessages((m) => [...m, { from: "ai", text: INTAKE_SCRIPT[nextStep].q[lang as keyof typeof INTAKE_SCRIPT[0]["q"]] }]);
+        const nextQ =
+          lang === "hi"
+            ? INTAKE_SCRIPT[nextStep].q.hi
+            : INTAKE_SCRIPT[nextStep].q.en;
+        setMessages((m) => [...m, { from: "ai", text: nextQ }]);
         setStep(nextStep);
       } else {
         setMessages((m) => [
@@ -89,25 +192,14 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
         title={lang === "en" ? "Voice & Touch Clinical Intake" : "स्वास्थ्य जाँच (आवाज और स्पर्श)"}
         onBack={onClose}
         right={
-          <div
-            className="flex rounded-full overflow-hidden shadow-sm"
-            style={{ border: "1px solid var(--border)", background: "var(--surface)" }}
+          <button
+            onClick={() => setIsLangModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200/90 shadow-xs text-xs font-bold text-[#3368a0] hover:bg-slate-50 transition-colors cursor-pointer"
+            title="Choose Language (Bhashini AI)"
           >
-            {["en", "hi"].map((l) => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                className="px-2.5 md:px-4 py-1 md:py-1.5 text-[11.5px] md:text-[13px] transition-colors cursor-pointer"
-                style={{
-                  background: lang === l ? "var(--primary)" : "transparent",
-                  color: lang === l ? "#fff" : "var(--ink-soft)",
-                  fontWeight: 700,
-                }}
-              >
-                {l.toUpperCase()}
-              </button>
-            ))}
-          </div>
+            <Globe size={13} />
+            <span>{activeLangObj.native}</span>
+          </button>
         }
       />
 
@@ -131,23 +223,42 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
       <div className="flex-1 overflow-y-auto px-5 md:px-10 py-2 md:py-4 space-y-3 md:space-y-5">
         {messages.map((m, i) => (
           <div key={i} className={"flex " + (m.from === "user" ? "justify-end" : "justify-start")}>
-            <div
-              className="max-w-[80%] md:max-w-[70%] rounded-2xl md:rounded-3xl px-4 py-2.5 md:px-6 md:py-4 text-[13.5px] md:text-[15px] leading-relaxed shadow-sm"
-              style={
-                m.from === "user"
-                  ? { background: "var(--primary)", color: "#fff", borderBottomRightRadius: 4 }
-                  : {
-                      background: "var(--surface)",
-                      color: "var(--ink)",
-                      border: "1px solid var(--border)",
-                      borderBottomLeftRadius: 4,
-                    }
-              }
-            >
-              {m.text}
+            <div className="flex items-end gap-2 max-w-[85%] md:max-w-[75%]">
+              <div
+                className="rounded-2xl md:rounded-3xl px-4 py-2.5 md:px-6 md:py-4 text-[13.5px] md:text-[15px] leading-relaxed shadow-sm flex-1"
+                style={
+                  m.from === "user"
+                    ? { background: "var(--primary)", color: "#fff", borderBottomRightRadius: 4 }
+                    : {
+                        background: "var(--surface)",
+                        color: "var(--ink)",
+                        border: "1px solid var(--border)",
+                        borderBottomLeftRadius: 4,
+                      }
+                }
+              >
+                {m.text}
+              </div>
+
+              {/* Bhashini TTS Audio Button for Elderly/Low-literacy */}
+              {m.from === "ai" && (
+                <button
+                  onClick={() => handlePlayTts(m.text, i)}
+                  className={`p-2 rounded-full border transition-all cursor-pointer shrink-0 ${
+                    playingTtsIndex === i
+                      ? "bg-[#3368a0] text-white border-[#3368a0] animate-pulse"
+                      : "bg-white text-slate-500 hover:text-[#3368a0] border-slate-200 hover:bg-slate-50"
+                  }`}
+                  title="Listen in your language (Bhashini TTS)"
+                  aria-label="Play audio"
+                >
+                  <Volume2 size={15} />
+                </button>
+              )}
             </div>
           </div>
         ))}
+
         {typing && (
           <div className="flex justify-start">
             <div
@@ -190,32 +301,53 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
             </div>
           </div>
         ) : !done ? (
-          <div className="flex items-center gap-2 md:gap-4 mt-3">
-            <div
-              className="flex-1 rounded-full px-4 py-3 md:px-6 md:py-4 text-[13px] md:text-[15px] truncate shadow-sm cursor-text"
-              style={{
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                color: "var(--ink-soft)",
-              }}
-            >
-              {INTAKE_SCRIPT[step].a[lang as keyof typeof INTAKE_SCRIPT[0]["a"]]}
+          <div className="space-y-2.5">
+            {/* Guided Suggestion Pill for easy single-tap answering */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
+              <button
+                onClick={() => sendAnswer(lang === "hi" ? INTAKE_SCRIPT[step].a.hi : INTAKE_SCRIPT[step].a.en)}
+                className="shrink-0 px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:border-[#3368a0]/40 transition-colors shadow-xs cursor-pointer truncate max-w-xs"
+              >
+                👉 {lang === "hi" ? INTAKE_SCRIPT[step].a.hi : INTAKE_SCRIPT[step].a.en}
+              </button>
             </div>
-            <button
-              className="tap-target flex items-center justify-center rounded-full shrink-0 hover:bg-teal-100 transition-colors md:w-14 md:h-14 cursor-pointer"
-              style={{ width: 42, height: 42, background: "var(--primary-tint)" }}
-              aria-label="Voice input"
-            >
-              <Mic size={17} color="var(--primary)" className="md:w-6 md:h-6" />
-            </button>
-            <button
-              onClick={sendAnswer}
-              className="tap-target flex items-center justify-center rounded-full shrink-0 hover:opacity-90 transition-opacity md:w-14 md:h-14 shadow-md cursor-pointer"
-              style={{ width: 42, height: 42, background: "var(--primary)" }}
-              aria-label="Send answer"
-            >
-              <Send size={16} color="#fff" className="md:w-5 md:h-5 ml-1" />
-            </button>
+
+            <div className="flex items-center gap-2 md:gap-4">
+              <input
+                type="text"
+                value={userInputText}
+                onChange={(e) => setUserInputText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") sendAnswer();
+                }}
+                placeholder={
+                  lang === "hi"
+                    ? "अपना जवाब यहाँ लिखें या बोलें..."
+                    : "Type or speak your answer in your language..."
+                }
+                className="flex-1 rounded-full px-4 py-3 md:px-6 md:py-4 text-[13px] md:text-[15px] shadow-sm bg-white border border-slate-200 text-slate-800 focus:outline-none focus:border-[#3368a0] focus:ring-1 focus:ring-[#3368a0]"
+              />
+              <button
+                onClick={() => {
+                  // Simulate or trigger Indic voice speech capture
+                  sendAnswer(lang === "hi" ? INTAKE_SCRIPT[step].a.hi : INTAKE_SCRIPT[step].a.en);
+                }}
+                className="tap-target flex items-center justify-center rounded-full shrink-0 hover:bg-teal-100 transition-colors md:w-14 md:h-14 cursor-pointer"
+                style={{ width: 42, height: 42, background: "var(--primary-tint)" }}
+                aria-label="Bhashini Voice Input"
+                title="Speak in your language (Bhashini Indic ASR)"
+              >
+                <Mic size={17} color="var(--primary)" className="md:w-6 md:h-6" />
+              </button>
+              <button
+                onClick={() => sendAnswer()}
+                className="tap-target flex items-center justify-center rounded-full shrink-0 hover:opacity-90 transition-opacity md:w-14 md:h-14 shadow-md cursor-pointer"
+                style={{ width: 42, height: 42, background: "var(--primary)" }}
+                aria-label="Send answer"
+              >
+                <Send size={16} color="#fff" className="md:w-5 md:h-5 ml-1" />
+              </button>
+            </div>
           </div>
         ) : (
           <button
@@ -231,6 +363,15 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
           </button>
         )}
       </div>
+
+      {/* Language Selection Modal */}
+      {isLangModalOpen && (
+        <LanguageModal
+          currentLang={lang}
+          onSelectLanguage={(code) => setLang(code)}
+          onClose={() => setIsLangModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import os
 import base64
 import httpx
+from typing import Optional, List, Dict, Any
 from fastapi import UploadFile, HTTPException
 from groq import Groq
 from dotenv import load_dotenv
@@ -88,6 +89,107 @@ async def transcribe_with_bhashini(audio_bytes: bytes, source_lang: str = "hi") 
 
         data = response.json()
         return data["pipelineResponse"][0]["output"][0]["source"].strip()
+
+
+async def translate_with_bhashini(text: str, source_lang: str = "en", target_lang: str = "hi") -> str:
+    """Translates text across Indian regional languages via Bhashini NMT"""
+    if not text or not text.strip():
+        return ""
+    if source_lang == target_lang:
+        return text
+
+    if not (BHASHINI_USER_ID and (BHASHINI_UDYAT_KEY or BHASHINI_INFERENCE_KEY)):
+        return text
+
+    headers = {
+        "User-ID": BHASHINI_USER_ID,
+        "Ulca-Api-Key": BHASHINI_UDYAT_KEY or "",
+        "Authorization": BHASHINI_INFERENCE_KEY or "",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "pipelineTasks": [
+            {
+                "taskType": "translation",
+                "config": {
+                    "language": {
+                        "sourceLanguage": source_lang,
+                        "targetLanguage": target_lang
+                    }
+                }
+            }
+        ],
+        "inputData": {
+            "input": [{"source": text}]
+        }
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.post(BHASHINI_BASE_URL, headers=headers, json=payload)
+            if response.status_code == 200:
+                data = response.json()
+                outputs = data.get("pipelineResponse", [{}])[0].get("output", [])
+                if outputs and "target" in outputs[0]:
+                    return outputs[0]["target"].strip()
+    except Exception as e:
+        print(f"[Bhashini NMT Warning] {e}")
+
+    # Fallback to Gemini if Bhashini NMT is temporarily unavailable
+    if gemini_model:
+        try:
+            prompt = f"Translate the following medical intake text from {source_lang} to {target_lang}. Return ONLY the direct translation:\n{text}"
+            res = gemini_model.generate_content(prompt)
+            if res.text:
+                return res.text.strip()
+        except Exception:
+            pass
+
+    return text
+
+
+async def tts_with_bhashini(text: str, lang: str = "hi", gender: str = "female") -> Optional[str]:
+    """Generates audio for low-literacy/elderly accessibility via Bhashini TTS"""
+    if not text or not text.strip():
+        return None
+    if not (BHASHINI_USER_ID and (BHASHINI_UDYAT_KEY or BHASHINI_INFERENCE_KEY)):
+        return None
+
+    headers = {
+        "User-ID": BHASHINI_USER_ID,
+        "Ulca-Api-Key": BHASHINI_UDYAT_KEY or "",
+        "Authorization": BHASHINI_INFERENCE_KEY or "",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "pipelineTasks": [
+            {
+                "taskType": "tts",
+                "config": {
+                    "language": {"sourceLanguage": lang},
+                    "gender": gender
+                }
+            }
+        ],
+        "inputData": {
+            "input": [{"source": text}]
+        }
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            response = await client.post(BHASHINI_BASE_URL, headers=headers, json=payload)
+            if response.status_code == 200:
+                data = response.json()
+                audio_arr = data.get("pipelineResponse", [{}])[0].get("audio", [])
+                if audio_arr and "audioContent" in audio_arr[0]:
+                    return audio_arr[0]["audioContent"]
+    except Exception as e:
+        print(f"[Bhashini TTS Warning] {e}")
+
+    return None
 
 
 async def process_voice_intake(audio_file: UploadFile, preferred_lang: str = "hi") -> str:

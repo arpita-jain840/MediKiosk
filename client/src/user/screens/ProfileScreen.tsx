@@ -2,16 +2,29 @@ import React from "react";
 import { ShieldCheck, Globe, ChevronRight, Pill, LogOut, Stethoscope } from "lucide-react";
 import { TopBar } from "../components/TopBar";
 import { Section } from "../components/Section";
+import { SUPPORTED_LANGUAGES } from "../components/LanguageModal";
 import type { PatientProfile } from "../types";
 
 interface ProfileScreenProps {
   patient: PatientProfile;
+  currentLang?: string;
+  onOpenLangModal?: () => void;
 }
 
-export const ProfileScreen: React.FC<ProfileScreenProps> = ({ patient }) => {
+export const ProfileScreen: React.FC<ProfileScreenProps> = ({
+  patient,
+  currentLang = "en",
+  onOpenLangModal,
+}) => {
+  const activeLang = SUPPORTED_LANGUAGES.find((l) => l.code === currentLang);
+
   return (
     <div className="flex-1 overflow-y-auto px-5 md:px-10 pb-6 md:pb-10" style={{ background: "var(--bg)" }}>
-      <TopBar title="Patient Profile & ABHA" />
+      <TopBar
+        title="Patient Profile & ABHA"
+        currentLang={currentLang}
+        onOpenLangModal={onOpenLangModal}
+      />
       <div className="flex items-center gap-3.5 md:gap-6 mb-5 md:mb-8 mt-1">
         <div
           className="rounded-full flex items-center justify-center shrink-0 md:w-24 md:h-24 text-white font-extrabold text-[19px] md:text-[28px]"
@@ -56,16 +69,20 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ patient }) => {
             </div>
           </Section>
 
-          <Section title="Preferred Language">
+          <Section title="Preferred Language (Bhashini AI)">
             <div
+              onClick={onOpenLangModal}
               className="rounded-2xl md:rounded-3xl p-3.5 md:p-5 flex items-center justify-between shadow-sm cursor-pointer hover:bg-white/80 transition-colors"
               style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
             >
               <div className="flex items-center gap-2.5 md:gap-4">
                 <Globe size={18} color="var(--primary)" className="md:w-5 md:h-5" />
-                <span className="text-[13.5px] md:text-[15px] font-semibold text-slate-800">
-                  English / हिन्दी
-                </span>
+                <div>
+                  <span className="text-[13.5px] md:text-[15px] font-semibold text-slate-800">
+                    {activeLang ? `${activeLang.name} (${activeLang.native})` : "English"}
+                  </span>
+                  <p className="text-[11px] text-[#3368a0] font-medium">Bhashini Indic AI Enabled</p>
+                </div>
               </div>
               <ChevronRight size={17} color="var(--ink-soft)" className="md:w-5 md:h-5" />
             </div>
