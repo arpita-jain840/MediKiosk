@@ -60,7 +60,7 @@ Table: raw_records           Table: clinical_blueprints                         
   - **Conversational Continuous Talk Mode:** Keeps listening hands-free after each turn without turning off.
   - **Auto-Speech Playback (TTS):** Automatically speaks the AI reply aloud using speech synthesis and Bhashini TTS.
   - **Automatic Mic Re-Arming:** When speech finishes speaking, the microphone automatically opens back up for seamless back-and-forth talking.
-  - **Model Transparency:** Powered by **Google Gemini 3.6 Flash** (`POST /api/assistant/chat`) with Groq (`Qwen 3.6 27B`) and local hospital guide engine fallbacks.
+  - **Model Division of Labor:** Front-of-house voice conversation is handled by **Groq + Bhashini NMT Translation Middle Layer** for fast, unrestricted chat, while **Google Gemini 3.6 Flash** is reserved exclusively for deep medical analysis (physical parche/report OCR and Clinical Blueprint JSON synthesis).
 - [x] **Bhashini NMT Translation:** Added translation across 11 Indic languages in [`server/routers/bhashini_routes.py`](file:///c:/Users/tusha/Desktop/MediKiosk/MediKiosk/server/routers/bhashini_routes.py).
 
 ---
