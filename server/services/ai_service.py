@@ -19,10 +19,10 @@ groq_client = Groq(api_key=api_key) if api_key else None
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 gemini_client = genai.Client(api_key=gemini_api_key) if gemini_api_key else None
 
-#Bhashini Setup
+# Bhashini Setup - Matched to Bhashini Dashboard
 BHASHINI_USER_ID = os.getenv("BHASHINI_USER_ID")
-BHASHINI_API_KEY = os.getenv("BHASHINI_API_KEY")
-BHASHINI_PIPELINE_ID = os.getenv("BHASHINI_PIPELINE_ID")
+BHASHINI_UDYAT_KEY = os.getenv("BHASHINI_UDYAT_KEY") or os.getenv("BHASHINI_API_KEY")
+BHASHINI_INFERENCE_KEY = os.getenv("BHASHINI_INFERENCE_KEY") or os.getenv("BHASHINI_PIPELINE_ID")
 BHASHINI_BASE_URL = "https://dhruva-api.bhashini.gov.in/services/inference/pipeline"
 
 MAX_FILE_SIZE_MB = 10
@@ -55,14 +55,15 @@ async def transcribe_with_whisper(audio_bytes: bytes, filename: str) -> str:
 
 async def transcribe_with_bhashini(audio_bytes: bytes, source_lang: str = "hi") -> str:
     """Indic Regional ASR via Bhashini"""
-    if not (BHASHINI_USER_ID and BHASHINI_API_KEY):
-        raise HTTPException(status_code=503, detail="Bhashini credentials not found. Check .env")
+    if not (BHASHINI_USER_ID and (BHASHINI_UDYAT_KEY or BHASHINI_INFERENCE_KEY)):
+        raise HTTPException(status_code=503, detail="Bhashini credentials not found in .env (need BHASHINI_USER_ID, BHASHINI_UDYAT_KEY, BHASHINI_INFERENCE_KEY)")
 
     base64_audio = base64.b64encode(audio_bytes).decode("utf-8")
 
     headers = {
         "User-ID": BHASHINI_USER_ID,
-        "Ulca-Api-Key": BHASHINI_API_KEY,
+        "Ulca-Api-Key": BHASHINI_UDYAT_KEY or "",
+        "Authorization": BHASHINI_INFERENCE_KEY or "",
         "Content-Type": "application/json"
     }
 
