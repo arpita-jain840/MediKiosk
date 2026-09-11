@@ -20,12 +20,26 @@ else:
     elif DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
 
+    # asyncpg does not accept ?sslmode= or &channel_binding= in URL query params
+    if "asyncpg" in DATABASE_URL and "?" in DATABASE_URL:
+        base_url, query = DATABASE_URL.split("?", 1)
+        import urllib.parse
+        parsed_q = urllib.parse.parse_qs(query)
+        # Drop params unsupported by asyncpg driver query parsing
+        parsed_q.pop("sslmode", None)
+        parsed_q.pop("channel_binding", None)
+        new_query = urllib.parse.urlencode(parsed_q, doseq=True)
+        DATABASE_URL = f"{base_url}?{new_query}" if new_query else base_url
+
+connect_args = {}
+if "asyncpg" in DATABASE_URL and "localhost" not in DATABASE_URL and "127.0.0.1" not in DATABASE_URL:
+    connect_args = {"ssl": True}
+
 engine = create_async_engine(
     DATABASE_URL,
     echo=False,
     future=True,
-    # SSL/connection pool flags for cloud Postgres (Supabase / Neon)
-    connect_args={"ssl": True} if "asyncpg" in DATABASE_URL and "localhost" not in DATABASE_URL and "127.0.0.1" not in DATABASE_URL else {}
+    connect_args=connect_args
 )
 
 AsyncSessionLocal = async_sessionmaker(

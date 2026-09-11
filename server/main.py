@@ -28,5 +28,11 @@ app.add_middleware(
 def health_check():
     return {"message": "MediKiosk Server & Database Core is running"}
 
+import os
+from fastapi.staticfiles import StaticFiles
+
+os.makedirs("uploads", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 app.include_router(ingest_routes.router)
 app.include_router(clinical_routes.router)

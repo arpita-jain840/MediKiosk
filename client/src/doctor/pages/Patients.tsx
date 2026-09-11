@@ -89,7 +89,7 @@ export const Patients: React.FC = () => {
             {displayedPatients.map((patient) => (
               <div
                 key={patient.id}
-                onClick={() => navigate(`/patients/${patient.id}`)}
+                onClick={() => navigate(`/doctor/patients/${patient.id}`)}
                 className="py-4.5 px-3 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/80 rounded-2xl transition-all cursor-pointer group"
               >
                 {/* Patient Basic Info */}

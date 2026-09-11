@@ -63,6 +63,9 @@ function App() {
         } />
         {/* Keep kiosk as alias or redirect */}
         <Route path="/kiosk" element={<Navigate to="/patient" replace />} />
+        
+        {/* Direct patient detail route aliases */}
+        <Route path="/patients/:id" element={<Navigate to="/doctor/patients/:id" replace />} />
 
         {/* Doctor Clinical Suite */}
         <Route path="/doctor" element={

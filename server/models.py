@@ -12,10 +12,13 @@ is_postgres = engine.dialect.name == "postgresql"
 UUIDType = PG_UUID(as_uuid=True) if is_postgres else String(36)
 JSONType = JSONB if is_postgres else JSON
 
+def generate_id():
+    return uuid.uuid4() if is_postgres else str(uuid.uuid4())
+
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(UUIDType, primary_key=True, default=lambda: str(uuid.uuid4()) if not is_postgres else uuid.uuid4)
+    id = Column(UUIDType, primary_key=True, default=generate_id)
     email = Column(String(255), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=True) # Optional for kiosk QR auto-auth
     role = Column(String(20), nullable=False, default="patient") # "doctor", "patient", "admin"
@@ -30,7 +33,7 @@ class User(Base):
 class Patient(Base):
     __tablename__ = "patients"
 
-    id = Column(UUIDType, primary_key=True, default=lambda: str(uuid.uuid4()) if not is_postgres else uuid.uuid4)
+    id = Column(UUIDType, primary_key=True, default=generate_id)
     user_id = Column(UUIDType, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
     abha_id = Column(String(50), unique=True, index=True, nullable=True)
     dob = Column(Date, nullable=True)
@@ -49,7 +52,7 @@ class Patient(Base):
 class Doctor(Base):
     __tablename__ = "doctors"
 
-    id = Column(UUIDType, primary_key=True, default=lambda: str(uuid.uuid4()) if not is_postgres else uuid.uuid4)
+    id = Column(UUIDType, primary_key=True, default=generate_id)
     user_id = Column(UUIDType, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
     specialization = Column(String(100), nullable=False)
     license_number = Column(String(50), unique=True, nullable=False)
@@ -64,7 +67,7 @@ class Appointment(Base):
     """Layer 1: Appointments, Queue & Scheduling"""
     __tablename__ = "appointments"
 
-    id = Column(UUIDType, primary_key=True, default=lambda: str(uuid.uuid4()) if not is_postgres else uuid.uuid4)
+    id = Column(UUIDType, primary_key=True, default=generate_id)
     patient_id = Column(UUIDType, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
     doctor_id = Column(UUIDType, ForeignKey("doctors.id", ondelete="SET NULL"), nullable=True)
     scheduled_at = Column(DateTime, nullable=False, default=datetime.utcnow)
@@ -81,7 +84,7 @@ class PatientDocument(Base):
     """Layer 2: Digital Documents, Prescriptions, Parche & Reports"""
     __tablename__ = "patient_documents"
 
-    id = Column(UUIDType, primary_key=True, default=lambda: str(uuid.uuid4()) if not is_postgres else uuid.uuid4)
+    id = Column(UUIDType, primary_key=True, default=generate_id)
     patient_id = Column(UUIDType, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
     document_type = Column(String(50), nullable=False) # "prescription", "lab_report", "xray", "audio_dictation"
     file_url = Column(Text, nullable=False)
@@ -98,7 +101,7 @@ class PatientClinicalProfile(Base):
     """Layer 3: AI Refined Clinical Profile (JSONB) for 1-Page Fast Render"""
     __tablename__ = "patient_clinical_profiles"
 
-    id = Column(UUIDType, primary_key=True, default=lambda: str(uuid.uuid4()) if not is_postgres else uuid.uuid4)
+    id = Column(UUIDType, primary_key=True, default=generate_id)
     patient_id = Column(UUIDType, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
     appointment_id = Column(UUIDType, ForeignKey("appointments.id", ondelete="SET NULL"), nullable=True)
     
@@ -107,6 +110,13 @@ class PatientClinicalProfile(Base):
     vitals = Column(JSONType, default=dict) # {"bp": "120/80", "pulse": 74, "spo2": 99, "temp": "98.4F", "weight": "58kg"}
     ai_summary = Column(Text, nullable=True) # 2-sentence clinical brief for Doctor Cockpit
     clinical_entities = Column(JSONType, default=dict) # {"medications": [...], "symptoms": [...], "allergies": [...], "differential": [...]}
+    
+    # SIH 2026 PS 26047 Specific Fields
+    hpi = Column(JSONType, default=dict) # {"onset": "3 hours ago", "duration": "acute", "triggers": "climbing stairs", "character": "tightness"}
+    red_flags = Column(JSONType, default=list) # e.g. ["Severe chest tightness with left arm radiation"]
+    ayush_pariksha = Column(JSONType, default=dict) # {"prakriti": "Vata-Pitta", "agni": "Mandagni", "koshtha": "Madhyama", "ahara": "Irregular meal timing"}
+    timeline = Column(JSONType, default=list) # [{"date": "2026-08-18", "type": "prescription", "title": "Cardiology Followup", "summary": "..."}]
+    doctor_notes = Column(Text, nullable=True) # Physician amendments / confirmed notes
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

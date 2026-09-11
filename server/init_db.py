@@ -235,19 +235,75 @@ async def init_db_and_seed():
             session.add(appointment)
             await session.flush()
 
-            # Layer 3: AI Refined Clinical Profile (JSONB)
+            # Layer 2: Seed Scanned Parche / Documents
+            sample_doc = PatientDocument(
+                patient_id=patient.id,
+                document_type="prescription" if pdata["token"] % 2 == 1 else "lab_report",
+                file_url="https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=800&auto=format&fit=crop&q=80",
+                file_name=f"Prior_OPD_Record_{pdata['token']}.pdf",
+                mime_type="application/pdf",
+                file_size=245000,
+                raw_extracted_text=f"Physician Note: Patient {pdata['name']}. Rx: {', '.join(pdata['medications']) if pdata['medications'] else 'Lifestyle management'}. History: {pdata['history']}."
+            )
+            session.add(sample_doc)
+            await session.flush()
+
+            # Layer 3: AI Refined Clinical Blueprint (JSONB)
+            is_cardiac = "chest" in pdata["complaint"].lower()
+            red_flags = []
+            if is_cardiac:
+                red_flags.append("Possible acute coronary/cardiovascular distress — left arm radiation & sweating flagged.")
+            elif "stroke" in pdata["complaint"].lower():
+                red_flags.append("Recent cerebrovascular event — monitor neurological status & BP.")
+
+            hpi_data = {
+                "onset": "3 hours ago" if is_cardiac else "5 days ago",
+                "duration": "Acute episodic",
+                "character": "Compressive tightness" if is_cardiac else "Dull intermittent ache",
+                "radiation": "Left arm and shoulder" if is_cardiac else "Local",
+                "triggers": "Exertion / climbing stairs",
+                "relieving": "Rest"
+            }
+
+            ayush_data = {
+                "prakriti": "Vata-Pitta" if pdata["gender"] == "Female" else "Pitta-Kapha",
+                "agni": "Mandagni (slow digestion)" if pdata["age"] > 50 else "Vishamagni (variable)",
+                "koshtha": "Madhyama (normal bowel pattern)",
+                "ahara_vihara": "High stress, sedentary urban OPD lifestyle, irregular meal timings"
+            }
+
+            timeline_data = [
+                {
+                    "date": "2026-09-02",
+                    "type": "prescription",
+                    "title": "Hospital OPD Prescription",
+                    "summary": f"Prescribed: {', '.join(pdata['medications']) if pdata['medications'] else 'Observation'}"
+                },
+                {
+                    "date": "2026-08-18",
+                    "type": "lab_report",
+                    "title": "Routine Investigation",
+                    "summary": f"Vitals check: BP {pdata['vitals']['bp']}, Pulse {pdata['vitals']['pulse']}."
+                }
+            ]
+
             clinical_profile = PatientClinicalProfile(
                 patient_id=patient.id,
                 appointment_id=appointment.id,
                 triage_priority=pdata["priority"],
                 chief_complaint=pdata["complaint"],
                 vitals=pdata["vitals"],
-                ai_summary=f"Patient {pdata['name']} ({pdata['age']}y {pdata['gender']}) presents with {pdata['complaint'].lower()}. Vitals stable. Relevant history: {pdata['history']}",
+                ai_summary=f"Patient {pdata['name']} ({pdata['age']}y {pdata['gender']}) presents with {pdata['complaint'].lower()}. Vitals: BP {pdata['vitals']['bp']}, SpO2 {pdata['vitals']['spO2']}. Relevant history: {pdata['history']}",
                 clinical_entities={
                     "medications": pdata["medications"],
                     "allergies": pdata["allergies"],
-                    "history": pdata["history"]
-                }
+                    "history": pdata["history"],
+                    "symptoms": [pdata["complaint"]]
+                },
+                hpi=hpi_data,
+                red_flags=red_flags,
+                ayush_pariksha=ayush_data,
+                timeline=timeline_data
             )
             session.add(clinical_profile)
 

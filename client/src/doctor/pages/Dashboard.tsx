@@ -113,7 +113,7 @@ export const Dashboard: React.FC = () => {
             <span className="text-xs font-bold">{syncedAlert}</span>
           </div>
           <button
-            onClick={() => navigate(`/patients/${lastScannedId || 'MK-9824'}`)}
+            onClick={() => navigate(`/doctor/patients/${lastScannedId || 'MK-9824'}`)}
             className="text-xs font-black bg-white text-emerald-800 px-3 py-1 rounded-xl shadow-xs hover:bg-emerald-50 transition-colors cursor-pointer"
           >
             Open Profile →
@@ -461,7 +461,7 @@ export const Dashboard: React.FC = () => {
                 {patients.map((patient) => (
                   <div
                     key={patient.id}
-                    onClick={() => navigate(`/patients/${patient.id}`)}
+                    onClick={() => navigate(`/doctor/patients/${patient.id}`)}
                     className="flex items-center justify-between p-2.5 rounded-2xl hover:bg-indigo-50/50 transition-all border border-transparent hover:border-indigo-100 cursor-pointer group"
                     title="Click to view patient EHR profile"
                   >
