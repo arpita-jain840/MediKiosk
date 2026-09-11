@@ -6,6 +6,8 @@ export interface PatientProfile {
   gender: string;
   abha: string;
   allergies: string[];
+  bloodGroup?: string;
+  phone?: string;
   medications: Array<{
     name: string;
     schedule: string;

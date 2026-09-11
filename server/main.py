@@ -6,11 +6,12 @@ from routers.Accestodoc import router as acc_to_doc_router
 from routers import clinical_routes
 from routers import bhashini_routes
 from routers import auth_routes
+from routers import websocket_routes
 from init_db import init_db_and_seed
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Automatically initialize tables and seed 10 patient dataset on startup
+    # Automatically initialize tables and seed baseline accounts if empty
     await init_db_and_seed()
     yield
 
@@ -46,3 +47,4 @@ app.include_router(auth_routes.router)
 app.include_router(ingest_routes.router)
 app.include_router(clinical_routes.router)
 app.include_router(bhashini_routes.router)
+app.include_router(websocket_routes.router)

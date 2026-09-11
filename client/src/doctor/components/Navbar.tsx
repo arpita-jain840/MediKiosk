@@ -1,5 +1,7 @@
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Bell, Sparkles, ArrowLeft, Settings } from 'lucide-react';
+import { Bell, Sparkles, ArrowLeft, Settings, QrCode } from 'lucide-react';
+import { QRScanModal } from './QRScanModal';
 
 interface NavbarProps {
   doctorName?: string;
@@ -10,6 +12,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const isNotDashboard = location.pathname !== '/' && location.pathname !== '/doctor' && location.pathname !== '/doctor/dashboard';
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   return (
     <header className="w-full flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-4 bg-transparent">
@@ -38,6 +41,16 @@ export const Navbar: React.FC<NavbarProps> = () => {
 
       {/* Action Controls & Doctor Profile */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {/* Scan Patient QR Code button */}
+        <button
+          onClick={() => setIsQRModalOpen(true)}
+          title="Scan Patient QR Code"
+          className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-primary text-white shadow-xs flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold hover:bg-primary/95 transition-all cursor-pointer"
+        >
+          <QrCode size={14} />
+          <span className="hidden xs:inline">Scan QR</span>
+        </button>
+
         {/* Patient Kiosk Terminal button */}
         <button
           title="Open Patient Intake Kiosk"
@@ -66,6 +79,9 @@ export const Navbar: React.FC<NavbarProps> = () => {
           <span className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
         </button>
       </div>
+
+      {/* QR Code Scanner / Token Modal */}
+      <QRScanModal isOpen={isQRModalOpen} onClose={() => setIsQRModalOpen(false)} />
     </header>
   );
 };
