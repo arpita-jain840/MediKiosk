@@ -105,9 +105,11 @@ async def process_voice_intake(audio_file: UploadFile, preferred_lang: str = "hi
         try:
             return await transcribe_with_bhashini(audio_bytes, source_lang=preferred_lang)
         except Exception as e:
-            # Fallback to Whisper if Bhashini is down or unauthorized
-            print(f"[Warning] Bhashini failed: {e}. Falling back to Whisper...")
-            return await transcribe_with_whisper(audio_bytes, audio_file.filename or "recording.webm")
+            # Only fallback to Whisper if Groq is actually configured
+            if groq_client:
+                print(f"[Warning] Bhashini failed: {e}. Falling back to Whisper...")
+                return await transcribe_with_whisper(audio_bytes, audio_file.filename or "recording.webm")
+            raise HTTPException(status_code=502, detail=f"Bhashini STT failed: {str(e)}")
     else:
         return await transcribe_with_whisper(audio_bytes, audio_file.filename or "recording.webm")
 # for image wala part 
