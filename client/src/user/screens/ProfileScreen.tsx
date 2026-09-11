@@ -1,5 +1,5 @@
 import React from "react";
-import { ShieldCheck, Globe, ChevronRight, Pill, LogOut, Stethoscope } from "lucide-react";
+import { ShieldCheck, Globe, ChevronRight, Pill, LogOut } from "lucide-react";
 import { TopBar } from "../components/TopBar";
 import { Section } from "../components/Section";
 import { SUPPORTED_LANGUAGES } from "../components/LanguageModal";
@@ -112,27 +112,13 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
             ))}
           </Section>
 
-          <Section title="Portal & Authentication">
-            <div className="space-y-2">
-              <button
-                onClick={() => {
-                  localStorage.setItem("medikiosk_role", "doctor");
-                  window.location.href = "/doctor";
-                }}
-                className="w-full rounded-2xl p-3.5 flex items-center justify-between shadow-xs bg-white hover:bg-slate-50 transition-colors border border-slate-200 cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <Stethoscope size={18} color="var(--primary)" />
-                  <span className="text-xs md:text-sm font-bold text-slate-800">
-                    {t.profile.switchDoctor}
-                  </span>
-                </div>
-                <ChevronRight size={16} color="var(--ink-soft)" />
-              </button>
-
+          <Section title="Account & Session">
+            <div>
               <button
                 onClick={() => {
                   localStorage.removeItem("medikiosk_role");
+                  localStorage.removeItem("medikiosk_token");
+                  localStorage.removeItem("medikiosk_user");
                   window.location.href = "/login";
                 }}
                 className="w-full rounded-2xl p-3.5 flex items-center justify-between shadow-xs bg-rose-50 hover:bg-rose-100 transition-colors border border-rose-200 cursor-pointer"
@@ -140,7 +126,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({
                 <div className="flex items-center gap-3">
                   <LogOut size={18} className="text-rose-600" />
                   <span className="text-xs md:text-sm font-bold text-rose-700">
-                    Logout / Change Role
+                    Log Out
                   </span>
                 </div>
                 <ChevronRight size={16} className="text-rose-400" />

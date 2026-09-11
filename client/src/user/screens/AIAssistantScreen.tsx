@@ -34,11 +34,13 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
   const [typing, setTyping] = useState(false);
   const [userInput, setUserInput] = useState("");
   const [isMuted, setIsMuted] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState("");
+  const recognitionRef = useRef<any>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, typing]);
+  }, [messages, typing, isListening]);
 
   // Update greeting when language changes
   useEffect(() => {
@@ -51,6 +53,41 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
       ]);
     }
   }, [currentLang, t.aiGuide.initialGreeting]);
+
+  // Web Speech Recognition setup
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = currentLang === "hi" ? "hi-IN" : "en-US";
+
+      recognition.onresult = (event: any) => {
+        let currentText = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          currentText += event.results[i][0].transcript;
+        }
+        setInterimTranscript(currentText);
+        if (event.results[0].isFinal) {
+          handleSendMessage(currentText);
+          setIsListening(false);
+          setInterimTranscript("");
+        }
+      };
+
+      recognition.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, [currentLang]);
 
   // Bhashini TTS voice playback
   const playVoiceResponse = async (text: string) => {
@@ -140,12 +177,26 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
 
   const handleVoiceToggle = () => {
     if (isListening) {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (e) {}
+      }
       setIsListening(false);
       return;
     }
 
+    setInterimTranscript("");
     setIsListening(true);
-    // Voice intake simulation for Kiosk
+
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.start();
+        return;
+      } catch (e) {
+        console.warn("Native speech recognition init error:", e);
+      }
+    }
+
+    // Voice intake fallback simulation for Kiosk
     setTimeout(() => {
       setIsListening(false);
       const sampleQuestion =
@@ -153,8 +204,9 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
           ? "डॉ. जॉन स्मिथ का कमरा कहाँ है?"
           : "Where is Dr. John Smith's OPD room?";
       handleSendMessage(sampleQuestion);
-    }, 2800);
+    }, 3200);
   };
+
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col h-full" style={{ background: "var(--bg)" }}>
@@ -261,6 +313,83 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
           <div ref={chatEndRef} />
         </div>
 
+        {/* Dynamic Voice Sound Wave Visualizer Banner (Dedicated for Talks) */}
+        {isListening && (
+          <div className="p-5 rounded-3xl bg-slate-900 text-white shadow-xl border border-slate-700/60 transition-all duration-300 animate-in fade-in slide-in-from-bottom-3">
+            <div className="flex items-center justify-between gap-4 mb-3">
+              <div className="flex items-center gap-3">
+                <div className="relative flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/30">
+                    <Mic size={20} className="animate-pulse" />
+                  </div>
+                  <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-rose-500"></span>
+                  </span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-white tracking-tight">Medikiosk AI</h4>
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      Live Voice Talk
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 font-medium">
+                    {interimTranscript ? `"${interimTranscript}"` : "Listening to your voice... Speak naturally"}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleVoiceToggle}
+                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors cursor-pointer"
+              >
+                Done Speaking
+              </button>
+            </div>
+
+            {/* Sound Wave Frequency Bars */}
+            <div className="h-14 flex items-center justify-center gap-1.5 px-4 bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden">
+              {[
+                { h: "28px", d: "0.1s" },
+                { h: "42px", d: "0.25s" },
+                { h: "20px", d: "0.4s" },
+                { h: "52px", d: "0.15s" },
+                { h: "36px", d: "0.3s" },
+                { h: "48px", d: "0.05s" },
+                { h: "24px", d: "0.35s" },
+                { h: "56px", d: "0.2s" },
+                { h: "32px", d: "0.45s" },
+                { h: "50px", d: "0.1s" },
+                { h: "38px", d: "0.28s" },
+                { h: "54px", d: "0.18s" },
+                { h: "26px", d: "0.38s" },
+                { h: "46px", d: "0.08s" },
+                { h: "34px", d: "0.22s" },
+                { h: "50px", d: "0.32s" },
+                { h: "22px", d: "0.12s" },
+                { h: "40px", d: "0.42s" },
+                { h: "28px", d: "0.26s" },
+              ].map((bar, i) => (
+                <div
+                  key={i}
+                  className="w-1.5 rounded-full animate-soundwave"
+                  style={{
+                    height: bar.h,
+                    animationDelay: bar.d,
+                    background: "linear-gradient(180deg, #34d399 0%, #38bdf8 50%, #6366f1 100%)",
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-400 px-1">
+              <span>🎙️ Voice talk mode active</span>
+              <span>Say "Doctor room" or any question</span>
+            </div>
+          </div>
+        )}
+
         {/* Quick Suggestion Chips */}
         <div className="pt-2">
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
@@ -288,7 +417,7 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
           {/* Animated Large Microphone Button for Kiosk */}
           <button
             onClick={handleVoiceToggle}
-            className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all cursor-pointer shadow-md shrink-0 ${
+            className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all cursor-pointer shadow-md shrink-0 relative ${
               isListening
                 ? "bg-rose-500 text-white animate-pulse ring-4 ring-rose-200"
                 : "bg-primary hover:bg-[#204b77] text-white active:scale-95"
@@ -296,7 +425,11 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
             title={isListening ? "Listening... click to stop" : "Click to speak"}
           >
             <Mic size={24} />
+            {isListening && (
+              <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-400 border-2 border-white animate-ping" />
+            )}
           </button>
+
 
           {/* Text Input Box */}
           <div className="flex-1 relative flex items-center">

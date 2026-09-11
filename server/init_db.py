@@ -173,34 +173,70 @@ async def init_db_and_seed():
         await conn.run_sync(Base.metadata.create_all)
 
     async with AsyncSessionLocal() as session:
-        # Check if users already seeded
-        result = await session.execute(select(User).limit(1))
-        existing_user = result.scalars().first()
-        if existing_user:
-            print("[Database] Tables already populated. Skipping seed.")
+        # Check if admindoc already exists
+        result = await session.execute(select(User).where(User.email == "admindoc"))
+        admin_doc_user = result.scalars().first()
+
+        if not admin_doc_user:
+            print("[Database] Seeding admindoc (doctor) credentials...")
+            doctor_user = User(
+                email="admindoc",
+                password_hash="admindoc",
+                full_name="Dr. Admin Doc",
+                role="doctor",
+                phone="+91 98765 43210"
+            )
+            session.add(doctor_user)
+            await session.flush()
+
+            doctor = Doctor(
+                user_id=doctor_user.id,
+                specialization="Cardiologist & General Medicine",
+                license_number="DOC-ADMIN-001",
+                hospital_name="City Care Hospital",
+                room_number="Room 4B"
+            )
+            session.add(doctor)
+            await session.flush()
+        else:
+            doctor_user = admin_doc_user
+            doc_res = await session.execute(select(Doctor).where(Doctor.user_id == doctor_user.id))
+            doctor = doc_res.scalars().first()
+            if not doctor:
+                doctor = Doctor(
+                    user_id=doctor_user.id,
+                    specialization="Cardiologist & General Medicine",
+                    license_number="DOC-ADMIN-001",
+                    hospital_name="City Care Hospital",
+                    room_number="Room 4B"
+                )
+                session.add(doctor)
+                await session.flush()
+
+        # Check if user1 (patient) already exists
+        result_user1 = await session.execute(select(User).where(User.email == "user1"))
+        user1_record = result_user1.scalars().first()
+        if not user1_record:
+            print("[Database] Seeding user1 (patient) credentials...")
+            user1_record = User(
+                email="user1",
+                password_hash="user123",
+                full_name="User One (Priya Sharma)",
+                role="patient",
+                phone="+91 91234 56789"
+            )
+            session.add(user1_record)
+            await session.flush()
+
+        # Check if 10 patients are already populated
+        pat_count_res = await session.execute(select(Patient).limit(10))
+        existing_patients = pat_count_res.scalars().all()
+        if len(existing_patients) >= 10:
+            await session.commit()
+            print("[Database] 10 patient records & credentials already populated. Seed complete.")
             return
 
-        print("[Database] Seeding default doctor and 10 patients...")
-
-        # 1. Create Default Doctor
-        doctor_user = User(
-            email="dr.smith@medikiosk.com",
-            full_name="Dr. John Smith",
-            role="doctor",
-            phone="+91 98765 43210"
-        )
-        session.add(doctor_user)
-        await session.flush()
-
-        doctor = Doctor(
-            user_id=doctor_user.id,
-            specialization="Cardiologist & General Medicine",
-            license_number="MCI-2018-99412",
-            hospital_name="City Care Hospital",
-            room_number="Room 4B"
-        )
-        session.add(doctor)
-        await session.flush()
+        print("[Database] Seeding 10 clinical patients...")
 
         # 2. Create 10 Patients with Layer 1 Appointments and Layer 3 Clinical Profiles
         for pdata in INITIAL_PATIENTS:

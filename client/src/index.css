@@ -22,3 +22,19 @@
     -webkit-font-smoothing: antialiased;
   }
 }
+
+@keyframes soundWave {
+  0%, 100% {
+    transform: scaleY(0.25);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.animate-soundwave {
+  animation: soundWave 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  transform-origin: center;
+}

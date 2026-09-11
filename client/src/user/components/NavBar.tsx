@@ -5,7 +5,6 @@ import {
   FileText,
   Mic,
   Activity,
-  Stethoscope,
 } from "lucide-react";
 
 import { getTranslations } from "../utils/i18n";
@@ -92,20 +91,6 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, currentLang = "en" 
               );
             })}
           </nav>
-        </div>
-
-        {/* Bottom: Doctor quick switch with clean card */}
-        <div className="pt-4 border-t border-slate-100">
-          <button
-            onClick={() => {
-              localStorage.setItem("medikiosk_role", "doctor");
-              window.location.href = "/doctor";
-            }}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-primary transition-colors cursor-pointer"
-          >
-            <Stethoscope size={15} />
-            <span>{t.nav.doctorSwitch}</span>
-          </button>
         </div>
       </aside>
 
