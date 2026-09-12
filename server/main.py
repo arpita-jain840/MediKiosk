@@ -7,6 +7,7 @@ from routers import clinical_routes
 from routers import bhashini_routes
 from routers import auth_routes
 from routers import websocket_routes
+from routers import notification_routes
 from init_db import init_db_and_seed
 
 @asynccontextmanager
@@ -48,3 +49,4 @@ app.include_router(ingest_routes.router)
 app.include_router(clinical_routes.router)
 app.include_router(bhashini_routes.router)
 app.include_router(websocket_routes.router)
+app.include_router(notification_routes.router)

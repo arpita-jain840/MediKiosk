@@ -98,9 +98,9 @@ export const Dashboard: React.FC = () => {
 
   const [patients, setPatients] = useState<Patient[]>([
     {
-      id: 'PAT-1001',
+      id: 'dd282916-ac7a-4ca8-a6c0-e63ffc62066f',
       mrn: 'MRN 88213',
-      name: 'Aarav Sharma',
+      name: 'Emma Watson',
       chiefComplaint: 'Fever, cough & severe fatigue for 3 days',
       attending: 'Dr. Ananya Sharma',
       triage: 'Stable',
@@ -111,9 +111,9 @@ export const Dashboard: React.FC = () => {
       allergies: 'None',
     },
     {
-      id: 'PAT-1002',
+      id: '89f13786-8f6b-4063-bbfa-9beec534a303',
       mrn: 'MRN 77452',
-      name: 'Priyanshi Gupta',
+      name: 'Sarah Hosten',
       chiefComplaint: 'Acute migraine with photophobia & nausea',
       attending: 'Dr. Ananya Sharma',
       triage: 'Guarded',
@@ -124,9 +124,9 @@ export const Dashboard: React.FC = () => {
       allergies: 'Sulfa drugs',
     },
     {
-      id: 'PAT-1003',
+      id: 'a5493a2e-120b-452f-b68a-3f0ec2c6589b',
       mrn: 'MRN 65310',
-      name: 'Rishabh Verma',
+      name: 'Dakota Smith',
       chiefComplaint: 'Chest tightness, palpitations & mild dyspnea',
       attending: 'Dr. Rohan Mehta',
       triage: 'Critical',
@@ -148,7 +148,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const handlePatientSynced = (patient: any) => {
-    const patientId = patient.id || 'PAT-1001';
+    const patientId = patient.id || 'dd282916-ac7a-4ca8-a6c0-e63ffc62066f';
     setLastScannedId(patientId);
     setPatients((prev) => [
       {
@@ -276,7 +276,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
-              onClick={() => navigate(`/doctor/patients/${lastScannedId || 'PAT-1001'}`)}
+              onClick={() => navigate(`/doctor/patients/${lastScannedId || 'dd282916-ac7a-4ca8-a6c0-e63ffc62066f'}`)}
               className="text-[11px] sm:text-xs font-black bg-white text-teal-800 px-2.5 sm:px-3 py-1 rounded-xl shadow-xs hover:bg-teal-50 transition-colors cursor-pointer"
             >
               Open profile

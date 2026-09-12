@@ -148,10 +148,6 @@ async def book_appointment(
     await db.commit()
     return {"message": "Appointment booked successfully", "token": token_count, "appointmentId": str(appt.id)}
 
-
-# ---------------------------------------------------------------------------
-# 3. Layer 2: Upload Parche / Document & Run AI OCR Ingestion
-# ---------------------------------------------------------------------------
 @router.post("/patient/upload-document")
 async def upload_patient_document(
     patient_id: str = Form(...),
@@ -209,11 +205,6 @@ async def upload_patient_document(
         "documentId": str(doc.id),
         "extractedSummary": extracted_text[:300] if extracted_text else "Pending review"
     }
-
-
-# ---------------------------------------------------------------------------
-# 4. SIH 2026 Core: 1-Page Fast Render Blueprint (Doctor Cockpit)
-# ---------------------------------------------------------------------------
 @router.get("/doctor/patient/{patient_id}/blueprint")
 async def get_patient_clinical_blueprint(patient_id: str, db: AsyncSession = Depends(get_db)):
     """
@@ -233,37 +224,6 @@ async def get_patient_clinical_blueprint(patient_id: str, db: AsyncSession = Dep
     )
     result = await db.execute(stmt)
     patient = result.scalars().first()
-
-    # If not found by UUID, try matching by index/token fallback for demo
-    if not patient:
-        all_res = await db.execute(
-            select(Patient).options(
-                selectinload(Patient.user),
-                selectinload(Patient.appointments),
-                selectinload(Patient.clinical_profiles),
-                selectinload(Patient.documents),
-            )
-        )
-        all_patients = all_res.scalars().all()
-        
-        if patient_id == "MK-9824":
-            patient = all_patients[0] if all_patients else None
-        elif patient_id.startswith("MK-"):
-            try:
-                public_index = int(patient_id[3:]) - 100
-                if 0 <= public_index < len(all_patients):
-                    patient = all_patients[public_index]
-            except ValueError:
-                pass
-
-        # Try matching by ID substring or token
-        if not patient:
-            for p in all_patients:
-                if patient_id.lower() in str(p.id).lower() or (p.appointments and str(p.appointments[-1].token_number) == patient_id.replace("MK-", "")):
-                    patient = p
-                    break
-        if not patient and all_patients:
-            patient = all_patients[0] # Friendly fallback to first patient
 
     if not patient:
         raise HTTPException(status_code=404, detail="Patient profile not found.")
@@ -292,12 +252,12 @@ async def get_patient_clinical_blueprint(patient_id: str, db: AsyncSession = Dep
         "blueprint": {
             "chiefComplaint": latest_profile.chief_complaint if latest_profile else "General Consultation",
             "triagePriority": latest_profile.triage_priority if latest_profile else "Routine",
-            "redFlags": latest_profile.red_flags or [],
-            "aiSummary": latest_profile.ai_summary or "Intake recorded at MediKiosk.",
-            "vitals": latest_profile.vitals or {
+            "redFlags": latest_profile.red_flags if latest_profile else [],
+            "aiSummary": latest_profile.ai_summary if latest_profile else "Intake recorded at MediKiosk.",
+            "vitals": latest_profile.vitals if latest_profile else {
                 "bp": "120/80 mmHg", "pulse": "72 bpm", "spO2": "98%", "temp": "98.6 °F", "weight": "65 kg"
             },
-            "hpi": latest_profile.hpi or {
+            "hpi": latest_profile.hpi if latest_profile else {
                 "onset": "Within past 48 hours",
                 "duration": "Acute episodic",
                 "character": "Patient reports discomfort",
@@ -305,19 +265,19 @@ async def get_patient_clinical_blueprint(patient_id: str, db: AsyncSession = Dep
                 "triggers": "Physical exertion",
                 "relieving": "Rest"
             },
-            "clinicalEntities": latest_profile.clinical_entities or {
+            "clinicalEntities": latest_profile.clinical_entities if latest_profile else {
                 "medications": [], "allergies": [], "symptoms": [], "history": "None"
             },
-            "ayushPariksha": latest_profile.ayush_pariksha or {
+            "ayushPariksha": latest_profile.ayush_pariksha if latest_profile else {
                 "prakriti": "Vata-Pitta",
                 "agni": "Vishamagni (Irregular)",
                 "koshtha": "Madhyama (Balanced)",
                 "ahara_vihara": "Irregular meal timings, urban lifestyle"
             },
-            "timeline": latest_profile.timeline or [
+            "timeline": latest_profile.timeline if latest_profile else [
                 {"date": "2026-09-02", "type": "prescription", "title": "Prior OPD Follow-up", "summary": "Prescription recorded"}
             ],
-            "doctorNotes": latest_profile.doctor_notes or "",
+            "doctorNotes": latest_profile.doctor_notes if latest_profile else "",
             "updatedAt": latest_profile.updated_at.isoformat() if latest_profile and latest_profile.updated_at else datetime.utcnow().isoformat()
         },
         "documents": [

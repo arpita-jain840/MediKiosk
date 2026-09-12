@@ -17,8 +17,6 @@ import {
   Download
 } from "lucide-react";
 
-import { initialPatients } from "../data/patientsData";
-
 interface BlueprintData {
   patient: {
     id: string;
@@ -92,6 +90,7 @@ export default function PatientDetail() {
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<BlueprintData | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [doctorNote, setDoctorNote] = useState("");
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [noteSavedAlert, setNoteSavedAlert] = useState(false);
@@ -103,93 +102,23 @@ export default function PatientDetail() {
     let isMounted = true;
     async function loadBlueprint() {
       setLoading(true);
+      setLoadError(null);
       try {
         const res = await fetch(`http://127.0.0.1:8000/api/doctor/patient/${id}/blueprint`);
-        if (res.ok) {
-          const json: BlueprintData = await res.json();
-          if (isMounted) {
-            setData(json);
-            setDoctorNote(json.blueprint.doctorNotes || "");
-            setLoading(false);
-            return;
-          }
+        if (!res.ok) {
+          throw new Error(`Patient profile unavailable (${res.status})`);
+        }
+        const json: BlueprintData = await res.json();
+        if (isMounted) {
+          setData(json);
+          setDoctorNote(json.blueprint.doctorNotes || "");
+          setLoading(false);
+          return;
         }
       } catch (err) {
-        console.warn("[PatientDetail] Backend API unreachable, loading offline fallback:", err);
-      }
-
-      // Fallback to local data if offline
-      const matched = initialPatients.find((p) => p.id === id) || initialPatients[0];
-      if (isMounted) {
-        setData({
-          patient: {
-            id: matched.id,
-            name: matched.name,
-            age: matched.age,
-            gender: matched.gender,
-            bloodGroup: matched.bloodGroup,
-            abha: matched.insurance || "14-8891-2301-4402",
-            allergies: matched.allergies,
-            phone: "+91 98765 43210",
-          },
-          appointment: {
-            token: matched.token || 1,
-            status: matched.status === "Done" ? "completed" : "waiting",
-            scheduledAt: new Date().toISOString(),
-          },
-          blueprint: {
-            chiefComplaint: matched.complaint,
-            triagePriority: matched.triagePriority || "Routine",
-            redFlags: matched.triagePriority === "Emergency" ? ["Immediate clinical evaluation advised"] : [],
-            aiSummary: matched.aiSummary || `Patient ${matched.name} presented for evaluation of ${matched.complaint}.`,
-            vitals: {
-              bp: matched.bp,
-              pulse: matched.pulse,
-              spO2: matched.spO2,
-              temp: matched.temp,
-              weight: matched.weight,
-            },
-            hpi: {
-              onset: "3 days ago",
-              duration: "Persistent / fluctuating",
-              character: "Discomfort reported",
-              radiation: "Local",
-              triggers: "Normal daily activity",
-              relieving: "Rest",
-            },
-            clinicalEntities: {
-              medications: matched.medications,
-              allergies: matched.allergies,
-              symptoms: [matched.complaint],
-              history: matched.history,
-            },
-            ayushPariksha: {
-              prakriti: "Vata-Pitta",
-              agni: "Vishamagni (Irregular)",
-              koshtha: "Madhyama (Balanced)",
-              ahara_vihara: "Irregular meal timing, chronic fatigue",
-            },
-            timeline: [
-              {
-                date: "2026-08-20",
-                type: "prescription",
-                title: "Previous OPD Visit",
-                summary: "Consultation recorded at district civil hospital.",
-              },
-            ],
-            doctorNotes: "",
-          },
-          documents: [
-            {
-              id: "doc-1",
-              type: "prescription",
-              name: "prior_parche_prescript.pdf",
-              url: "#",
-              rawOcr: "Rx: Tab Paracetamol 650mg SOS, Tab Cetirizine 10mg HS x 5 days.",
-              uploadedAt: "2026-08-20",
-            },
-          ],
-        });
+        console.error("[PatientDetail] Unable to load patient from backend:", err);
+        if (isMounted) setLoadError("This patient profile could not be loaded from the database.");
+        if (isMounted) setData(null);
         setLoading(false);
       }
     }
@@ -204,15 +133,32 @@ export default function PatientDetail() {
     if (!data) return;
     setIsSavingNote(true);
     try {
+      const notificationResponse = await fetch(`http://127.0.0.1:8000/api/patient/remarks/${data.patient.id}`, {
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        method: "POST",
+        body: JSON.stringify({
+          message: doctorNote,
+          doctor_name: "Dr. Ananya Sharma",
+        }),
+      });
+      if (!notificationResponse.ok) {
+        throw new Error(`Notification request failed (${notificationResponse.status})`);
+      }
+
       const formData = new FormData();
       formData.append("note", doctorNote);
       if (markComplete) {
         formData.append("status", "completed");
       }
-      await fetch(`http://127.0.0.1:8000/api/doctor/patient/${data.patient.id}/note`, {
+      const noteResponse = await fetch(`http://127.0.0.1:8000/api/doctor/patient/${data.patient.id}/note`, {
+        credentials: "include",
         method: "POST",
         body: formData,
       });
+      if (!noteResponse.ok) {
+        throw new Error(`Clinical note request failed (${noteResponse.status})`);
+      }
       setNoteSavedAlert(true);
       setTimeout(() => setNoteSavedAlert(false), 4000);
       if (markComplete) {
@@ -245,12 +191,22 @@ export default function PatientDetail() {
   };
 
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-slate-500">
         <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin" />
         <p className="text-sm font-semibold text-slate-700">Loading Clinical Blueprint from Database...</p>
         <span className="text-xs text-slate-400">Zero AI re-generation lag (&lt;50ms fast stream)</span>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 text-slate-500">
+        <AlertTriangle className="w-10 h-10 text-amber-500" />
+        <p className="text-sm font-semibold text-slate-700">{loadError || "Patient profile not found."}</p>
+        <button onClick={() => navigate("/doctor/patients")} className="text-sm font-bold text-primary hover:underline">Back to patient queue</button>
       </div>
     );
   }

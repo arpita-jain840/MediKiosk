@@ -33,10 +33,10 @@ export const PatientQRCard: React.FC<{ onPatientSynced?: (patient: SyncedPatient
   const [isScanning, setIsScanning] = useState(false);
   const [syncedPatient, setSyncedPatient] = useState<SyncedPatient | null>(null);
 
-  // Mock patient data for simulation from Indian dataset
+  // Simulated scan points to the first seeded database patient.
   const mockPatient: SyncedPatient = {
-    id: 'PAT-1001',
-    name: 'Aarav Sharma',
+    id: 'dd282916-ac7a-4ca8-a6c0-e63ffc62066f',
+    name: 'Emma Watson',
     age: 24,
     gender: 'Male',
     bloodGroup: 'O+',

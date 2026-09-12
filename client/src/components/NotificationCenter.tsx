@@ -4,14 +4,13 @@ import {
   Bell,
   CalendarDays,
   Check,
-  CheckCircle2,
   FileText,
   Image,
   MessageCircle,
-  Ticket,
   UserRound,
   X,
 } from "lucide-react";
+import { usePatientNotifications } from "../user/context/PatientNotificationContext";
 
 type NotificationRole = "patient" | "doctor";
 type NotificationFilter = "all" | "unread";
@@ -30,15 +29,6 @@ type NotificationItem = {
   preview?: boolean;
 };
 
-const patientNotifications: NotificationItem[] = [
-  { id: "patient-prescription", title: "Your prescription is ready", message: "Dr. Ananya Sharma has uploaded your prescription.", time: "5 min ago", date: "11 September 2026, 10:42 AM", icon: FileText, tone: "bg-sky-50 text-sky-700", unread: true, person: "Dr. Ananya Sharma", action: "View Prescription" },
-  { id: "patient-reminder", title: "Appointment reminder", message: "Your appointment is scheduled for today at 11:30 AM.", time: "1 hour ago", date: "11 September 2026, 9:42 AM", icon: CalendarDays, tone: "bg-amber-50 text-amber-700", unread: true, person: "Dr. Ananya Sharma", action: "View Appointment" },
-  { id: "patient-message", title: "New message from your doctor", message: "Dr. Rajesh Kumar sent you a message regarding your consultation.", time: "2 hours ago", date: "11 September 2026, 8:42 AM", icon: MessageCircle, tone: "bg-indigo-50 text-indigo-700", unread: false, person: "Dr. Rajesh Kumar", action: "Open Message" },
-  { id: "patient-document", title: "New document uploaded", message: "Your doctor uploaded a new prescription/document.", time: "Yesterday", date: "10 September 2026, 4:10 PM", icon: Image, tone: "bg-violet-50 text-violet-700", unread: false, person: "Dr. Ananya Sharma", action: "View Document", preview: true },
-  { id: "patient-confirmed", title: "Appointment confirmed", message: "Your OPD appointment with Dr. Priya Mehta has been confirmed.", time: "Yesterday", date: "10 September 2026, 1:20 PM", icon: CheckCircle2, tone: "bg-emerald-50 text-emerald-700", unread: false, person: "Dr. Priya Mehta", action: "View Appointment" },
-  { id: "patient-token", title: "Your OPD token is approaching", message: "Your token number is 18. Please be ready for your consultation.", time: "Today", date: "11 September 2026, 10:00 AM", icon: Ticket, tone: "bg-teal-50 text-teal-700", unread: false, action: "View Queue" },
-];
-
 const doctorNotifications: NotificationItem[] = [
   { id: "doctor-critical", title: "Critical patient alert", message: "Patient Rahul Sharma has been flagged with a critical symptom.", time: "2 min ago", date: "11 September 2026, 10:41 AM", icon: AlertTriangle, tone: "bg-rose-50 text-rose-700", unread: true, person: "Rahul Sharma", action: "View Patient" },
   { id: "doctor-new-patient", title: "New patient submitted", message: "A patient has shared their medical information with you.", time: "5 min ago", date: "11 September 2026, 10:38 AM", icon: UserRound, tone: "bg-sky-50 text-sky-700", unread: true, action: "View Patient" },
@@ -55,13 +45,31 @@ interface NotificationCenterProps {
 }
 
 export const NotificationCenter: React.FC<NotificationCenterProps> = ({ role, mobile = false }) => {
-  const [items, setItems] = useState(() => (role === "patient" ? patientNotifications : doctorNotifications));
+  const patientNotificationContext = usePatientNotifications();
+  const [items, setItems] = useState(() => (role === "patient" ? [] : doctorNotifications));
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<NotificationFilter>("all");
   const [selected, setSelected] = useState<NotificationItem | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const unreadCount = items.filter((item) => item.unread).length;
   const visibleItems = filter === "unread" ? items.filter((item) => item.unread) : items;
+
+  useEffect(() => {
+    if (role !== "patient" || !patientNotificationContext) return;
+
+    setItems(patientNotificationContext.notifications.map((notification) => ({
+      id: notification.id,
+      title: notification.title,
+      message: notification.message,
+      time: new Date(notification.created_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+      date: new Date(notification.created_at).toLocaleString(),
+      icon: notification.type === "prescription" ? FileText : MessageCircle,
+      tone: notification.type === "prescription" ? "bg-sky-50 text-sky-700" : "bg-indigo-50 text-indigo-700",
+      unread: !notification.read,
+      person: notification.doctor_name,
+      action: notification.type === "prescription" ? "View Prescription" : "Open Message",
+    })));
+  }, [role, patientNotificationContext?.notifications]);
 
   useEffect(() => {
     const closeOnOutside = (event: MouseEvent) => {
@@ -83,6 +91,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ role, mo
 
   const openNotification = (item: NotificationItem) => {
     setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, unread: false } : entry));
+    patientNotificationContext?.markAsRead(item.id);
     setSelected({ ...item, unread: false });
     setOpen(false);
   };
@@ -105,7 +114,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ role, mo
         <div className={`fixed md:absolute ${mobile ? "bottom-[4.5rem] top-auto" : "top-[4.5rem] md:top-[calc(100%+10px)]"} right-3 md:right-0 z-50 w-[calc(100vw-24px)] max-w-[400px] rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150`}>
           <div className="p-4 border-b border-slate-100 flex items-start justify-between gap-3">
             <div><h2 className="text-sm font-extrabold text-slate-900">Notifications</h2><p className="text-[11px] text-slate-400 mt-1">Your latest updates and reminders</p></div>
-            <button type="button" onClick={() => setItems((current) => current.map((item) => ({ ...item, unread: false })))} className="text-[10px] font-bold text-primary hover:underline whitespace-nowrap cursor-pointer">Mark all as read</button>
+            <button type="button" onClick={() => { setItems((current) => current.map((item) => ({ ...item, unread: false }))); patientNotificationContext?.markAllAsRead(); }} className="text-[10px] font-bold text-primary hover:underline whitespace-nowrap cursor-pointer">Mark all as read</button>
           </div>
           <div className="px-3 pt-3 flex items-center gap-1">
             {(["all", "unread"] as NotificationFilter[]).map((option) => <button key={option} type="button" onClick={() => setFilter(option)} className={`px-3 py-1 rounded-full text-[10px] font-bold capitalize cursor-pointer ${filter === option ? "bg-primary text-white" : "text-slate-500 hover:bg-slate-50"}`}>{option}</button>)}

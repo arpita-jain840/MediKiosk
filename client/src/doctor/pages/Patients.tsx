@@ -8,8 +8,24 @@ export const Patients: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>('active');
 
   useEffect(() => {
-    setPatients(getLivePatients());
-    fetchLiveCockpitPatients().then((data) => setPatients(data));
+    let isMounted = true;
+
+    const loadPatients = async () => {
+      setPatients(getLivePatients());
+      try {
+        const data = await fetchLiveCockpitPatients();
+        if (isMounted) {
+          setPatients(data);
+        }
+      } catch (error) {
+        console.warn('[Patients] Backend unavailable; showing local patient data.', error);
+      }
+    };
+
+    void loadPatients();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const waitingOrConsulting = patients.filter((p) => p.status === 'Waiting' || p.status === 'In Consultation');
@@ -77,7 +93,6 @@ export const Patients: React.FC = () => {
             {displayedPatients.map((patient) => (
               <div
                 key={patient.id}
-                
                 className="py-4 px-2 sm:px-3 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 hover:bg-slate-50/80 rounded-2xl transition-all cursor-pointer group"
               >
                 {/* Patient Basic Info */}
@@ -93,7 +108,7 @@ export const Patients: React.FC = () => {
                         {patient.name}
                       </h3>
                       
-                      {patient.id === 'MK-9824' && (
+                      {patient.token === 1 && (
                         <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1">
                           <QrCode className="w-2.5 h-2.5" />
                           Live QR

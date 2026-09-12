@@ -69,13 +69,9 @@ export const SubmitAccess: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden font-sans">
-      {/* Subtle Ambient Background Gradients */}
       <div className="absolute top-1/6 -left-20 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/6 -right-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-      {/* Main Container Card */}
       <div className="max-w-md w-full bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden relative transition-all duration-300">
-
-        {/* Top Doctor Clinic Header */}
         <div className="bg-gradient-to-r from-teal-800 to-teal-900 text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-teal-200 backdrop-blur-sm border border-white/10">
@@ -91,11 +87,7 @@ export const SubmitAccess: React.FC = () => {
             Live Desk #04
           </span>
         </div>
-
-        {/* Content Body */}
         <div className="p-6 sm:p-7 flex flex-col items-center text-center">
-
-          {/* Lock Icon Header */}
           <div className="w-14 h-14 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center mb-3.5 shadow-inner border border-teal-100/80">
             <ShieldCheck className="w-7 h-7" />
           </div>
@@ -106,8 +98,6 @@ export const SubmitAccess: React.FC = () => {
           <p className="text-xs sm:text-sm text-slate-500 font-normal leading-relaxed mb-5 max-w-xs">
             Hit the request access button and we’ll find someone who can give you access
           </p>
-
-          {/* Patient Record Selector / Preview */}
           <div className="w-full text-left bg-slate-50/90 rounded-2xl p-4 border border-slate-200/70 mb-4 transition-all">
             <div className="flex items-center justify-between mb-2.5">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -115,7 +105,6 @@ export const SubmitAccess: React.FC = () => {
                 Select Patient Record
               </span>
 
-              {/* Dropdown to switch mock patient from dataset */}
               <div className="relative">
                 <select
                   value={selectedPatient.id}
@@ -127,15 +116,13 @@ export const SubmitAccess: React.FC = () => {
                 >
                   {initialPatients.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name} ({p.id})
+                      {p.name}
                     </option>
                   ))}
                 </select>
                 <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-2 pointer-events-none" />
               </div>
             </div>
-
-            {/* Selected Patient Mini Card */}
             <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-xs mb-2.5">
               <img
                 src={selectedPatient.avatar}
@@ -150,12 +137,11 @@ export const SubmitAccess: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 font-medium">
-                  {selectedPatient.age} yrs • {selectedPatient.gender} • {selectedPatient.id}
+                  {selectedPatient.age} yrs • {selectedPatient.gender}
                 </p>
               </div>
             </div>
 
-            {/* Vitals Summary Grid */}
             <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-medium text-slate-600 mb-2">
               <div className="bg-white rounded-lg p-1.5 border border-slate-100">
                 <span className="text-slate-400 block text-[9px] font-bold">BP</span>
@@ -171,7 +157,6 @@ export const SubmitAccess: React.FC = () => {
               </div>
             </div>
 
-            {/* Complaint */}
             <div className="bg-white rounded-lg p-2 border border-slate-100 text-[11px] text-slate-600 flex items-start gap-1.5">
               <Stethoscope className="w-3.5 h-3.5 text-teal-600 flex-shrink-0 mt-0.5" />
               <span className="line-clamp-2">{selectedPatient.complaint}</span>
@@ -180,7 +165,6 @@ export const SubmitAccess: React.FC = () => {
 
           
 
-          {/* Primary Request Access Button */}
           <button
             onClick={handleGrantAccess}
             disabled={isSubmitting || isSubmitted}

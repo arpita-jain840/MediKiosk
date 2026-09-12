@@ -65,7 +65,7 @@ const DoctorLayout = () => {
       dashboard: '/doctor/dashboard',
       queue: '/doctor/patients',
       appointments: '/doctor/appointments',
-      prescriptions: '/doctor/prescription/PAT-1001',
+      prescriptions: '/doctor/prescription/dd282916-ac7a-4ca8-a6c0-e63ffc62066f',
       records: '/doctor/reports',
       'ai-assistant': '/doctor/consultations',
     };

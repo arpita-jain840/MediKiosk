@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  ArrowRight,
   CalendarDays,
   CheckCircle2,
   Clock3,
@@ -25,9 +24,9 @@ interface QueuePatient {
 
 const queuePatients: QueuePatient[] = [
   {
-    id: "PAT-1001",
+    id: "dd282916-ac7a-4ca8-a6c0-e63ffc62066f",
     token: "A-01",
-    name: "Aarav Sharma",
+    name: "Emma Watson",
     age: 24,
     gender: "Male",
     complaint: "Fever, cough and fatigue",
@@ -35,9 +34,9 @@ const queuePatients: QueuePatient[] = [
     priority: "Routine",
   },
   {
-    id: "PAT-1002",
+    id: "89f13786-8f6b-4063-bbfa-9beec534a303",
     token: "A-02",
-    name: "Priyanshi Gupta",
+    name: "Sarah Hosten",
     age: 31,
     gender: "Female",
     complaint: "Acute migraine and nausea",
@@ -45,9 +44,9 @@ const queuePatients: QueuePatient[] = [
     priority: "Priority",
   },
   {
-    id: "PAT-1003",
+    id: "a5493a2e-120b-452f-b68a-3f0ec2c6589b",
     token: "A-03",
-    name: "Rishabh Verma",
+    name: "Dakota Smith",
     age: 47,
     gender: "Male",
     complaint: "Chest tightness and palpitations",
@@ -188,7 +187,7 @@ export const DoctorDashboard: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => navigate("/doctor/prescription/PAT-1001")}
+              onClick={() => navigate("/doctor/prescription/dd282916-ac7a-4ca8-a6c0-e63ffc62066f")}
               className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-4 py-2.5 text-xs font-extrabold text-white hover:bg-white/10 cursor-pointer"
             >
               <FileSignature size={15} />
@@ -325,14 +324,7 @@ export const DoctorDashboard: React.FC = () => {
 
                 <div className="flex items-center justify-between sm:justify-end gap-3">
                   <span className="text-xs font-bold text-slate-400">{patient.wait}</span>
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/doctor/patient/${patient.id}`)}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-extrabold text-white hover:opacity-90 cursor-pointer"
-                  >
-                    <span>Start</span>
-                    <ArrowRight size={14} />
-                  </button>
+                  
                 </div>
               </div>
             ))}
@@ -352,7 +344,7 @@ export const DoctorDashboard: React.FC = () => {
                 key={task.label}
                 type="button"
                 onClick={() =>
-                  navigate(task.label.startsWith("Prescription") ? "/doctor/prescription/PAT-1001" : "/doctor/reports")
+                  navigate(task.label.startsWith("Prescription") ? "/doctor/prescription/dd282916-ac7a-4ca8-a6c0-e63ffc62066f" : "/doctor/reports")
                 }
                 className="w-full flex items-center gap-3 rounded-xl border border-slate-200 p-3 text-left hover:border-primary/40 hover:bg-slate-50 transition-colors cursor-pointer"
               >

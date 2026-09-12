@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavBar } from "./components/NavBar";
 import { LanguageModal } from "./components/LanguageModal";
 import { HomeScreen } from "./screens/HomeScreen";
@@ -10,6 +10,8 @@ import { ConfirmScreen } from "./screens/ConfirmScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { KioskSessionGuard } from "./components/KioskSessionGuard";
 import { DEFAULT_PATIENT } from "./data/patientData";
+import { PatientNotificationProvider, usePatientNotifications } from "./context/PatientNotificationContext";
+import { Bell, X } from "lucide-react";
 
 import type { DoctorDirectoryItem, BlueprintSynthesisResult } from "./types";
 
@@ -20,6 +22,16 @@ export default function PatientApp() {
   const [isLangModalOpen, setIsLangModalOpen] = useState(false);
   const [bookedDoctor, setBookedDoctor] = useState<DoctorDirectoryItem | null>(null);
   const [blueprintResult] = useState<BlueprintSynthesisResult | null>(null);
+  const [patientId] = useState<string | null>(() => {
+    try {
+      const stored = localStorage.getItem("medikiosk_user");
+      if (!stored) return null;
+      const parsed = JSON.parse(stored);
+      return parsed.patient_id || parsed.id || null;
+    } catch {
+      return null;
+    }
+  });
 
   const [currentUser] = useState(() => {
     try {
@@ -110,7 +122,9 @@ export default function PatientApp() {
   }
 
   return (
-    <div
+    <PatientNotificationProvider patientId={patientId}>
+      <PatientNotificationToast />
+      <div
       className="w-full min-h-screen h-screen flex flex-col-reverse md:flex-row overflow-hidden"
       style={{
         background: "var(--bg)",
@@ -187,6 +201,43 @@ export default function PatientApp() {
         inactivityTimeoutSeconds={90}
         countdownThresholdSeconds={15}
       />
+      </div>
+    </PatientNotificationProvider>
+  );
+}
+
+function PatientNotificationToast() {
+  const notificationContext = usePatientNotifications();
+  const notification = notificationContext?.latestNotification;
+
+  useEffect(() => {
+    if (!notification) return;
+    const timeoutId = window.setTimeout(() => notificationContext?.dismissLatestNotification(), 5000);
+    return () => window.clearTimeout(timeoutId);
+  }, [notification, notificationContext]);
+
+  if (!notification) return null;
+
+  return (
+    <div className="fixed top-4 right-4 z-[80] w-[min(380px,calc(100vw-2rem))] rounded-2xl border border-sky-200 bg-white p-4 shadow-2xl animate-in fade-in slide-in-from-top-3 duration-200">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
+          <Bell size={17} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-black text-slate-900">{notification.title}</p>
+          <p className="mt-1 text-xs leading-relaxed text-slate-600">{notification.message}</p>
+          {notification.doctor_name && <p className="mt-2 text-[10px] font-bold text-slate-400">{notification.doctor_name}</p>}
+        </div>
+        <button
+          type="button"
+          aria-label="Dismiss notification"
+          onClick={() => notificationContext.dismissLatestNotification()}
+          className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+        >
+          <X size={15} />
+        </button>
+      </div>
     </div>
   );
 }

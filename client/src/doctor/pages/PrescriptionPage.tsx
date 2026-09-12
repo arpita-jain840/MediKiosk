@@ -30,9 +30,9 @@ export const PrescriptionPage: React.FC = () => {
 
   // Initial Prescription Data automatically populated based on patient
   const [prescription, setPrescription] = useState<PrescriptionData>(() => {
-    const isMigraine = matched.id === 'PAT-1002' || matched.name.includes('Priyanshi');
-    const isHypertension = matched.id === 'PAT-1003';
-    const isSkin = matched.id === 'PAT-1004';
+    const isMigraine = matched.name === 'Amina Begum';
+    const isHypertension = matched.name === 'Rajesh Kumar';
+    const isSkin = false;
 
     const defaultDiagnosis = isMigraine
       ? 'Acute Migraine with Photophobia & Nausea'
@@ -111,7 +111,7 @@ export const PrescriptionPage: React.FC = () => {
       clinicName: 'MEDIKIS CARE CENTER & MULTISPECIALTY CLINIC',
       clinicAddress: 'Saket, New Delhi, India 110017',
       clinicPhone: '+91 98101 23456',
-      consultationId: matched.id.replace('PAT-', 'RX-'),
+      consultationId: `RX-${matched.id}`,
       consultationDate: new Date().toLocaleDateString('en-GB', {
         day: '2-digit',
         month: 'short',
@@ -147,7 +147,7 @@ export const PrescriptionPage: React.FC = () => {
       patientGender: matched.gender,
       patientWeight: matched.weight || '56 kg',
       patientBloodGroup: matched.bloodGroup || 'B+',
-      consultationId: matched.id.replace('PAT-', 'RX-'),
+      consultationId: `RX-${matched.id}`,
     }));
   }, [matched]);
 
@@ -211,19 +211,37 @@ export const PrescriptionPage: React.FC = () => {
     showToast('Handwritten clinical drawing saved to prescription');
   };
 
-  // Confirm Send to Patient
-  const handleConfirmSend = () => {
+  // Send the existing prescription reference to the patient's notification queue.
+  const handleConfirmSend = async () => {
     setIsSending(true);
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/patient/prescription/${prescription.patientId}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            doctor_name: 'Dr. Sharma',
+            message: 'Your prescription has been uploaded.',
+            pdf_url: 'https://example.com/prescription.pdf',
+          }),
+        },
+      );
 
-    // Simulate backend API call
-    setTimeout(() => {
-      // Mark patient as completed in shared local store
+      if (!response.ok) {
+        throw new Error(`Prescription notification failed (${response.status})`);
+      }
+
       markPatientAsCompleted(prescription.patientId);
-
-      setIsSending(false);
       setIsSendConfirmOpen(false);
       setIsSuccessOpen(true);
-    }, 1200);
+    } catch (error) {
+      console.error('[Prescription] Unable to notify patient:', error);
+      showToast('Unable to send prescription notification');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
