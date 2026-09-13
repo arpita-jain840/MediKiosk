@@ -271,10 +271,10 @@ export const Dashboard: React.FC = () => {
           style={{ animation: `${toastLeaving ? 'dashToastOut' : 'dashToastIn'} 0.28s cubic-bezier(0.16,1,0.3,1) forwards` }}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
             <span className="text-xs font-bold truncate">{toastMessage}</span>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => navigate(`/doctor/patients/${lastScannedId || 'dd282916-ac7a-4ca8-a6c0-e63ffc62066f'}`)}
               className="text-[11px] sm:text-xs font-black bg-white text-teal-800 px-2.5 sm:px-3 py-1 rounded-xl shadow-xs hover:bg-teal-50 transition-colors cursor-pointer"
@@ -337,7 +337,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           {/* Mini Calendar (Order 5 on Mobile, Order 1 in Right Col on Desktop) */}
-          <div className="bg-white rounded-[2rem] p-5 sm:p-6 border border-slate-100/80 shadow-xs order-5 xl:order-1">
+          <div className="bg-white rounded-4xl p-5 sm:p-6 border border-slate-100/80 shadow-xs order-5 xl:order-1">
             <div className="flex items-center justify-between mb-4 sm:mb-5">
               <h3 className="text-sm sm:text-base font-bold text-slate-900">Appointment</h3>
               <button className="text-slate-400 hover:text-slate-700 transition-colors cursor-pointer">
@@ -379,7 +379,7 @@ export const Dashboard: React.FC = () => {
         <div className="order-2 xl:order-1 xl:col-span-2 flex flex-col gap-6">
           
           {/* Patients Today List - Forward / At the Top on Mobile */}
-          <div className="bg-white rounded-[2rem] p-5 sm:p-6 border border-slate-100/80 shadow-xs order-1 xl:order-2">
+          <div className="bg-white rounded-4xl p-5 sm:p-6 border border-slate-100/80 shadow-xs order-1 xl:order-2">
             <div className="flex items-center justify-between mb-4 sm:mb-5">
               <div>
                 <h3 className="text-base sm:text-lg font-bold text-slate-900">Your patients today</h3>
@@ -403,21 +403,21 @@ export const Dashboard: React.FC = () => {
                     <img
                       src={patient.avatar}
                       alt={patient.name}
-                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-slate-200 group-hover:border-teal-300 transition-colors flex-shrink-0"
+                      className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border border-slate-200 group-hover:border-teal-300 transition-colors shrink-0"
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-teal-700 transition-colors truncate">
                           {patient.name}
                         </h4>
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0 ${triageStyles[patient.triage]}`}>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ${triageStyles[patient.triage]}`}>
                           {patient.triage}
                         </span>
                       </div>
                       <p className="text-xs text-slate-400 font-medium truncate mt-0.5">{patient.chiefComplaint}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0 pl-2">
+                  <div className="flex items-center gap-2 shrink-0 pl-2">
                     <span className="text-xs font-semibold text-slate-400 whitespace-nowrap font-mono hidden sm:inline">{patient.time}</span>
                     <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-teal-700 group-hover:translate-x-0.5 transition-all" />
                   </div>
@@ -427,7 +427,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           {/* Chart Section - Responsive graph */}
-          <div className="bg-white rounded-[2rem] p-5 sm:p-6 border border-slate-100/80 shadow-xs order-2 xl:order-1">
+          <div className="bg-white rounded-4xl p-5 sm:p-6 border border-slate-100/80 shadow-xs order-2 xl:order-1">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-5 sm:mb-6">
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-slate-900">Patient analytics</h2>
@@ -466,7 +466,7 @@ export const Dashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className="lg:col-span-3 relative w-full h-[180px] sm:h-[220px]">
+              <div className="lg:col-span-3 relative w-full h-45 sm:h-55">
                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] sm:text-[11px] font-semibold text-slate-300">
                   {[50, 40, 30, 20, 10].map((n) => (
                     <div key={n} className="w-full flex items-center gap-2 sm:gap-3">
@@ -512,7 +512,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           {/* Events Card */}
-          <div className="bg-white rounded-[2rem] p-5 sm:p-6 border border-slate-100/80 shadow-xs order-3">
+          <div className="bg-white rounded-4xl p-5 sm:p-6 border border-slate-100/80 shadow-xs order-3">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-base sm:text-lg font-bold text-slate-900">Upcoming Events & Rounds</h3>
@@ -531,7 +531,7 @@ export const Dashboard: React.FC = () => {
                       </div>
                       <button
                         onClick={ev.toggle}
-                        className={`w-11 h-6 rounded-full transition-colors duration-200 relative cursor-pointer flex-shrink-0 ${ev.active ? 'bg-teal-700' : 'bg-slate-300'}`}
+                        className={`w-11 h-6 rounded-full transition-colors duration-200 relative cursor-pointer shrink-0 ${ev.active ? 'bg-teal-700' : 'bg-slate-300'}`}
                       >
                         <span
                           className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform duration-200 ${ev.active ? 'translate-x-5' : 'translate-x-0'}`}
