@@ -1,5 +1,46 @@
 import type { LucideIcon } from "lucide-react";
 
+export interface Symptom {
+  label: string;
+  severity: "mild" | "moderate" | "severe";
+  since: string;
+}
+
+export interface DoctorNote {
+  id: string;
+  date: string;
+  doctor: string;
+  hospital: string;
+  room: string;
+  diagnosis: string;
+  notes: string;
+  prescription: string[];
+  followUp?: string;
+}
+
+export interface AppointmentHistoryItem {
+  id: string;
+  date: string;
+  time: string;
+  doctor: string;
+  specialization: string;
+  hospital: string;
+  room: string;
+  token: string;
+  status: "Completed" | "Cancelled" | "Upcoming";
+  doctorSaid: string;
+  prescription: string[];
+  diagnosis: string;
+  nextVisit?: string;
+  vitalsAtVisit?: {
+    bp?: string;
+    pulse?: string;
+    temp?: string;
+    spo2?: string;
+    weight?: string;
+  };
+}
+
 export interface PatientProfile {
   name: string;
   age: number;
@@ -8,10 +49,18 @@ export interface PatientProfile {
   allergies: string[];
   bloodGroup?: string;
   phone?: string;
+  address?: string;
+  emergencyContact?: string;
+  profileImage?: string;
+  symptoms?: Symptom[];
+  notes?: string;
   medications: Array<{
     name: string;
     schedule: string;
+    purpose?: string;
+    prescribedBy?: string;
   }>;
+  appointmentHistory?: AppointmentHistoryItem[];
 }
 
 export interface RecordCategory {

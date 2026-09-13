@@ -768,4 +768,4 @@ async def analyze_patient_medical_page_with_gemini(
         ],
         "analyzed_by": "Google Gemini Clinical Intelligence Engine",
         "analyzed_at": datetime.utcnow().isoformat()
-    }
+    }
