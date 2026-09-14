@@ -37,8 +37,18 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
     bp?.aiSummary ||
     "Intake recorded at MediKiosk terminal. Clinical blueprint committed to database.";
 
+  const userStr = typeof window !== "undefined" ? localStorage.getItem("medikiosk_user") : null;
+  let savedPatientId = "7047ac9d-9586-42fb-8728-acb9b52a10da";
+  if (userStr) {
+    try {
+      const parsed = JSON.parse(userStr);
+      savedPatientId = parsed.patient_id || parsed.id || savedPatientId;
+    } catch {
+      // fallback
+    }
+  }
+  const patientId = blueprintResult?.profileId || savedPatientId;
   const token = blueprintResult?.appointment?.token || bp?.token || 1;
-  const patientId = blueprintResult?.profileId || "227107b6-d738-4acd-ad21-8c88430acbd9";
 
 
   // Live WebSocket queue state

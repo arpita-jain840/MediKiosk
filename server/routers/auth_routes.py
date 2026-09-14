@@ -24,12 +24,26 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
     u_lower = req.username.strip().lower()
     p_pass = req.password.strip()
 
+    # Alias mapping for user1..user5 to seeded patient records
+    alias_map = {
+        "user1": "priya.sharma@example.com",
+        "user2": "emma.watson@example.com",
+        "user3": "rajesh.kumar@example.com",
+        "user4": "sarah.hosten@example.com",
+        "user5": "vikram.malhotra@example.com",
+    }
+    lookup_email = alias_map.get(u_lower, u_lower)
+
     # 1. First check Database Users table with profile associations
     from sqlalchemy.orm import selectinload
     stmt = (
         select(User)
         .options(selectinload(User.patient_profile), selectinload(User.doctor_profile))
-        .where((User.email.ilike(u_lower)) | (User.full_name.ilike(u_lower)))
+        .where(
+            (User.email.ilike(u_lower))
+            | (User.email.ilike(lookup_email))
+            | (User.full_name.ilike(u_lower))
+        )
     )
     res = await db.execute(stmt)
     db_user = res.scalars().first()
@@ -110,11 +124,11 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
         }
 
     designated_users = {
-        "user1": {"passwords": ["user1123", "user123"], "full_name": "Priya Sharma", "abha": "14-2938-4471-0093", "age": 34, "gender": "Female"},
-        "user2": {"passwords": ["user2123", "user223"], "full_name": "Emma Watson", "abha": "14-9824-3321-0012", "age": 28, "gender": "Female"},
-        "user3": {"passwords": ["user3123", "user323"], "full_name": "Rajesh Kumar", "abha": "14-5582-7719-0104", "age": 59, "gender": "Male"},
-        "user4": {"passwords": ["user4123", "user423"], "full_name": "Sarah Hosten", "abha": "14-4412-8823-0101", "age": 34, "gender": "Female"},
-        "user5": {"passwords": ["user5123", "user523"], "full_name": "Vikram Malhotra", "abha": "14-1182-6632-0108", "age": 38, "gender": "Male"}
+        "user1": {"id": "7047ac9d-9586-42fb-8728-acb9b52a10da", "passwords": ["user1123", "user123"], "full_name": "Priya Sharma", "abha": "14-2938-4471-0093", "age": 34, "gender": "Female"},
+        "user2": {"id": "dd282916-ac7a-4ca8-a6c0-e63ffc62066f", "passwords": ["user2123", "user223"], "full_name": "Emma Watson", "abha": "14-9824-3321-0012", "age": 28, "gender": "Female"},
+        "user3": {"id": "34808a5f-e712-4fbc-8e22-501c4b4e1527", "passwords": ["user3123", "user323"], "full_name": "Rajesh Kumar", "abha": "14-5582-7719-0104", "age": 59, "gender": "Male"},
+        "user4": {"id": "89f13786-8f6b-4063-bbfa-9beec534a303", "passwords": ["user4123", "user423"], "full_name": "Sarah Hosten", "abha": "14-4412-8823-0101", "age": 34, "gender": "Female"},
+        "user5": {"id": "84759d82-b1bf-48d7-9cb8-ee41518d7837", "passwords": ["user5123", "user523"], "full_name": "Vikram Malhotra", "abha": "14-1182-6632-0108", "age": 38, "gender": "Male"}
     }
 
     if u_lower in designated_users and p_pass in designated_users[u_lower]["passwords"]:
@@ -124,7 +138,8 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
             "role": "patient",
             "redirect": "/patient",
             "user": {
-                "id": f"patient-{u_lower}-id",
+                "id": u_info["id"],
+                "patient_id": u_info["id"],
                 "username": u_lower,
                 "full_name": u_info["full_name"],
                 "role": "patient",

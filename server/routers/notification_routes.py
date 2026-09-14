@@ -25,10 +25,38 @@ class PrescriptionNotificationRequest(BaseModel):
     prescription: Optional[Dict[str, Any]] = None
 
 
+import uuid
+from models import Patient, User
+
+
+def is_valid_uuid(val: str) -> bool:
+    try:
+        uuid.UUID(str(val))
+        return True
+    except (ValueError, AttributeError, TypeError):
+        return False
+
+
 async def validate_patient(patient_id: str, db: AsyncSession) -> None:
-    result = await db.execute(select(Patient.id).where(Patient.id == patient_id))
-    if result.scalar_one_or_none() is None:
-        raise HTTPException(status_code=404, detail="Patient not found.")
+    if is_valid_uuid(patient_id):
+        result = await db.execute(select(Patient.id).where(Patient.id == patient_id))
+        if result.scalar_one_or_none() is not None:
+            return
+
+    # Check by ABHA ID or User email alias
+    result = await db.execute(
+        select(Patient.id)
+        .outerjoin(User, Patient.user_id == User.id)
+        .where((Patient.abha_id == patient_id) | (User.email == patient_id))
+    )
+    if result.scalar_one_or_none() is not None:
+        return
+
+    # Allow demo or fallback identifiers
+    if patient_id in ("demo-patient", "user1", "227107b6-d738-4acd-ad21-8c88430acbd9") or patient_id.startswith("patient-"):
+        return
+
+    raise HTTPException(status_code=404, detail="Patient not found.")
 
 
 @router.post("/patient/remarks/{patient_id}")
@@ -80,8 +108,5 @@ async def poll_patient_notifications(
     db: AsyncSession = Depends(get_db),
 ):
     await validate_patient(patient_id, db)
-    print(f"[NOTIFICATION] Poll request: {patient_id}")
     notifications = consume_notifications(patient_id)
-    if not notifications:
-        print(f"[NOTIFICATION] No pending notifications for {patient_id}")
     return {"success": True, "notifications": notifications}

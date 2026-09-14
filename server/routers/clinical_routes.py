@@ -29,6 +29,69 @@ def is_valid_uuid(val: str) -> bool:
     except (ValueError, AttributeError):
         return False
 
+async def resolve_patient(db: AsyncSession, patient_id: str, load_options=None):
+    """
+    Safely resolves a Patient record whether patient_id is:
+    - A UUID (e.g. 7047ac9d-9586-42fb-8728-acb9b52a10da)
+    - An ABHA ID (e.g. 14-2938-4471-0093)
+    - A User email/alias (e.g. user1, priya.sharma@example.com)
+    - A fallback demo identifier (e.g. demo-patient, 227107b6-d738-4acd-ad21-8c88430acbd9)
+    Prevents PostgreSQL asyncpg UUID type cast fatal errors.
+    """
+    if is_valid_uuid(patient_id):
+        stmt = select(Patient).where(Patient.id == patient_id)
+        if load_options:
+            stmt = stmt.options(*load_options)
+        res = await db.execute(stmt)
+        p = res.scalars().first()
+        if p:
+            return p
+
+    # 2. Match ABHA ID
+    stmt = select(Patient).where(Patient.abha_id == patient_id)
+    if load_options:
+        stmt = stmt.options(*load_options)
+    res = await db.execute(stmt)
+    p = res.scalars().first()
+    if p:
+        return p
+
+    # 3. Match User Email / Username alias
+    alias_map = {
+        "user1": "priya.sharma@example.com",
+        "user2": "emma.watson@example.com",
+        "user3": "rajesh.kumar@example.com",
+        "user4": "sarah.hosten@example.com",
+        "user5": "vikram.malhotra@example.com",
+    }
+    p_lower = str(patient_id).lower()
+    lookup = alias_map.get(p_lower, p_lower)
+    stmt = (
+        select(Patient)
+        .join(User)
+        .where((User.email.ilike(patient_id)) | (User.email.ilike(lookup)) | (User.full_name.ilike(patient_id)))
+    )
+    if load_options:
+        stmt = stmt.options(*load_options)
+    res = await db.execute(stmt)
+    p = res.scalars().first()
+    if p:
+        return p
+
+    # 4. Fallback for demo IDs
+    all_stmt = select(Patient)
+    if load_options:
+        all_stmt = all_stmt.options(*load_options)
+    all_res = await db.execute(all_stmt)
+    all_patients = all_res.scalars().all()
+    if all_patients:
+        for p in all_patients:
+            if hasattr(p, "user") and p.user and "priya" in p.user.full_name.lower():
+                return p
+        return all_patients[0]
+
+    return None
+
 # ---------------------------------------------------------------------------
 # Conversational AI Assistant (Patient Voice & Kiosk Guidance)
 # ---------------------------------------------------------------------------
@@ -117,8 +180,7 @@ async def book_appointment(
     db: AsyncSession = Depends(get_db)
 ):
     # Verify patient exists
-    p_result = await db.execute(select(Patient).where(Patient.id == patient_id))
-    patient = p_result.scalars().first()
+    patient = await resolve_patient(db, patient_id)
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found.")
 
@@ -167,9 +229,15 @@ async def upload_patient_document(
         except Exception as e:
             extracted_text = f"[AI Extraction Error: {str(e)}]"
 
+    # Resolve target patient safely to obtain real database UUID
+    patient = await resolve_patient(db, patient_id)
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient profile not found.")
+    target_patient_id = patient.id
+
     # Layer 2 Record in Database (raw_records)
     doc = RawRecord(
-        patient_id=patient_id,
+        patient_id=target_patient_id,
         document_type=document_type,
         file_url=file_url,
         file_name=file.filename or saved_filename,
@@ -184,7 +252,7 @@ async def upload_patient_document(
     if extracted_text:
         profile_res = await db.execute(
             select(PatientClinicalProfile)
-            .where(PatientClinicalProfile.patient_id == patient_id)
+            .where(PatientClinicalProfile.patient_id == target_patient_id)
             .order_by(PatientClinicalProfile.created_at.desc())
         )
         profile = profile_res.scalars().first()
@@ -192,7 +260,7 @@ async def upload_patient_document(
             profile.ai_summary = f"{profile.ai_summary or ''}\nDocument Ingested: {extracted_text[:300]}..."
         else:
             profile = PatientClinicalProfile(
-                patient_id=patient_id,
+                patient_id=target_patient_id,
                 chief_complaint="Document Uploaded",
                 ai_summary=f"Extracted from {file.filename}: {extracted_text[:400]}",
                 triage_priority="Routine"
@@ -211,19 +279,16 @@ async def get_patient_clinical_blueprint(patient_id: str, db: AsyncSession = Dep
     Delivers the complete pre-computed Clinical Blueprint in <50ms.
     Zero AI re-generation overhead on doctor load!
     """
-    where_cond = (Patient.id == patient_id) | (Patient.abha_id == patient_id) if is_valid_uuid(patient_id) else (Patient.abha_id == patient_id)
-    stmt = (
-        select(Patient)
-        .where(where_cond)
-        .options(
+    patient = await resolve_patient(
+        db,
+        patient_id,
+        [
             selectinload(Patient.user),
             selectinload(Patient.appointments),
             selectinload(Patient.clinical_profiles),
             selectinload(Patient.documents),
-        )
+        ]
     )
-    result = await db.execute(stmt)
-    patient = result.scalars().first()
 
     if not patient:
         raise HTTPException(status_code=404, detail="Patient profile not found.")
@@ -308,13 +373,11 @@ async def generate_and_commit_blueprint(
     Runs Gemini Multimodal clinical synthesis ONCE and stores the blueprint permanently.
     Doctor will subsequently load this pre-computed blueprint in <50ms without re-running AI.
     """
-    stmt = (
-        select(Patient)
-        .where(Patient.id == patient_id)
-        .options(selectinload(Patient.documents), selectinload(Patient.appointments))
+    patient = await resolve_patient(
+        db,
+        patient_id,
+        [selectinload(Patient.documents), selectinload(Patient.appointments)]
     )
-    result = await db.execute(stmt)
-    patient = result.scalars().first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found.")
 
@@ -460,34 +523,15 @@ async def get_patient_fhir_bundle(patient_id: str, db: AsyncSession = Depends(ge
     containing Composition, Patient, Practitioner, Encounter, Condition,
     Observation (Vitals + AYUSH), and MedicationRequest resources.
     """
-    stmt = (
-        select(Patient)
-        .where((Patient.id == patient_id) | (Patient.abha_id == patient_id))
-        .options(
+    patient = await resolve_patient(
+        db,
+        patient_id,
+        [
             selectinload(Patient.user),
             selectinload(Patient.appointments),
-            selectinload(Patient.clinical_profiles)
-        )
+            selectinload(Patient.clinical_profiles),
+        ]
     )
-    result = await db.execute(stmt)
-    patient = result.scalars().first()
-
-    # Fallback to first patient if test ID
-    if not patient:
-        all_res = await db.execute(
-            select(Patient).options(
-                selectinload(Patient.user),
-                selectinload(Patient.appointments),
-                selectinload(Patient.clinical_profiles)
-            )
-        )
-        all_p = all_res.scalars().all()
-        for p in all_p:
-            if patient_id.lower() in str(p.id).lower():
-                patient = p
-                break
-        if not patient and all_p:
-            patient = all_p[0]
 
     if not patient:
         raise HTTPException(status_code=404, detail="Patient record not found for FHIR export.")
@@ -547,37 +591,16 @@ async def analyze_patient_medical_page(
     - Performs deep medication reconciliation, interaction warnings, and abnormal biomarker alerts
     - Updates and commits clinical insights directly into the PostgreSQL / SQLite database
     """
-    where_cond = (Patient.id == patient_id) | (Patient.abha_id == patient_id) if is_valid_uuid(patient_id) else (Patient.abha_id == patient_id)
-    stmt = (
-        select(Patient)
-        .where(where_cond)
-        .options(
+    patient = await resolve_patient(
+        db,
+        patient_id,
+        [
             selectinload(Patient.user),
             selectinload(Patient.appointments),
             selectinload(Patient.clinical_profiles),
             selectinload(Patient.documents),
-        )
+        ]
     )
-    result = await db.execute(stmt)
-    patient = result.scalars().first()
-
-    # Fallback lookup if token or sample ID
-    if not patient:
-        all_res = await db.execute(
-            select(Patient).options(
-                selectinload(Patient.user),
-                selectinload(Patient.appointments),
-                selectinload(Patient.clinical_profiles),
-                selectinload(Patient.documents),
-            )
-        )
-        all_patients = all_res.scalars().all()
-        for p in all_patients:
-            if patient_id.lower() in str(p.id).lower():
-                patient = p
-                break
-        if not patient and all_patients:
-            patient = all_patients[0]
 
     if not patient:
         raise HTTPException(status_code=404, detail="Patient profile not found.")
@@ -660,34 +683,15 @@ async def get_patient_medical_analysis(
     Instant retrieval (<50ms) of previously computed Gemini Medical Page Analysis
     directly from database without re-invoking AI.
     """
-    where_cond = (Patient.id == patient_id) | (Patient.abha_id == patient_id) if is_valid_uuid(patient_id) else (Patient.abha_id == patient_id)
-    stmt = (
-        select(Patient)
-        .where(where_cond)
-        .options(
+    patient = await resolve_patient(
+        db,
+        patient_id,
+        [
             selectinload(Patient.user),
             selectinload(Patient.clinical_profiles),
-            selectinload(Patient.documents)
-        )
+            selectinload(Patient.documents),
+        ]
     )
-    res = await db.execute(stmt)
-    patient = res.scalars().first()
-
-    if not patient:
-        all_res = await db.execute(
-            select(Patient).options(
-                selectinload(Patient.user),
-                selectinload(Patient.clinical_profiles),
-                selectinload(Patient.documents)
-            )
-        )
-        all_p = all_res.scalars().all()
-        for p in all_p:
-            if patient_id.lower() in str(p.id).lower():
-                patient = p
-                break
-        if not patient and all_p:
-            patient = all_p[0]
 
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found.")

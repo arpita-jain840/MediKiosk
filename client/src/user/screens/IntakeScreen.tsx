@@ -169,9 +169,20 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
       .map((m) => `${m.from === "user" ? "Patient" : "Kiosk AI"}: ${m.text}`)
       .join("\n");
 
+    const userStr = localStorage.getItem("medikiosk_user");
+    let activePatientId = "7047ac9d-9586-42fb-8728-acb9b52a10da";
+    if (userStr) {
+      try {
+        const parsed = JSON.parse(userStr);
+        activePatientId = parsed.patient_id || parsed.id || activePatientId;
+      } catch {
+        // use fallback
+      }
+    }
+
     try {
       const res = await fetch(
-        getApiUrl(`/api/clinical/generate-blueprint?patient_id=227107b6-d738-4acd-ad21-8c88430acbd9&intake_narration=${encodeURIComponent(intakeSummary)}`),
+        getApiUrl(`/api/clinical/generate-blueprint?patient_id=${activePatientId}&intake_narration=${encodeURIComponent(intakeSummary)}`),
         { method: "POST" }
       );
       if (res.ok) {

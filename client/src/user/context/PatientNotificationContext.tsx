@@ -64,7 +64,7 @@ export const PatientNotificationProvider: React.FC<PatientNotificationProviderPr
     };
 
     void pollNotifications();
-    const intervalId = window.setInterval(pollNotifications, 1000);
+    const intervalId = window.setInterval(pollNotifications, 3500);
 
     return () => {
       isMounted = false;

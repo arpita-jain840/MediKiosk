@@ -47,11 +47,25 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const getActivePatientId = () => {
+    try {
+      const userStr = localStorage.getItem("medikiosk_user");
+      if (userStr) {
+        const parsed = JSON.parse(userStr);
+        return parsed.patient_id || parsed.id || "7047ac9d-9586-42fb-8728-acb9b52a10da";
+      }
+    } catch {
+      // fallback
+    }
+    return "7047ac9d-9586-42fb-8728-acb9b52a10da";
+  };
+
   // Auto-fetch existing Gemini Medical Analysis from Database on mount
   useEffect(() => {
     const fetchExistingAnalysis = async () => {
       try {
-        const res = await fetch(getApiUrl("/api/patient/user1/medical-analysis"));
+        const patientId = getActivePatientId();
+        const res = await fetch(getApiUrl(`/api/patient/${patientId}/medical-analysis`));
         if (res.ok) {
           const data = await res.json();
           if (data.hasAnalysis && data.analysis) {
@@ -70,7 +84,8 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
     setAnalyzingPage(true);
     setAnalysisError(null);
     try {
-      const res = await fetch(getApiUrl("/api/patient/user1/analyze-medical-page"), {
+      const patientId = getActivePatientId();
+      const res = await fetch(getApiUrl(`/api/patient/${patientId}/analyze-medical-page`), {
         method: "POST"
       });
       if (res.ok) {
@@ -96,7 +111,8 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
     setUploadSuccess(null);
 
     const formData = new FormData();
-    formData.append("patient_id", "227107b6-d738-4acd-ad21-8c88430acbd9");
+    const patientId = getActivePatientId();
+    formData.append("patient_id", patientId);
     formData.append("document_type", "prescription");
     formData.append("file", file);
 
