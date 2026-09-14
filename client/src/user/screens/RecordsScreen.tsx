@@ -19,6 +19,7 @@ import { TopBar } from "../components/TopBar";
 import { RECORD_CATEGORIES, INITIAL_RECORDS } from "../data/patientData";
 import { getTranslations } from "../utils/i18n";
 import type { MedicalRecordItem } from "../types";
+import { getApiUrl } from "../../config/api";
 
 interface RecordsScreenProps {
   currentLang?: string;
@@ -50,7 +51,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
   useEffect(() => {
     const fetchExistingAnalysis = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/patient/user1/medical-analysis");
+        const res = await fetch(getApiUrl("/api/patient/user1/medical-analysis"));
         if (res.ok) {
           const data = await res.json();
           if (data.hasAnalysis && data.analysis) {
@@ -69,7 +70,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
     setAnalyzingPage(true);
     setAnalysisError(null);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/patient/user1/analyze-medical-page", {
+      const res = await fetch(getApiUrl("/api/patient/user1/analyze-medical-page"), {
         method: "POST"
       });
       if (res.ok) {
@@ -100,7 +101,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/patient/upload-document", {
+      const res = await fetch(getApiUrl("/api/patient/upload-document"), {
         method: "POST",
         body: formData,
       });

@@ -22,6 +22,7 @@ import {
   Clock3,
 } from 'lucide-react';
 import PatientQRCard from '../components/PatientQRCard';
+import { getApiUrl } from '../../config/api';
 
 /* ------------------------------------------------------------------ */
 /*  One-time global styles: keyframes used across the dashboard.       */
@@ -194,7 +195,7 @@ export const Dashboard: React.FC = () => {
       if (hasDetectedPatient) return;
 
       try {
-        const response = await fetch(`http://localhost:8000/doctor/${doctorId}/patient`);
+        const response = await fetch(getApiUrl(`/doctor/${doctorId}/patient`));
         if (!response.ok || !isMounted) return;
 
         const data: { success: boolean; patient_id: string | null } = await response.json();

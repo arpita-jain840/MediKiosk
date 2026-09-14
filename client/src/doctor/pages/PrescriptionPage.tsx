@@ -19,6 +19,7 @@ import { PrescriptionPreviewModal } from '../components/prescription/Prescriptio
 import { SendConfirmationModal } from '../components/prescription/SendConfirmationModal';
 import { PrescriptionSuccessModal } from '../components/prescription/PrescriptionSuccessModal';
 import { CheckCircle2 } from 'lucide-react';
+import { getApiUrl } from '../../config/api';
 
 export const PrescriptionPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -216,7 +217,7 @@ export const PrescriptionPage: React.FC = () => {
     setIsSending(true);
     try {
       const response = await fetch(
-        `http://localhost:8000/api/patient/prescription/${prescription.patientId}`,
+        getApiUrl(`/api/patient/prescription/${prescription.patientId}`),
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

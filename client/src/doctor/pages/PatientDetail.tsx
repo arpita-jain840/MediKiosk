@@ -24,7 +24,6 @@ import {
   MessageSquareText,
   ClipboardList,
   MapPin,
-  Star,
   Camera,
   User,
   Thermometer,
@@ -32,6 +31,7 @@ import {
   ChevronRight,
   BadgeCheck,
 } from "lucide-react";
+import { getApiUrl } from "../../config/api";
 
 /* ─────────────────────────── Type Definitions ─────────────────────────── */
 
@@ -529,7 +529,7 @@ export default function PatientDetail() {
       setLoading(true);
       setLoadError(null);
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/doctor/patient/${id}/blueprint`);
+        const res = await fetch(getApiUrl(`/api/doctor/patient/${id}/blueprint`));
         if (!res.ok) {
           throw new Error(`Patient profile unavailable (${res.status})`);
         }
@@ -572,7 +572,7 @@ export default function PatientDetail() {
     if (!data) return;
     setIsSavingNote(true);
     try {
-      const notificationResponse = await fetch(`http://127.0.0.1:8000/api/patient/remarks/${data.patient.id}`, {
+      const notificationResponse = await fetch(getApiUrl(`/api/patient/remarks/${data.patient.id}`), {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         method: "POST",
@@ -590,7 +590,7 @@ export default function PatientDetail() {
       if (markComplete) {
         formData.append("status", "completed");
       }
-      const noteResponse = await fetch(`http://127.0.0.1:8000/api/doctor/patient/${data.patient.id}/note`, {
+      const noteResponse = await fetch(getApiUrl(`/api/doctor/patient/${data.patient.id}/note`), {
         credentials: "include",
         method: "POST",
         body: formData,
@@ -613,7 +613,7 @@ export default function PatientDetail() {
   const handleExportFhir = async () => {
     if (!data) return;
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/patient/${data.patient.id}/fhir`);
+      const res = await fetch(getApiUrl(`/api/patient/${data.patient.id}/fhir`));
       if (res.ok) {
         const bundle = await res.json();
         const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
@@ -662,7 +662,7 @@ export default function PatientDetail() {
     );
   }
 
-  const { patient, appointment, blueprint, documents } = data;
+  const { patient, blueprint, documents } = data;
   const isEmergency = blueprint.triagePriority === "Emergency" || (blueprint.redFlags && blueprint.redFlags.length > 0);
   const summaryTakeaways = (blueprint.aiSummary || "")
     .split(/(?<=[.!?])\s+/)
@@ -1451,7 +1451,7 @@ export default function PatientDetail() {
                     >
                       {doc.url && doc.url !== "#" ? (
                         <img
-                          src={`http://127.0.0.1:8000${doc.url}`}
+                          src={getApiUrl(doc.url)}
                           alt={doc.name}
                           className="w-full h-full object-cover"
                         />
@@ -1552,7 +1552,7 @@ export default function PatientDetail() {
               {selectedDoc.url && selectedDoc.url !== "#" ? (
                 <div className="rounded-xl overflow-hidden border border-slate-200">
                   <img
-                    src={`http://127.0.0.1:8000${selectedDoc.url}`}
+                    src={getApiUrl(selectedDoc.url)}
                     alt="Document"
                     className="w-full h-auto object-contain"
                   />

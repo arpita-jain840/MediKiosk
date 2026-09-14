@@ -4,6 +4,7 @@ import { TopBar } from "../components/TopBar";
 import { LanguageModal, SUPPORTED_LANGUAGES } from "../components/LanguageModal";
 import { INTAKE_SCRIPT } from "../data/patientData";
 import type { BlueprintSynthesisResult } from "../types";
+import { getApiUrl } from "../../config/api";
 
 interface IntakeScreenProps {
   onClose: () => void;
@@ -62,7 +63,7 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
       } else {
         // Use Bhashini NMT for regional translation (Bengali, Tamil, Telugu, Marathi, etc.)
         try {
-          const res = await fetch("http://127.0.0.1:8000/api/bhashini/translate", {
+          const res = await fetch(getApiUrl("/api/bhashini/translate"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -99,7 +100,7 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
   const handlePlayTts = async (text: string, index: number) => {
     setPlayingTtsIndex(index);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/bhashini/tts", {
+      const res = await fetch(getApiUrl("/api/bhashini/tts"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -170,7 +171,7 @@ export const IntakeScreen: React.FC<IntakeScreenProps> = ({
 
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/api/clinical/generate-blueprint?patient_id=227107b6-d738-4acd-ad21-8c88430acbd9&intake_narration=${encodeURIComponent(intakeSummary)}`,
+        getApiUrl(`/api/clinical/generate-blueprint?patient_id=227107b6-d738-4acd-ad21-8c88430acbd9&intake_narration=${encodeURIComponent(intakeSummary)}`),
         { method: "POST" }
       );
       if (res.ok) {

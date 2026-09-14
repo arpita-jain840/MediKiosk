@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PatientQRCard from "../components/PatientQRCard";
+import { getApiUrl } from "../../config/api";
 
 interface QueuePatient {
   id: string;
@@ -84,7 +85,7 @@ export const DoctorDashboard: React.FC = () => {
     const poll = async () => {
       if (detected) return;
       try {
-        const response = await fetch(`http://localhost:8000/doctor/${doctorId}/patient`);
+        const response = await fetch(getApiUrl(`/doctor/${doctorId}/patient`));
         if (!response.ok || !mounted) return;
 
         const data: { success: boolean; patient_id: string | null } = await response.json();

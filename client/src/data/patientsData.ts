@@ -1,3 +1,5 @@
+import { getApiUrl } from '../config/api';
+
 export interface PatientRecord {
   id: string;
   name: string;
@@ -90,7 +92,7 @@ export const getLivePatients = (): PatientRecord[] => {
 };
 
 export const fetchLiveCockpitPatients = async (): Promise<PatientRecord[]> => {
-  const response = await fetch('http://127.0.0.1:8000/api/doctor/patients');
+  const response = await fetch(getApiUrl('/api/doctor/patients'));
   if (!response.ok) {
     throw new Error(`Unable to load doctor patients (${response.status})`);
   }

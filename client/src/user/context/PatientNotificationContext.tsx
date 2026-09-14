@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { getApiUrl } from "../../config/api";
 
 export interface PatientNotification {
   id: string;
@@ -41,7 +42,8 @@ export const PatientNotificationProvider: React.FC<PatientNotificationProviderPr
 
     const pollNotifications = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/patient/notifications/dd282916-ac7a-4ca8-a6c0-e63ffc62066f`);
+        const targetId = patientId || 'dd282916-ac7a-4ca8-a6c0-e63ffc62066f';
+        const response = await fetch(getApiUrl(`/api/patient/notifications/${targetId}`));
         if (!response.ok) return;
 
         const payload: { success: boolean; notifications: PatientNotification[] } = await response.json();

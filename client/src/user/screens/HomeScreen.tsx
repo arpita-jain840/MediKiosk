@@ -23,6 +23,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { TopBar } from "../components/TopBar";
 import { getTranslations } from "../utils/i18n";
 import type { PatientProfile } from "../types";
+import { getApiUrl, getWsUrl } from "../../config/api";
 
 interface HomeScreenProps {
   patient: PatientProfile;
@@ -56,7 +57,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   useEffect(() => {
     let ws: WebSocket | null = null;
     try {
-      ws = new WebSocket("ws://127.0.0.1:8000/ws/queue");
+      ws = new WebSocket(getWsUrl("/ws/queue"));
       ws.onopen = () => setIsLiveConnected(true);
       ws.onclose = () => setIsLiveConnected(false);
       ws.onmessage = (evt) => {
@@ -97,7 +98,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const handleExportFhir = async () => {
     setIsExportingFhir(true);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/patient/demo-patient/fhir`);
+      const res = await fetch(getApiUrl("/api/patient/demo-patient/fhir"));
       if (res.ok) {
         const bundle = await res.json();
         const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });

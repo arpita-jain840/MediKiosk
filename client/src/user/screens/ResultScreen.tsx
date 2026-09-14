@@ -15,6 +15,7 @@ import { Section } from "../components/Section";
 import { SummaryRow } from "../components/SummaryRow";
 import { PRIORITY_STYLES } from "../data/patientData";
 import type { BlueprintSynthesisResult } from "../types";
+import { getApiUrl, getWsUrl } from "../../config/api";
 
 interface ResultScreenProps {
   blueprintResult?: BlueprintSynthesisResult | null;
@@ -60,7 +61,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
   useEffect(() => {
     let ws: WebSocket | null = null;
     try {
-      ws = new WebSocket("ws://127.0.0.1:8000/ws/queue");
+      ws = new WebSocket(getWsUrl("/ws/queue"));
       ws.onopen = () => setIsLiveConnected(true);
       ws.onclose = () => setIsLiveConnected(false);
       ws.onmessage = (evt) => {
@@ -89,7 +90,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
   const handleExportFhir = async () => {
     setIsExportingFhir(true);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/patient/${patientId}/fhir`);
+      const res = await fetch(getApiUrl(`/api/patient/${patientId}/fhir`));
       if (res.ok) {
         const bundle = await res.json();
         const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });

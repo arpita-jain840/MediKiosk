@@ -10,6 +10,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { initialPatients, type PatientRecord } from '../data/patientsData';
+import { getApiUrl } from '../config/api';
 
 const EXISTING_DOCTOR_ID = 'DOC-1001';
 
@@ -34,7 +35,7 @@ export const SubmitAccess: React.FC = () => {
     setSubmitError('');
 
     try {
-      const response = await fetch('http://localhost:8000/submit', {
+      const response = await fetch(getApiUrl('/submit'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ patient_id: patientId, doctor_id: doctorId }),
@@ -45,7 +46,7 @@ export const SubmitAccess: React.FC = () => {
         return;
       }
 
-      const notificationResponse = await fetch('http://localhost:8000/patient/submit', {
+      const notificationResponse = await fetch(getApiUrl('/patient/submit'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ patient_id: patientId, doctor_id: doctorId }),

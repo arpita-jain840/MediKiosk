@@ -12,6 +12,7 @@ import {
   Info,
 } from "lucide-react";
 import { loginWithGoogleFirebase, isFirebaseConfigured } from "./firebase";
+import { getApiUrl } from "../config/api";
 
 interface LoginProps {
   onLogin: (role: "doctor" | "patient") => void;
@@ -49,7 +50,7 @@ export default function Login({ onLogin }: LoginProps) {
     setErrorMsg("");
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/auth/login", {
+      const res = await fetch(getApiUrl("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -110,7 +111,7 @@ export default function Login({ onLogin }: LoginProps) {
       const googleUser = await loginWithGoogleFirebase();
       
       // Call backend google auth endpoint
-      const res = await fetch("http://127.0.0.1:8000/api/auth/google", {
+      const res = await fetch(getApiUrl("/api/auth/google"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

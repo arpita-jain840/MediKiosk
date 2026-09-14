@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { TopBar } from "../components/TopBar";
 import { getTranslations } from "../utils/i18n";
+import { getApiUrl } from "../../config/api";
 
 interface AIAssistantScreenProps {
   currentLang?: string;
@@ -158,7 +159,7 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
       let bhashiniPlayed = false;
       if (currentLang !== "en") {
         try {
-          const res = await fetch("http://127.0.0.1:8000/api/bhashini/tts", {
+          const res = await fetch(getApiUrl("/api/bhashini/tts"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -280,7 +281,7 @@ export const AIAssistantScreen: React.FC<AIAssistantScreenProps> = ({
       setTyping(true);
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/assistant/chat", {
+        const response = await fetch(getApiUrl("/api/assistant/chat"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
