@@ -30,7 +30,7 @@ export default function Login({ onLogin }: LoginProps) {
   const [infoModalOpen, setInfoModalOpen] = useState(false);
 
   // Auto-fill and execute quick demo login
-  const handleQuickDemo = async (role: "doctor" | "patient") => {
+  const handleQuickDemo = async (role: "doctor" | "patient", userCode: string = "user1") => {
     setErrorMsg("");
     if (role === "doctor") {
       setActiveTab("doctor");
@@ -39,9 +39,9 @@ export default function Login({ onLogin }: LoginProps) {
       await submitCredentials("admindoc", "admindoc", "doctor");
     } else {
       setActiveTab("patient");
-      setUsername("user1");
-      setPassword("user1123");
-      await submitCredentials("user1", "user1123", "patient");
+      setUsername(userCode);
+      setPassword(userCode);
+      await submitCredentials(userCode, userCode, "patient");
     }
   };
 
@@ -80,11 +80,23 @@ export default function Login({ onLogin }: LoginProps) {
       const uLower = u.trim().toLowerCase();
       if ((uLower === "admindoc" && p === "admindoc") || explicitRole === "doctor") {
         localStorage.setItem("medikiosk_role", "doctor");
+        localStorage.setItem("medikiosk_user", JSON.stringify({
+          id: "doc-admin-01",
+          username: "admindoc",
+          full_name: "Dr. Neha Sharma",
+          role: "doctor"
+        }));
         onLogin("doctor");
         navigate("/doctor");
         return;
-      } else if ((uLower === "user1" && p === "user123") || explicitRole === "patient") {
+      } else if (["user1", "user2", "user3", "user4", "user5"].includes(uLower) && p === uLower) {
         localStorage.setItem("medikiosk_role", "patient");
+        localStorage.setItem("medikiosk_user", JSON.stringify({
+          id: uLower,
+          patient_id: uLower,
+          username: uLower,
+          role: "patient"
+        }));
         onLogin("patient");
         navigate("/patient");
         return;
@@ -323,34 +335,63 @@ export default function Login({ onLogin }: LoginProps) {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-2">
               <button
                 type="button"
                 onClick={() => handleQuickDemo("doctor")}
-                className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-colors cursor-pointer group"
+                className="w-full p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-colors cursor-pointer group flex items-center justify-between"
               >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 group-hover:text-primary">
-                  <Stethoscope size={13} className="text-primary" />
-                  <span>Doctor</span>
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                    <Stethoscope size={14} />
+                  </span>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 group-hover:text-primary block">
+                      Doctor: Dr. Neha Sharma
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono">
+                      admindoc / admindoc
+                    </span>
+                  </div>
                 </div>
-                <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                  admindoc / admindoc
-                </div>
+                <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-md bg-primary/10">
+                  Login →
+                </span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => handleQuickDemo("patient")}
-                className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-left transition-colors cursor-pointer group"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 group-hover:text-primary">
-                  <User size={13} className="text-emerald-600" />
-                  <span>Patient</span>
+              <div className="pt-1">
+                <span className="text-[10px] font-bold text-slate-400 block mb-1.5">
+                  5 Patient Accounts (Password = User ID):
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                  {[
+                    { id: "user1", name: "Priya Sharma", tag: "Asthma" },
+                    { id: "user2", name: "Emma Watson", tag: "Thyroid" },
+                    { id: "user3", name: "Rajesh Kumar", tag: "CAD" },
+                    { id: "user4", name: "Sarah Hosten", tag: "Migraine" },
+                    { id: "user5", name: "Vikram Malhotra", tag: "Diabetes" },
+                  ].map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => handleQuickDemo("patient", p.id)}
+                      className="p-2 rounded-xl bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 border border-slate-200 text-left transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-700">
+                          {p.id}
+                        </span>
+                        <span className="text-[9px] font-semibold text-slate-400">
+                          {p.tag}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-medium block truncate">
+                        {p.name}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-                <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                  user1 / user1123
-                </div>
-              </button>
+              </div>
             </div>
           </div>
 

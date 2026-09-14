@@ -14,6 +14,7 @@ import { PatientNotificationProvider, usePatientNotifications } from "./context/
 import { Bell, X } from "lucide-react";
 
 import type { DoctorDirectoryItem, BlueprintSynthesisResult } from "./types";
+import PatientHealthReport from "../components/PatientHealthReport";
 
 export default function PatientApp() {
   const [tab, setTab] = useState("home");
@@ -27,9 +28,9 @@ export default function PatientApp() {
       const stored = localStorage.getItem("medikiosk_user");
       if (!stored) return null;
       const parsed = JSON.parse(stored);
-      return parsed.patient_id || parsed.id || null;
+      return parsed.patient_id || parsed.username || parsed.id || "user1";
     } catch {
-      return null;
+      return "user1";
     }
   });
 
@@ -83,6 +84,27 @@ export default function PatientApp() {
           setBookedDoctor(doc);
         }}
       />
+    );
+  } else if (tab === "report") {
+    content = (
+      <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
+        <div className="max-w-360 mx-auto space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-200/80">
+            <div>
+              <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+                My Health Report
+              </h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                AI-synthesized from your uploads, kiosk vitals, and physician consultations.
+              </p>
+            </div>
+            <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200 shadow-2xs">
+              ● Live Synchronized
+            </span>
+          </div>
+          <PatientHealthReport patientId={patientId || "user1"} />
+        </div>
+      </div>
     );
   } else if (tab === "records") {
     content = (
@@ -219,7 +241,7 @@ function PatientNotificationToast() {
   if (!notification) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-[80] w-[min(380px,calc(100vw-2rem))] rounded-2xl border border-sky-200 bg-white p-4 shadow-2xl animate-in fade-in slide-in-from-top-3 duration-200">
+    <div className="fixed top-4 right-4 z-80 w-[min(380px,calc(100vw-2rem))] rounded-2xl border border-sky-200 bg-white p-4 shadow-2xl animate-in fade-in slide-in-from-top-3 duration-200">
       <div className="flex items-start gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
           <Bell size={17} />

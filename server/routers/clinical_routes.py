@@ -47,6 +47,34 @@ async def resolve_patient(db: AsyncSession, patient_id: str, load_options=None):
         if p:
             return p
 
+    # 1.5. Check Patient Code / User ID Map
+    code_map = {
+        "user1": "7047ac9d-9586-42fb-8728-acb9b52a1001",
+        "mk-1001": "7047ac9d-9586-42fb-8728-acb9b52a1001",
+        "1001": "7047ac9d-9586-42fb-8728-acb9b52a1001",
+        "user2": "dd282916-ac7a-4ca8-a6c0-e63ffc621002",
+        "mk-1002": "dd282916-ac7a-4ca8-a6c0-e63ffc621002",
+        "1002": "dd282916-ac7a-4ca8-a6c0-e63ffc621002",
+        "user3": "34808a5f-e712-4fbc-8e22-501c4b4e1003",
+        "mk-1003": "34808a5f-e712-4fbc-8e22-501c4b4e1003",
+        "1003": "34808a5f-e712-4fbc-8e22-501c4b4e1003",
+        "user4": "89f13786-8f6b-4063-bbfa-9beec5341004",
+        "mk-1004": "89f13786-8f6b-4063-bbfa-9beec5341004",
+        "1004": "89f13786-8f6b-4063-bbfa-9beec5341004",
+        "user5": "84759d82-b1bf-48d7-9cb8-ee41518d1005",
+        "mk-1005": "84759d82-b1bf-48d7-9cb8-ee41518d1005",
+        "1005": "84759d82-b1bf-48d7-9cb8-ee41518d1005",
+    }
+    p_lower = str(patient_id).strip().lower()
+    if p_lower in code_map:
+        stmt = select(Patient).where(Patient.id == code_map[p_lower])
+        if load_options:
+            stmt = stmt.options(*load_options)
+        res = await db.execute(stmt)
+        p = res.scalars().first()
+        if p:
+            return p
+
     # 2. Match ABHA ID
     stmt = select(Patient).where(Patient.abha_id == patient_id)
     if load_options:
@@ -56,7 +84,7 @@ async def resolve_patient(db: AsyncSession, patient_id: str, load_options=None):
     if p:
         return p
 
-    # 3. Match User Email / Username alias
+    # 3. Match User Email / Username alias / Full Name
     alias_map = {
         "user1": "priya.sharma@example.com",
         "user2": "emma.watson@example.com",
@@ -64,12 +92,16 @@ async def resolve_patient(db: AsyncSession, patient_id: str, load_options=None):
         "user4": "sarah.hosten@example.com",
         "user5": "vikram.malhotra@example.com",
     }
-    p_lower = str(patient_id).lower()
     lookup = alias_map.get(p_lower, p_lower)
     stmt = (
         select(Patient)
         .join(User)
-        .where((User.email.ilike(patient_id)) | (User.email.ilike(lookup)) | (User.full_name.ilike(patient_id)))
+        .where(
+            (User.email.ilike(patient_id)) | 
+            (User.email.ilike(lookup)) | 
+            (User.full_name.ilike(patient_id)) |
+            (User.full_name.ilike(f"%{patient_id}%"))
+        )
     )
     if load_options:
         stmt = stmt.options(*load_options)
@@ -709,5 +741,34 @@ async def get_patient_medical_analysis(
         "analysis": existing_analysis,
         "documentsCount": len(patient.documents)
     }
+
+
+@router.get("/patient/{patient_id}/health-report")
+async def get_patient_health_report_endpoint(
+    patient_id: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Returns the comprehensive, prioritized Patient Health Report matching
+    the clinical reference UI architecture (vitals, priority findings, abnormal values,
+    key takeaways, sparkline trends, medication summary, timeline).
+    """
+    patient = await resolve_patient(
+        db,
+        patient_id,
+        [
+            selectinload(Patient.user),
+            selectinload(Patient.clinical_profiles),
+            selectinload(Patient.documents),
+        ]
+    )
+
+    if not patient:
+        raise HTTPException(status_code=404, detail=f"Patient '{patient_id}' not found.")
+
+    latest_profile = patient.clinical_profiles[-1] if patient.clinical_profiles else None
+    report = ai_service.build_patient_health_report(patient, patient.documents, latest_profile)
+    return report
+
 
 

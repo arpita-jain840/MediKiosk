@@ -124,7 +124,7 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
       if (res.ok) {
         const data = await res.json();
         const extracted = data.extractedSummary || "Document digitized successfully.";
-        setUploadSuccess(`Uploaded: ${file.name}`);
+        setUploadSuccess(`Uploaded: ${file.name} — Gemini analyzed and upgraded your Health Report.`);
         setRecordsList((prev) => [
           {
             id: Date.now(),
@@ -137,6 +137,22 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
           },
           ...prev,
         ]);
+
+        // Automatically trigger Gemini Medical History & Report Upgrade
+        try {
+          const autoSync = await fetch(getApiUrl(`/api/patient/${patientId}/analyze-medical-page`), {
+            method: "POST"
+          });
+          if (autoSync.ok) {
+            const syncData = await autoSync.json();
+            if (syncData.analysis) {
+              setGeminiAnalysis(syncData.analysis);
+            }
+          }
+        } catch (syncErr) {
+          console.warn("[Upload Auto-Reconciliation Notice]", syncErr);
+        }
+
         setTimeout(() => setUploadSuccess(null), 5000);
       }
     } catch (err) {

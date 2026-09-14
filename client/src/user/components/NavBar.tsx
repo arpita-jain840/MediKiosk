@@ -5,6 +5,7 @@ import {
   FileText,
   Mic,
   Activity,
+  HeartPulse,
 } from "lucide-react";
 
 import { getTranslations } from "../utils/i18n";
@@ -21,6 +22,7 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, currentLang = "en" 
   const t = getTranslations(currentLang);
   const items = [
     { id: "home", label: t.nav.home, icon: Home },
+    { id: "report", label: "My Report", icon: HeartPulse, isNew: true, badge: "AI Live" },
     { id: "appointments", label: t.nav.appointments, icon: Calendar },
     { id: "records", label: t.nav.records, icon: FileText },
     { id: "ai-assistant", label: t.nav.ai, icon: Mic, isAi: true },
@@ -77,7 +79,18 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, currentLang = "en" 
                     className={active ? "text-white" : "text-slate-400"}
                   />
                   <span>{it.label}</span>
-                  {it.isAi && (
+                  {it.badge && (
+                    <span
+                      className={`ml-auto text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                        active
+                          ? "bg-white/20 text-white"
+                          : "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                      }`}
+                    >
+                      {it.badge}
+                    </span>
+                  )}
+                  {it.isAi && !it.badge && (
                     <span
                       className={`ml-auto text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
                         active
@@ -109,6 +122,17 @@ export const NavBar: React.FC<NavBarProps> = ({ tab, setTab, currentLang = "en" 
           <Home size={19} color={tab === "home" ? "var(--primary)" : "var(--ink-soft)"} />
           <span className={`text-[10.5px] ${tab === "home" ? "font-bold" : "font-medium"}`}>
             {t.nav.home}
+          </span>
+        </button>
+
+        <button
+          onClick={() => setTab("report")}
+          className="flex-1 flex flex-col items-center justify-center gap-1 py-2 tap-target cursor-pointer"
+          style={{ color: tab === "report" ? "var(--primary)" : "var(--ink-soft)" }}
+        >
+          <HeartPulse size={19} color={tab === "report" ? "var(--primary)" : "var(--ink-soft)"} />
+          <span className={`text-[10.5px] ${tab === "report" ? "font-bold" : "font-medium"}`}>
+            My Report
           </span>
         </button>
 

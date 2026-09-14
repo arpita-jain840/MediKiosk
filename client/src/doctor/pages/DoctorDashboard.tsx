@@ -1,374 +1,301 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
-  CalendarDays,
-  CheckCircle2,
-  Clock3,
-  FileSignature,
-  ListChecks,
-  Play,
-  Stethoscope,
+  Search,
+  Sparkles,
+  ArrowRight,
+  Clock,
+  AlertTriangle,
+  ChevronRight,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import PatientQRCard from "../components/PatientQRCard";
-import { getApiUrl } from "../../config/api";
+import PatientHealthReport from "../../components/PatientHealthReport";
 
 interface QueuePatient {
   id: string;
-  token: string;
+  code: string;
   name: string;
   age: number;
   gender: string;
   complaint: string;
   wait: string;
   priority: "Routine" | "Priority" | "Urgent";
+  flag?: string;
 }
 
-const queuePatients: QueuePatient[] = [
+const OPD_QUEUE: QueuePatient[] = [
   {
-    id: "dd282916-ac7a-4ca8-a6c0-e63ffc62066f",
-    token: "A-01",
-    name: "Emma Watson",
-    age: 24,
-    gender: "Male",
-    complaint: "Fever, cough and fatigue",
-    wait: "2 min",
-    priority: "Routine",
-  },
-  {
-    id: "89f13786-8f6b-4063-bbfa-9beec534a303",
-    token: "A-02",
-    name: "Sarah Hosten",
-    age: 31,
+    id: "7047ac9d-9586-42fb-8728-acb9b52a1001",
+    code: "user1",
+    name: "Priya Sharma",
+    age: 34,
     gender: "Female",
-    complaint: "Acute migraine and nausea",
-    wait: "8 min",
+    complaint: "Persistent bronchial asthma, allergic rhinitis, and inhaler titration",
+    wait: "Just arrived",
     priority: "Priority",
+    flag: "Serum IgE 380 IU/mL & Peak Flow 320 L/min",
   },
   {
-    id: "a5493a2e-120b-452f-b68a-3f0ec2c6589b",
-    token: "A-03",
-    name: "Dakota Smith",
-    age: 47,
-    gender: "Male",
-    complaint: "Chest tightness and palpitations",
-    wait: "14 min",
+    id: "dd282916-ac7a-4ca8-a6c0-e63ffc621002",
+    code: "user2",
+    name: "Emma Watson",
+    age: 28,
+    gender: "Female",
+    complaint: "Chronic fatigue, severe cold intolerance, and Hashimoto thyroiditis",
+    wait: "3 min",
     priority: "Urgent",
-  },
-];
-
-const pendingTasks = [
-  {
-    label: "Prescription signatures",
-    detail: "3 prescriptions waiting for e-signature",
-    icon: FileSignature,
-    action: "Review",
+    flag: "TSH 8.4 mIU/L & Ferritin 9 ng/mL (Severe)",
   },
   {
-    label: "Lab reports",
-    detail: "5 new reports need clinical review",
-    icon: ListChecks,
-    action: "Open reports",
+    id: "34808a5f-e712-4fbc-8e22-501c4b4e1003",
+    code: "user3",
+    name: "Rajesh Kumar",
+    age: 59,
+    gender: "Male",
+    complaint: "Coronary artery disease, exertional heaviness, and dyslipidemia",
+    wait: "7 min",
+    priority: "Urgent",
+    flag: "ECG T-wave inversion (V5-V6) & Contrast Allergy",
+  },
+  {
+    id: "89f13786-8f6b-4063-bbfa-9beec5341004",
+    code: "user4",
+    name: "Sarah Hosten",
+    age: 34,
+    gender: "Female",
+    complaint: "Recurrent episodic migraines with scintillating visual aura",
+    wait: "11 min",
+    priority: "Routine",
+    flag: "C5-C6 disc bulge & Sulfa drug allergy",
+  },
+  {
+    id: "84759d82-b1bf-48d7-9cb8-ee41518d1005",
+    code: "user5",
+    name: "Vikram Malhotra",
+    age: 38,
+    gender: "Male",
+    complaint: "Type 2 diabetes mellitus, metabolic syndrome, and Grade 2 NAFLD",
+    wait: "15 min",
+    priority: "Priority",
+    flag: "HbA1c 8.2% & ALT 64 U/L (Steatohepatitis)",
   },
 ];
 
 export const DoctorDashboard: React.FC = () => {
-  const navigate = useNavigate();
-  const doctorId = "DOC-1001";
-  const [submittedPatientId, setSubmittedPatientId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlPatientId = searchParams.get("patientId");
 
+  const [inputQuery, setInputQuery] = useState(urlPatientId || "");
+  const [activePatientId, setActivePatientId] = useState<string | null>(urlPatientId || null);
+
+  // Sync state if URL search param changes
   useEffect(() => {
-    let mounted = true;
-    let detected = false;
-    let intervalId: number | undefined;
+    if (urlPatientId) {
+      setActivePatientId(urlPatientId);
+      setInputQuery(urlPatientId);
+    }
+  }, [urlPatientId]);
 
-    const poll = async () => {
-      if (detected) return;
-      try {
-        const response = await fetch(getApiUrl(`/doctor/${doctorId}/patient`));
-        if (!response.ok || !mounted) return;
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const query = inputQuery.trim();
+    if (query) {
+      setActivePatientId(query);
+      setSearchParams({ patientId: query });
+    }
+  };
 
-        const data: { success: boolean; patient_id: string | null } = await response.json();
-        if (data.success && data.patient_id) {
-          detected = true;
-          if (intervalId !== undefined) window.clearInterval(intervalId);
-          setSubmittedPatientId(data.patient_id);
-        }
-      } catch (error) {
-        console.warn("[DoctorDashboard] Patient notification polling failed:", error);
-      }
-    };
+  const handleSelectPatient = (idOrCode: string) => {
+    setInputQuery(idOrCode);
+    setActivePatientId(idOrCode);
+    setSearchParams({ patientId: idOrCode });
+  };
 
-    void poll();
-    intervalId = window.setInterval(poll, 1000);
-
-    return () => {
-      mounted = false;
-      if (intervalId !== undefined) window.clearInterval(intervalId);
-    };
-  }, [doctorId]);
-
-  useEffect(() => {
-    if (submittedPatientId) navigate(`/doctor/patients/${submittedPatientId}`);
-  }, [navigate, submittedPatientId]);
-
-  const visiblePatients = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) return queuePatients;
-
-    return queuePatients.filter((patient) =>
-      `${patient.name} ${patient.id} ${patient.token}`.toLowerCase().includes(query)
-    );
-  }, [searchQuery]);
-
-  const dateLabel = new Intl.DateTimeFormat("en-IN", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date());
+  const handleClearPatient = () => {
+    setActivePatientId(null);
+    setInputQuery("");
+    setSearchParams({});
+  };
 
   return (
-    <div className="flex flex-col gap-5 md:gap-6 max-w-7xl mx-auto pb-8">
-      {/* Header */}
-      <section className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-primary mb-2">
-            Doctor portal
-          </p>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
-            Welcome, Dr. Ananya
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            {dateLabel} · Your OPD workspace is ready.
-          </p>
-        </div>
+    <div className="w-full max-w-360 mx-auto flex flex-col gap-6 pb-12 animate-fadeIn font-sans">
+      {/* ========================================================================= */}
+      {/* 1. MINIMALIST SEARCH HERO SECTION                                         */}
+      {/* ========================================================================= */}
+      <section className="bg-white rounded-3xl border border-slate-200/90 p-6 md:p-8 shadow-2xs relative overflow-hidden">
+        {/* Subtle background decoration */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-linear-to-bl from-sky-50/70 via-indigo-50/40 to-transparent rounded-full -mr-20 -mt-20 pointer-events-none" />
 
-        <span className="inline-flex items-center gap-2 self-start rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          On duty
-        </span>
-      </section>
+        <div className="relative z-10 max-w-3xl space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200/80 text-[11px] font-extrabold text-indigo-700 tracking-wide uppercase">
+              <Sparkles size={13} className="text-indigo-600" />
+              Clinical Decision Support
+            </span>
+            <span className="text-xs font-semibold text-slate-400">
+              Instant AI Health Synthesis
+            </span>
+          </div>
 
-      {/* Hero / live clinic board */}
-      <section className="rounded-2xl bg-primary p-5 sm:p-7 text-white shadow-sm overflow-hidden relative">
-        <div className="absolute -right-12 -top-16 w-48 h-48 rounded-full border-[24px] border-white/10" />
-
-        <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-          <div className="max-w-xl">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/70 mb-2">
-              Live clinic board
-            </p>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Today&apos;s OPD
-            </h2>
-            <p className="text-sm text-white/80 mt-2">
-              Keep consultations moving with the live patient queue and clinical tasks in one place.
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+              Patient Health Intelligence
+            </h1>
+            <p className="text-xs md:text-sm font-medium text-slate-500 mt-1">
+              Enter a Patient ID or Name to generate the comprehensive, prioritized Clinical Health Report in seconds.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => navigate(`/doctor/patient/${queuePatients[0].id}`)}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-extrabold text-primary shadow-sm hover:bg-slate-50 cursor-pointer"
-            >
-              <Play size={15} />
-              Start next consult
-            </button>
+          {/* Clean High-Affordance Search Bar */}
+          <form onSubmit={handleSearchSubmit} className="pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
+              <div className="relative flex-1">
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={inputQuery}
+                  onChange={(e) => setInputQuery(e.target.value)}
+                  placeholder="Type User ID (e.g. user1, user2, user3), Name, or Condition..."
+                  className="w-full pl-11 pr-24 py-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/90 text-sm font-semibold text-slate-800 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-2xs transition-all"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
+                  <span className="hidden sm:inline-block px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[10px] font-extrabold text-slate-400 shadow-2xs">
+                    ↵ Enter
+                  </span>
+                </div>
+              </div>
 
-            <button
-              type="button"
-              onClick={() => document.getElementById("patient-queue")?.scrollIntoView({ behavior: "smooth" })}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-4 py-2.5 text-xs font-extrabold text-white hover:bg-white/10 cursor-pointer"
-            >
-              <ListChecks size={15} />
-              View queue
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/doctor/prescription/dd282916-ac7a-4ca8-a6c0-e63ffc62066f")}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-4 py-2.5 text-xs font-extrabold text-white hover:bg-white/10 cursor-pointer"
-            >
-              <FileSignature size={15} />
-              Sign prescriptions
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Live handoff + QR card */}
-      <section className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.85fr)] gap-5 items-start">
-        <div className="rounded-2xl border border-emerald-200/70 bg-emerald-50/60 p-4 sm:p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-emerald-800">
-              Live patient handoff
-            </p>
-          </div>
-          <p className="text-sm font-semibold text-slate-700">
-            Keep the desk QR visible so patients can securely send their existing case to this doctor.
-          </p>
-        </div>
-
-        <PatientQRCard />
-      </section>
-
-      {/* Stat cards */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {[
-          {
-            label: "Patients waiting",
-            value: "12",
-            detail: "+3 since 9 AM",
-            icon: Clock3,
-            tint: "bg-sky-50 text-sky-700",
-          },
-          {
-            label: "Consults completed",
-            value: "18",
-            detail: "+4 today",
-            icon: CheckCircle2,
-            tint: "bg-emerald-50 text-emerald-700",
-          },
-          {
-            label: "Pending signatures",
-            value: "3",
-            detail: "Needs attention",
-            icon: FileSignature,
-            tint: "bg-amber-50 text-amber-700",
-          },
-          {
-            label: "Avg. consult time",
-            value: "12m",
-            detail: "2m faster today",
-            icon: Stethoscope,
-            tint: "bg-rose-50 text-rose-700",
-          },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="rounded-2xl bg-white border border-slate-200/80 p-4 sm:p-5 shadow-sm"
-          >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${stat.tint}`}>
-              <stat.icon size={19} />
-            </div>
-            <p className="text-xs font-semibold text-slate-400">{stat.label}</p>
-            <div className="flex items-end justify-between gap-2 mt-1">
-              <p className="text-2xl font-extrabold text-slate-900">{stat.value}</p>
-              <p className="text-[10px] font-bold text-slate-400 text-right">{stat.detail}</p>
-            </div>
-          </div>
-        ))}
-      </section>
-
-      {/* Queue + tasks */}
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.5fr)_minmax(320px,0.8fr)] gap-5">
-        {/* Patient queue */}
-        <section
-          id="patient-queue"
-          className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 border-b border-slate-100">
-            <div>
-              <h2 className="text-lg font-extrabold text-slate-900">Patient Queue</h2>
-              <p className="text-xs text-slate-400 mt-1">Next patients waiting for consultation</p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <input
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search queue"
-                className="w-full sm:w-36 rounded-xl border border-slate-200 px-3 py-2 text-xs outline-none focus:border-primary"
-              />
               <button
-                type="button"
-                onClick={() => navigate("/doctor/patients")}
-                className="text-xs font-bold text-primary hover:underline whitespace-nowrap"
+                type="submit"
+                className="px-6 py-3.5 rounded-2xl bg-primary text-white text-xs font-bold shadow-sm hover:bg-primary/95 transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0"
               >
-                Full queue
+                <span>Generate Report</span>
+                <ArrowRight size={14} />
               </button>
+            </div>
+          </form>
+
+          {/* Minimalist Quick-Access Patient Chips */}
+          <div className="pt-1 flex items-center gap-2 flex-wrap text-xs">
+            <span className="text-slate-400 font-bold text-[11px]">Quick Access:</span>
+            {OPD_QUEUE.map((p) => {
+              const isSelected = activePatientId === p.code || activePatientId === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => handleSelectPatient(p.code)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer border ${
+                    isSelected
+                      ? "bg-primary text-white border-primary shadow-xs"
+                      : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200/80"
+                  }`}
+                >
+                  <span className="opacity-75 font-mono">{p.code}</span>
+                  <span>{p.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 2. DYNAMIC CONTENT: Active Health Report OR Minimalist Queue               */}
+      {/* ========================================================================= */}
+      {activePatientId ? (
+        <div className="space-y-4">
+          <PatientHealthReport
+            patientId={activePatientId}
+            showBackToSearch={true}
+            onClose={handleClearPatient}
+          />
+        </div>
+      ) : (
+        /* Minimalist Unchaotic Queue List */
+        <section className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-2xs space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <div>
+              <h2 className="text-base font-extrabold text-slate-900">
+                AIIA OPD Consultation Queue
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Select any patient or enter their Patient ID above to review their full multi-modal clinical report.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                {OPD_QUEUE.length} Patients Waiting
+              </span>
             </div>
           </div>
 
           <div className="divide-y divide-slate-100">
-            {visiblePatients.map((patient) => (
-              <div key={patient.id} className="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="w-11 h-11 rounded-xl bg-primary-tint text-primary flex items-center justify-center font-extrabold text-sm shrink-0">
-                  {patient.token}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm font-extrabold text-slate-900">{patient.name}</h3>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        patient.priority === "Urgent"
-                          ? "bg-rose-50 text-rose-700"
-                          : patient.priority === "Priority"
-                          ? "bg-amber-50 text-amber-700"
-                          : "bg-slate-100 text-slate-600"
-                      }`}
-                    >
-                      {patient.priority}
-                    </span>
+            {OPD_QUEUE.map((patient) => (
+              <div
+                key={patient.id}
+                onClick={() => handleSelectPatient(patient.code)}
+                className="py-4 first:pt-2 last:pb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/80 rounded-2xl px-3 transition-colors cursor-pointer group"
+              >
+                <div className="flex items-start sm:items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-primary font-mono font-black text-xs shrink-0 group-hover:scale-105 transition-transform">
+                    {patient.code.replace("MK-", "")}
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">
-                    {patient.id} · {patient.age} yrs · {patient.gender}
-                  </p>
-                  <p className="text-xs font-semibold text-slate-700 mt-2 truncate">
-                    {patient.complaint}
-                  </p>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm font-extrabold text-slate-900 group-hover:text-primary transition-colors">
+                        {patient.name}
+                      </h3>
+                      <span className="text-xs text-slate-400 font-semibold">
+                        {patient.age}y · {patient.gender}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold border ${
+                          patient.priority === "Urgent"
+                            ? "bg-rose-50 text-rose-700 border-rose-200"
+                            : patient.priority === "Priority"
+                            ? "bg-amber-50 text-amber-700 border-amber-200"
+                            : "bg-slate-100 text-slate-600 border-slate-200"
+                        }`}
+                      >
+                        {patient.priority}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 line-clamp-1">
+                      {patient.complaint}
+                    </p>
+
+                    {patient.flag && (
+                      <p className="text-[11px] font-bold text-rose-600 flex items-center gap-1 mt-0.5">
+                        <AlertTriangle size={12} className="shrink-0" />
+                        <span>{patient.flag}</span>
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-3">
-                  <span className="text-xs font-bold text-slate-400">{patient.wait}</span>
-                  
+                <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
+                  <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+                    <Clock size={12} />
+                    {patient.wait}
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelectPatient(patient.code);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 group-hover:bg-primary group-hover:text-white text-slate-700 text-xs font-bold transition-all shadow-2xs"
+                  >
+                    <span>View Report</span>
+                    <ChevronRight size={14} />
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         </section>
-
-        {/* Pending tasks */}
-        <section className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-slate-100">
-            <h2 className="text-lg font-extrabold text-slate-900">Pending Tasks</h2>
-            <p className="text-xs text-slate-400 mt-1">Keep your clinical workspace clear</p>
-          </div>
-
-          <div className="p-4 space-y-3">
-            {pendingTasks.map((task) => (
-              <button
-                key={task.label}
-                type="button"
-                onClick={() =>
-                  navigate(task.label.startsWith("Prescription") ? "/doctor/prescription/dd282916-ac7a-4ca8-a6c0-e63ffc62066f" : "/doctor/reports")
-                }
-                className="w-full flex items-center gap-3 rounded-xl border border-slate-200 p-3 text-left hover:border-primary/40 hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                <span className="w-9 h-9 rounded-lg bg-primary-tint text-primary flex items-center justify-center shrink-0">
-                  <task.icon size={17} />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-xs font-extrabold text-slate-800">{task.label}</span>
-                  <span className="block text-[11px] text-slate-400 mt-0.5">{task.detail}</span>
-                </span>
-                <span className="text-[11px] font-extrabold text-primary">{task.action}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="mx-4 mb-4 rounded-xl bg-slate-50 p-3 flex items-center gap-3">
-            <CalendarDays size={17} className="text-primary" />
-            <p className="text-xs font-semibold text-slate-600">
-              Next appointment starts in 20 minutes.
-            </p>
-          </div>
-        </section>
-      </div>
+      )}
     </div>
   );
 };

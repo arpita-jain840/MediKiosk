@@ -15,6 +15,7 @@ interface DoctorTopBarProps {
   showSearch?: boolean;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
+  onSearchSubmit?: (query: string) => void;
   searchPlaceholder?: string;
   onOpenProfile?: () => void;
 }
@@ -30,7 +31,8 @@ export const DoctorTopBar: React.FC<DoctorTopBarProps> = ({
   showSearch = true,
   searchQuery = "",
   onSearchChange,
-  searchPlaceholder = "Search patients, tokens, or records...",
+  onSearchSubmit,
+  searchPlaceholder = "Search patient, report, or condition...",
   onOpenProfile,
 }) => {
   const t = getTranslations(currentLang);
@@ -38,7 +40,7 @@ export const DoctorTopBar: React.FC<DoctorTopBarProps> = ({
   const initials = doctorName.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2);
 
   return (
-    <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-5 md:px-10 pt-5 md:pt-6 pb-3 md:pb-5 shrink-0 border-b border-slate-200/60 bg-[var(--bg)]">
+    <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-5 md:px-10 pt-5 md:pt-6 pb-3 md:pb-5 shrink-0 border-b border-slate-200/60 bg-(--bg)">
       <div className="flex items-start justify-between gap-3 md:contents">
         <div className="flex items-center gap-3 min-w-0 md:order-1">
         {onBack && (
@@ -79,6 +81,12 @@ export const DoctorTopBar: React.FC<DoctorTopBarProps> = ({
               type="search"
               value={searchQuery}
               onChange={(event) => onSearchChange?.(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && searchQuery.trim()) {
+                  event.preventDefault();
+                  onSearchSubmit?.(searchQuery.trim());
+                }
+              }}
               placeholder={searchPlaceholder}
               className="w-full pl-9.5 pr-4 py-2 text-xs md:text-sm rounded-xl bg-white border border-slate-200 shadow-2xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-slate-800 placeholder:text-slate-400"
             />

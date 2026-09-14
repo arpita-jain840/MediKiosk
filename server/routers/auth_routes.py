@@ -52,11 +52,11 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
     designated_passwords = {
         "admindoc": ["admindoc"],
         "admindoc@medikiosk.com": ["admindoc"],
-        "user1": ["user1123", "user123"],
-        "user2": ["user2123", "user223"],
-        "user3": ["user3123", "user323"],
-        "user4": ["user4123", "user423"],
-        "user5": ["user5123", "user523"],
+        "user1": ["user1", "user1123", "user123"],
+        "user2": ["user2", "user2123", "user223"],
+        "user3": ["user3", "user3123", "user323"],
+        "user4": ["user4", "user4123", "user423"],
+        "user5": ["user5", "user5123", "user523"],
     }
 
     if db_user:
@@ -124,11 +124,11 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
         }
 
     designated_users = {
-        "user1": {"id": "7047ac9d-9586-42fb-8728-acb9b52a10da", "passwords": ["user1123", "user123"], "full_name": "Priya Sharma", "abha": "14-2938-4471-0093", "age": 34, "gender": "Female"},
-        "user2": {"id": "dd282916-ac7a-4ca8-a6c0-e63ffc62066f", "passwords": ["user2123", "user223"], "full_name": "Emma Watson", "abha": "14-9824-3321-0012", "age": 28, "gender": "Female"},
-        "user3": {"id": "34808a5f-e712-4fbc-8e22-501c4b4e1527", "passwords": ["user3123", "user323"], "full_name": "Rajesh Kumar", "abha": "14-5582-7719-0104", "age": 59, "gender": "Male"},
-        "user4": {"id": "89f13786-8f6b-4063-bbfa-9beec534a303", "passwords": ["user4123", "user423"], "full_name": "Sarah Hosten", "abha": "14-4412-8823-0101", "age": 34, "gender": "Female"},
-        "user5": {"id": "84759d82-b1bf-48d7-9cb8-ee41518d7837", "passwords": ["user5123", "user523"], "full_name": "Vikram Malhotra", "abha": "14-1182-6632-0108", "age": 38, "gender": "Male"}
+        "user1": {"id": "7047ac9d-9586-42fb-8728-acb9b52a1001", "passwords": ["user1", "user1123", "user123"], "full_name": "Priya Sharma", "abha": "14-2938-4471-0091", "age": 34, "gender": "Female"},
+        "user2": {"id": "dd282916-ac7a-4ca8-a6c0-e63ffc621002", "passwords": ["user2", "user2123", "user223"], "full_name": "Emma Watson", "abha": "14-9824-3321-0092", "age": 28, "gender": "Female"},
+        "user3": {"id": "34808a5f-e712-4fbc-8e22-501c4b4e1003", "passwords": ["user3", "user3123", "user323"], "full_name": "Rajesh Kumar", "abha": "14-5582-7719-0093", "age": 59, "gender": "Male"},
+        "user4": {"id": "89f13786-8f6b-4063-bbfa-9beec5341004", "passwords": ["user4", "user4123", "user423"], "full_name": "Sarah Hosten", "abha": "14-4412-8823-0094", "age": 34, "gender": "Female"},
+        "user5": {"id": "84759d82-b1bf-48d7-9cb8-ee41518d1005", "passwords": ["user5", "user5123", "user523"], "full_name": "Vikram Malhotra", "abha": "14-1182-6632-0095", "age": 38, "gender": "Male"}
     }
 
     if u_lower in designated_users and p_pass in designated_users[u_lower]["passwords"]:
@@ -152,7 +152,7 @@ async def login(req: LoginRequest, db: AsyncSession = Depends(get_db)):
 
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid credentials. Doctor: 'admindoc' / 'admindoc', Patients: 'user1'..'user5' with passwords 'user1123'..'user5123'."
+        detail="Invalid credentials. Doctor: 'admindoc' / 'admindoc', Patients: 'user1'..'user5' with passwords 'user1'..'user5'."
     )
 
 

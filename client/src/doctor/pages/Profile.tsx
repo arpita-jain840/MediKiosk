@@ -1,17 +1,25 @@
 import React from 'react';
-import { Edit3 } from 'lucide-react';
+import { Edit3, LogOut } from 'lucide-react';
 
 export const Profile: React.FC = () => {
+  const handleLogout = () => {
+    localStorage.removeItem('medikiosk_role');
+    localStorage.removeItem('medikiosk_token');
+    localStorage.removeItem('medikiosk_user');
+    sessionStorage.clear();
+    window.location.href = '/login';
+  };
+
   const doctor = {
-    name: 'Dr. Ananya Sharma',
+    name: 'Dr. Neha Sharma',
     doctorId: 'DOC-1001',
-    specialty: 'General Physician & Clinical Consultant',
+    specialty: 'Cardiologist & Internal Medicine Consultant',
     experience: 12,
-    hospital: 'Medikis Care Center',
-    location: 'Saket, New Delhi, India',
-    email: 'dr.ananya.sharma@medikis.in',
+    hospital: 'AIIA OPD Hospital & Kiosk Network',
+    location: 'New Delhi, India',
+    email: 'dr.neha.sharma@medikiosk.in',
     phone: '+91 98101 23456',
-    qualification: 'MBBS, MD (Internal Medicine)',
+    qualification: 'MBBS, MD (Cardiology)',
     registrationNo: 'MCI-DL-2014-98421',
     patientsToday: 8,
     totalPatients: 248,
@@ -19,10 +27,10 @@ export const Profile: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-5 md:gap-6 max-w-5xl mx-auto pb-8 text-slate-800">
+    <div className="flex flex-col gap-5 md:gap-6 max-w-5xl mx-auto pb-8 text-slate-800 animate-fadeIn font-sans">
       {/* Top Banner & Avatar */}
-      <div className="bg-white rounded-[2rem] p-5 sm:p-7 border border-slate-100/80 shadow-xs relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-24 sm:h-28 bg-gradient-to-r from-teal-700 via-indigo-700 to-slate-900 opacity-90" />
+      <div className="bg-white rounded-4xl p-5 sm:p-7 border border-slate-100/80 shadow-xs relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-24 sm:h-28 bg-linear-to-r from-teal-700 via-indigo-700 to-slate-900 opacity-90" />
         
         <div className="relative pt-12 sm:pt-16 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 text-center sm:text-left">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4">
@@ -43,17 +51,27 @@ export const Profile: React.FC = () => {
             </div>
           </div>
 
-          <button className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer self-center sm:self-end">
-            <Edit3 className="w-3.5 h-3.5" />
-            <span>Edit Profile</span>
-          </button>
+          <div className="flex items-center gap-2 self-center sm:self-end">
+            <button className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs">
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Edit Profile</span>
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <LogOut className="w-3.5 h-3.5 text-rose-600" />
+              <span>Log Out</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Grid: Credentials & Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Left 2 Cols: Credentials */}
-        <div className="md:col-span-2 bg-white rounded-[2rem] p-5 sm:p-6 border border-slate-100/80 shadow-xs space-y-4">
+        <div className="md:col-span-2 bg-white rounded-4xl p-5 sm:p-6 border border-slate-100/80 shadow-xs space-y-4">
           <h2 className="text-base sm:text-lg font-bold text-slate-900 border-b border-slate-100 pb-3">
             Doctor Credentials & Hospital Affiliation
           </h2>
@@ -92,7 +110,7 @@ export const Profile: React.FC = () => {
         </div>
 
         {/* Right 1 Col: Performance Stats */}
-        <div className="bg-white rounded-[2rem] p-5 sm:p-6 border border-slate-100/80 shadow-xs flex flex-col justify-between gap-4">
+        <div className="bg-white rounded-4xl p-5 sm:p-6 border border-slate-100/80 shadow-xs flex flex-col justify-between gap-4">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">
               Patient Throughput
@@ -113,6 +131,21 @@ export const Profile: React.FC = () => {
             MediKiosk Live Kiosk Desk #04 Connected
           </div>
         </div>
+      </div>
+
+      {/* Session & Security */}
+      <div className="bg-white rounded-4xl p-5 sm:p-6 border border-slate-100/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900">Session & Security</h3>
+          <p className="text-xs text-slate-400 mt-0.5">End your clinical doctor session securely on this terminal.</p>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Sign Out of Doctor Portal</span>
+        </button>
       </div>
     </div>
   );

@@ -69,11 +69,11 @@ export const SubmitAccess: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-bg-warm flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden font-sans">
       <div className="absolute top-1/6 -left-20 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/6 -right-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="max-w-md w-full bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden relative transition-all duration-300">
-        <div className="bg-gradient-to-r from-teal-800 to-teal-900 text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-linear-to-r from-teal-800 to-teal-900 text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-teal-200 backdrop-blur-sm border border-white/10">
               <Building2 className="w-5 h-5" />
@@ -128,7 +128,7 @@ export const SubmitAccess: React.FC = () => {
               <img
                 src={selectedPatient.avatar}
                 alt={selectedPatient.name}
-                className="w-11 h-11 rounded-full object-cover border border-slate-200 flex-shrink-0"
+                className="w-11 h-11 rounded-full object-cover border border-slate-200 shrink-0"
               />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-1">
@@ -159,7 +159,7 @@ export const SubmitAccess: React.FC = () => {
             </div>
 
             <div className="bg-white rounded-lg p-2 border border-slate-100 text-[11px] text-slate-600 flex items-start gap-1.5">
-              <Stethoscope className="w-3.5 h-3.5 text-teal-600 flex-shrink-0 mt-0.5" />
+              <Stethoscope className="w-3.5 h-3.5 text-teal-600 shrink-0 mt-0.5" />
               <span className="line-clamp-2">{selectedPatient.complaint}</span>
             </div>
           </div>
@@ -192,7 +192,7 @@ export const SubmitAccess: React.FC = () => {
           <div className="bg-white rounded-3xl p-7 sm:p-9 max-w-sm w-full max-h-[90vh] overflow-y-auto shadow-2xl relative text-center flex flex-col items-center my-auto">
 
             {/* Checkmark */}
-            <div className="w-16 h-16 rounded-full bg-[#00c888] flex items-center justify-center shadow-lg shadow-emerald-500/30 mb-6 flex-shrink-0">
+            <div className="w-16 h-16 rounded-full bg-[#00c888] flex items-center justify-center shadow-lg shadow-emerald-500/30 mb-6 shrink-0">
               <Check className="w-8 h-8 text-white stroke-[3.5]" />
             </div>
 
@@ -207,7 +207,7 @@ export const SubmitAccess: React.FC = () => {
             </p>
 
             {/* Medical / Clinic Context Confirmation */}
-            <div className="w-full bg-slate-50 rounded-2xl p-3.5 border border-slate-100 mb-6 text-left flex-shrink-0">
+            <div className="w-full bg-slate-50 rounded-2xl p-3.5 border border-slate-100 mb-6 text-left shrink-0">
               <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 mb-1.5">
                 <span className="flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-teal-600" />
@@ -226,7 +226,7 @@ export const SubmitAccess: React.FC = () => {
             {/* Close */}
             <button
               onClick={() => setIsSubmitted(false)}
-              className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-bold transition-colors cursor-pointer flex-shrink-0"
+              className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-bold transition-colors cursor-pointer shrink-0"
             >
               Done
             </button>

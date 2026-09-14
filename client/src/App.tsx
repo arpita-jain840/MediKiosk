@@ -73,18 +73,21 @@ const DoctorLayout = () => {
   };
 
   return (
-    <div className="flex flex-col-reverse md:flex-row h-screen w-screen overflow-hidden bg-[var(--bg)]">
+    <div className="flex flex-col-reverse md:flex-row h-screen w-screen overflow-hidden bg-(--bg)">
       <DoctorNavBar tab={currentTab} setTab={setTab} currentLang={currentLang} />
 
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <DoctorTopBar
           title={pageHeader.title}
           subtitle={pageHeader.subtitle}
-          doctorName="Dr. Ananya Sharma"
+          doctorName="Dr. Neha Sharma"
           currentLang={currentLang}
           onOpenLangModal={() => setIsLangModalOpen(true)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          onSearchSubmit={(query) => {
+            navigate(`/doctor/dashboard?patientId=${encodeURIComponent(query)}`);
+          }}
           onBack={location.pathname === '/doctor/dashboard' ? undefined : () => navigate(-1)}
           onOpenProfile={() => navigate('/doctor/profile')}
         />
