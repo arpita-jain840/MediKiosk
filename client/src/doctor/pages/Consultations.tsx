@@ -118,13 +118,13 @@ export const Consultations: React.FC = () => {
 
       {/* Consultations List */}
       {isLoading ? (
-        <div className="bg-white rounded-[2rem] p-12 text-center border border-slate-100 flex flex-col items-center justify-center">
+        <div className="bg-white rounded-4xl p-12 text-center border border-slate-100 flex flex-col items-center justify-center">
           <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mb-3" />
           <h3 className="text-sm font-bold text-slate-800">Loading Clinical Consultations from Database...</h3>
           <p className="text-xs text-slate-400 mt-1">Retrieving live patient queue sessions.</p>
         </div>
       ) : filteredPatients.length === 0 ? (
-        <div className="bg-white rounded-[2rem] p-12 text-center border border-slate-100">
+        <div className="bg-white rounded-4xl p-12 text-center border border-slate-100">
           <CheckCircle2 className="w-10 h-10 text-slate-300 mx-auto mb-2" />
           <h3 className="text-sm font-bold text-slate-800">No Consultations Found</h3>
           <p className="text-xs text-slate-400 mt-1">No patient consultations match your current filter or database records.</p>
@@ -134,7 +134,7 @@ export const Consultations: React.FC = () => {
           {filteredPatients.map((patient) => (
             <div
               key={patient.id}
-              className="bg-white rounded-[2rem] p-5 sm:p-6 border border-slate-100/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4"
+              className="bg-white rounded-4xl p-5 sm:p-6 border border-slate-100/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4"
             >
             <div>
               <div className="flex items-start justify-between gap-3 mb-3">
@@ -142,7 +142,7 @@ export const Consultations: React.FC = () => {
                   <img
                     src={patient.avatar}
                     alt={patient.name}
-                    className="w-12 h-12 rounded-2xl object-cover border border-slate-200 flex-shrink-0"
+                    className="w-12 h-12 rounded-2xl object-cover border border-slate-200 shrink-0"
                   />
                   <div className="min-w-0">
                     <h3 className="text-sm sm:text-base font-black text-slate-900 truncate">
@@ -155,7 +155,7 @@ export const Consultations: React.FC = () => {
                 </div>
 
                 <span
-                  className={`px-2.5 py-1 rounded-full text-[10px] font-bold border flex-shrink-0 ${
+                  className={`px-2.5 py-1 rounded-full text-[10px] font-bold border shrink-0 ${
                     patient.status === 'In Consultation'
                       ? 'bg-indigo-50 text-indigo-700 border-indigo-200 animate-pulse'
                       : patient.status === 'Waiting'

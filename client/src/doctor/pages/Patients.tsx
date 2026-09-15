@@ -85,7 +85,7 @@ export const Patients: React.FC = () => {
       </div>
 
       {/* Patients Table / Card List */}
-      <div className="bg-white rounded-[2rem] p-4 sm:p-6 border border-slate-100/80 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-4xl p-4 sm:p-6 border border-slate-100/80 shadow-xs overflow-hidden">
         {isLoading ? (
           <div className="text-center py-16 flex flex-col items-center justify-center">
             <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mb-3" />
@@ -114,7 +114,7 @@ export const Patients: React.FC = () => {
                   <img
                     src={patient.avatar}
                     alt={patient.name}
-                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover border border-slate-200 group-hover:border-indigo-300 transition-colors flex-shrink-0"
+                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover border border-slate-200 group-hover:border-indigo-300 transition-colors shrink-0"
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">

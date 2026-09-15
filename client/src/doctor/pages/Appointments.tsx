@@ -549,7 +549,7 @@ export const Appointments: React.FC = () => {
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-1.5 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-2xl text-xs font-black shadow-md shadow-blue-600/25 cursor-pointer transition-all"
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
+            <Plus className="w-4 h-4 stroke-3" />
             <span>Add Appointment</span>
           </button>
         </div>
@@ -666,9 +666,9 @@ export const Appointments: React.FC = () => {
       {/* ======================================================== */}
       {/* 4. MULTI-DOCTOR TIMETABLE SCHEDULE GRID                  */}
       {/* ======================================================== */}
-      <div className="bg-white rounded-[2rem] border border-slate-200/90 shadow-xs overflow-x-auto relative">
+      <div className="bg-white rounded-4xl border border-slate-200/90 shadow-xs overflow-x-auto relative">
         {/* Table Header: GMT Timezone & Doctor Columns */}
-        <div className="grid grid-cols-12 min-w-[950px] border-b border-slate-200/90 bg-slate-50/60 sticky top-0 z-10">
+        <div className="grid grid-cols-12 min-w-237.5 border-b border-slate-200/90 bg-slate-50/60 sticky top-0 z-10">
           {/* Timezone Col */}
           <div className="col-span-2 p-4 sm:p-5 flex items-center justify-center border-r border-slate-200/90 text-center">
             <div>
@@ -717,14 +717,14 @@ export const Appointments: React.FC = () => {
         </div>
 
         {/* Schedule Time Slot Rows */}
-        <div className="relative min-w-[950px]">
+        <div className="relative min-w-237.5">
           {timeSlots.map((slot) => {
             const isBreak = slot === '12:00';
 
             return (
               <div
                 key={slot}
-                className={`grid grid-cols-12 min-h-[125px] border-b border-slate-200/70 relative ${isBreak ? 'bg-slate-50/70' : 'bg-white'
+                className={`grid grid-cols-12 min-h-31.25 border-b border-slate-200/70 relative ${isBreak ? 'bg-slate-50/70' : 'bg-white'
                   }`}
               >
                 {/* Time Label Column */}
@@ -759,7 +759,7 @@ export const Appointments: React.FC = () => {
                       >
                         {isNotAvailable ? (
                           /* Not Available Block (Pink / Light-Red as requested) */
-                          <div className="h-full min-h-[95px] rounded-2xl flex flex-col items-center justify-center text-xs font-bold text-rose-500 bg-rose-50/60 border border-rose-100 border-dashed select-none">
+                          <div className="h-full min-h-23.75 rounded-2xl flex flex-col items-center justify-center text-xs font-bold text-rose-500 bg-rose-50/60 border border-rose-100 border-dashed select-none">
                             <span>Not Available</span>
                             <span className="text-[10px] text-rose-400 font-medium">Department Meeting</span>
                           </div>
@@ -767,7 +767,7 @@ export const Appointments: React.FC = () => {
                           /* APPOINTMENT CARD */
                           <div
                             onClick={() => setSelectedAppointment(apt)}
-                            className="h-full min-h-[95px] rounded-2xl p-3 flex flex-col justify-between transition-all shadow-xs hover:shadow-md border border-slate-200/90 bg-white hover:border-blue-300 cursor-pointer group relative overflow-hidden"
+                            className="h-full min-h-23.75 rounded-2xl p-3 flex flex-col justify-between transition-all shadow-xs hover:shadow-md border border-slate-200/90 bg-white hover:border-blue-300 cursor-pointer group relative overflow-hidden"
                           >
                             {/* Urgent Priority Left Accent Line */}
                             {apt.priority === 'Urgent' && (
@@ -825,7 +825,7 @@ export const Appointments: React.FC = () => {
 
                             {/* Card Bottom: Payment & Quick Action Buttons */}
                             <div className="flex items-center justify-between pt-1 border-t border-slate-100 pl-1">
-                              <span className="text-[10px] font-bold text-slate-400 truncate max-w-[120px]">
+                              <span className="text-[10px] font-bold text-slate-400 truncate max-w-30">
                                 {apt.paymentStatus}
                               </span>
 
@@ -907,7 +907,7 @@ export const Appointments: React.FC = () => {
                               setFormTimeSlot(slot);
                               setShowAddModal(true);
                             }}
-                            className={`h-full min-h-[95px] rounded-2xl flex items-center justify-center text-slate-300 border border-transparent transition-all group ${slotAvailable ? 'hover:text-blue-600 hover:bg-blue-50/30 hover:border-blue-200 cursor-pointer' : 'cursor-not-allowed bg-slate-50/40'}`}
+                            className={`h-full min-h-23.75 rounded-2xl flex items-center justify-center text-slate-300 border border-transparent transition-all group ${slotAvailable ? 'hover:text-blue-600 hover:bg-blue-50/30 hover:border-blue-200 cursor-pointer' : 'cursor-not-allowed bg-slate-50/40'}`}
                           >
                             <span className={`text-[11px] font-bold opacity-0 transition-opacity flex items-center gap-1 bg-white px-3 py-1 rounded-full shadow-xs border border-blue-200 ${slotAvailable ? 'group-hover:opacity-100' : ''}`}>
                               <Plus className="w-3 h-3" /> Book Slot
@@ -928,7 +928,7 @@ export const Appointments: React.FC = () => {
             style={{ top: '375px' }}
           >
             <div className="w-3 h-3 rounded-full bg-rose-500 -ml-1.5 shadow-md ring-4 ring-rose-300/80" />
-            <div className="flex-1 h-[2px] bg-rose-500 shadow-sm relative flex items-center justify-center">
+            <div className="flex-1 h-0.5 bg-rose-500 shadow-sm relative flex items-center justify-center">
               <div className="bg-slate-950 text-white text-[10px] font-black px-3 py-0.5 rounded-full shadow-lg transform -translate-y-0.5">
                 11:00
               </div>
@@ -1366,7 +1366,7 @@ export const Appointments: React.FC = () => {
       {/* ======================================================== */}
       {showCancelConfirm && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2rem] p-7 max-w-sm w-full shadow-2xl border border-slate-100 text-center space-y-4">
+          <div className="bg-white rounded-4xl p-7 max-w-sm w-full shadow-2xl border border-slate-100 text-center space-y-4">
             <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
               <AlertTriangle className="w-6 h-6" />
             </div>

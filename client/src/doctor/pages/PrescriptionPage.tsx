@@ -214,7 +214,7 @@ export const PrescriptionPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-8 bg-white rounded-3xl border border-slate-100 shadow-xs">
+      <div className="flex flex-col items-center justify-center min-h-100 text-center p-8 bg-white rounded-3xl border border-slate-100 shadow-xs">
         <Loader2 className="w-8 h-8 text-teal-600 animate-spin mb-3" />
         <h3 className="text-sm font-bold text-slate-800">Loading Patient Prescription Profile from Database...</h3>
         <p className="text-xs text-slate-400 mt-1">Retrieving clinical blueprint and current medications.</p>
@@ -224,7 +224,7 @@ export const PrescriptionPage: React.FC = () => {
 
   if (loadError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-8 bg-white rounded-3xl border border-slate-100 shadow-xs">
+      <div className="flex flex-col items-center justify-center min-h-75 text-center p-8 bg-white rounded-3xl border border-slate-100 shadow-xs">
         <AlertCircle className="w-8 h-8 text-rose-500 mb-3" />
         <h3 className="text-sm font-bold text-slate-800">Unable to Load Patient Record</h3>
         <p className="text-xs text-slate-400 mt-1">{loadError}</p>
@@ -233,7 +233,7 @@ export const PrescriptionPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto pb-24 space-y-5 sm:space-y-6 text-slate-800">
+    <div className="w-full max-w-360 mx-auto pb-24 space-y-5 sm:space-y-6 text-slate-800">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-6 right-6 sm:right-8 z-50 bg-slate-950/95 backdrop-blur text-white px-4 sm:px-5 py-3 rounded-2xl shadow-2xl border border-slate-800 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200 text-xs font-semibold">

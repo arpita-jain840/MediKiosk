@@ -467,7 +467,7 @@ export default function PatientDetail() {
   const lastAppointment = blueprint.previousAppointments?.[0];
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto pb-16 space-y-5 text-slate-800 font-sans">
+    <div className="w-full max-w-360 mx-auto pb-16 space-y-5 text-slate-800 font-sans">
       {/* Hidden profile image input */}
       <input
         type="file"
@@ -541,7 +541,7 @@ export default function PatientDetail() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                  <div className="w-full h-full bg-linear-to-br from-primary/10 to-primary/5 flex items-center justify-center">
                     <User size={36} className="text-primary/40" />
                   </div>
                 )}
@@ -620,7 +620,7 @@ export default function PatientDetail() {
                 {patient.address && (
                   <div className="flex items-center gap-1.5 text-xs text-slate-500">
                     <MapPin size={12} className="shrink-0" />
-                    <span className="truncate max-w-[250px]">{patient.address}</span>
+                    <span className="truncate max-w-62.5">{patient.address}</span>
                   </div>
                 )}
               </div>
@@ -989,7 +989,7 @@ export default function PatientDetail() {
         <div className="space-y-5">
           {/* Last Appointment Highlight */}
           {lastAppointment && (
-            <div className="bg-gradient-to-br from-primary/5 via-white to-sky-50/50 rounded-2xl p-6 border-2 border-primary/20 shadow-md space-y-4">
+            <div className="bg-linear-to-br from-primary/5 via-white to-sky-50/50 rounded-2xl p-6 border-2 border-primary/20 shadow-md space-y-4">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-sm">
                   <CalendarDays size={20} />
@@ -1201,7 +1201,7 @@ export default function PatientDetail() {
                 <div className="relative flex items-start gap-6 pt-2 pb-1 min-w-max border-t-2 border-dashed border-slate-200">
                   {blueprint.timeline.map((item, idx) => (
                     <div key={idx} className="relative pl-0 pt-3 w-40 shrink-0">
-                      <div className="absolute -top-[7px] left-0 w-2.5 h-2.5 rounded-full bg-primary border-2 border-white ring-2 ring-sky-100" />
+                      <div className="absolute -top-1.75 left-0 w-2.5 h-2.5 rounded-full bg-primary border-2 border-white ring-2 ring-sky-100" />
                       <span className="text-[10px] font-bold text-slate-400 block">{item.date}</span>
                       <span className="text-xs font-bold text-slate-800 block mt-0.5">{item.title}</span>
                       <span className="text-[11px] text-slate-600 block mt-0.5 line-clamp-3">{item.summary}</span>
