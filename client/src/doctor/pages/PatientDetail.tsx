@@ -148,301 +148,96 @@ interface BlueprintData {
   }>;
 }
 
-/* ─────────────────────── Rich Default Blueprint ──────────────────────── */
+/* ─────────────────────── Baseline Blueprint Schema ──────────────────────── */
 
 const DEFAULT_BLUEPRINT_DATA: BlueprintData = {
   patient: {
     id: "",
-    name: "Priya Sharma",
-    age: 34,
-    gender: "Female",
-    bloodGroup: "B+",
-    abha: "14-2938-4471-0093",
-    allergies: ["Penicillin", "Dust", "Sulfa Drugs"],
-    phone: "+91 98765 43210",
-    address: "42, Lajpat Nagar Phase-II, New Delhi – 110024",
+    name: "Patient",
+    age: 30,
+    gender: "Not Specified",
+    bloodGroup: "Unknown",
+    abha: "Not Linked",
+    allergies: [],
+    phone: "",
+    address: "",
     profileImage: "",
   },
   appointment: {
-    token: 5,
+    token: 1,
     status: "waiting",
-    scheduledAt: "13 Sep 2026, 10:30 AM",
+    scheduledAt: new Date().toISOString(),
   },
   blueprint: {
-    chiefComplaint: "Chest tightness & episodic breathlessness since morning, radiating to left arm with sweating",
-    triagePriority: "Specialist",
-    redFlags: ["Left arm radiation", "Diaphoresis (sweating)", "History of Type-2 Diabetes"],
-    aiSummary:
-      "34-year-old female presenting with acute chest tightness and breathlessness for 3 hours. Symptoms worsen with exertion and partially radiate to the left arm. Associated with mild diaphoresis. Known Type-2 Diabetic on Metformin 500mg BD. Vitals show mild tachycardia (92 bpm) and borderline BP. ECG and Troponin I recommended urgently. Previous consultation at AIIMS Delhi for similar episode 3 months ago was unremarkable on stress test. AYUSH intake suggests Vata-Pitta prakriti with Vishamagni. No prior cardiac interventions.",
+    chiefComplaint: "OPD Consultation",
+    triagePriority: "Routine",
+    redFlags: [],
+    aiSummary: "Patient record loaded from MediKiosk database.",
     vitals: {
-      bp: "138/88 mmHg",
-      pulse: "92 bpm",
-      spO2: "96%",
-      temp: "98.4 °F",
-      weight: "62 kg",
+      bp: "120/80 mmHg",
+      pulse: "72 bpm",
+      spO2: "98%",
+      temp: "98.6 °F",
+      weight: "65 kg",
     },
     hpi: {
-      onset: "3 hours ago (this morning)",
-      duration: "Intermittent, lasting 5-10 min each episode",
-      character: "Tight, squeezing pressure across the chest",
-      radiation: "Left arm and jaw (mild)",
-      triggers: "Climbing stairs, physical exertion, emotional stress",
-      relieving: "Rest and sitting upright, partial relief with deep breaths",
+      onset: "Documented at intake",
+      duration: "Acute",
+      character: "Discomfort reported",
+      radiation: "None",
+      triggers: "Exertion",
+      relieving: "Rest",
     },
     clinicalEntities: {
-      medications: [
-        "Metformin 500mg",
-        "Amlodipine 5mg",
-        "Atorvastatin 20mg",
-        "Pantoprazole 40mg",
-        "Vitamin D3 60K (Weekly)",
-      ],
-      allergies: ["Penicillin", "Dust", "Sulfa Drugs"],
-      symptoms: [
-        "Chest tightness",
-        "Breathlessness",
-        "Sweating",
-        "Fatigue",
-      ],
-      history:
-        "Type-2 Diabetes Mellitus diagnosed 4 years ago. Mild hypertension managed with Amlodipine. Vitamin D deficiency. No prior cardiac events or surgeries. Family history: Father had MI at age 58. Non-smoker. Occasional alcohol use.",
+      medications: [],
+      allergies: [],
+      symptoms: [],
+      history: "None reported",
     },
     ayushPariksha: {
-      prakriti: "Vata-Pitta (dual dosha predominance)",
-      agni: "Vishamagni (Irregular digestive fire)",
-      koshtha: "Madhyama (Moderate bowel regularity)",
-      ahara_vihara: "Irregular meal timings, high-stress urban lifestyle, limited physical activity, poor sleep hygiene",
+      prakriti: "Vata-Pitta",
+      agni: "Sama Agni",
+      koshtha: "Madhyama",
+      ahara_vihara: "Urban lifestyle",
     },
-    timeline: [
-      {
-        date: "13 Sep 2026",
-        type: "appointment",
-        title: "Current Visit — MediKiosk Triage",
-        summary: "AI-assisted intake completed. Chest tightness with breathlessness. Specialist triage flagged.",
-      },
-      {
-        date: "28 Aug 2026",
-        type: "appointment",
-        title: "Follow-up at AIIA Clinic",
-        summary: "Dr. Ananya Sharma: Hyperacidity resolved. Continue Pantoprazole 40mg for 2 more weeks. HbA1c: 7.1%",
-      },
-      {
-        date: "15 Jul 2026",
-        type: "lab",
-        title: "HbA1c & Lipid Panel",
-        summary: "HbA1c: 7.1%, LDL: 142 mg/dL (slightly high), HDL: 48 mg/dL. Started Atorvastatin 20mg.",
-      },
-      {
-        date: "10 Jun 2026",
-        type: "appointment",
-        title: "Chest Discomfort — AIIMS OPD",
-        summary: "Dr. Rajesh Kulkarni: ECG normal sinus rhythm. Troponin-I negative. Stress test: borderline. Advised lifestyle changes.",
-      },
-      {
-        date: "22 Mar 2026",
-        type: "prescription",
-        title: "Diabetes Review — City Care Hospital",
-        summary: "Dr. Kavita Nair: HbA1c 7.4%. Increased Metformin to 500mg BD. Added Vitamin D3 60K weekly.",
-      },
-    ],
-    doctorNotes: "Patient reports increased stress at work over the past month. Symptoms are episodic and exertion-related. Previous ECG was normal. Needs urgent cardiac workup including ECG, Troponin-I, and 2D Echo. Monitor closely for ACS.",
-    updatedAt: "13 Sep 2026, 10:35 AM",
-
-    /* ── Enriched Detail Data ── */
-    medicationDetails: [
-      {
-        name: "Metformin",
-        dosage: "500mg",
-        schedule: "Twice daily, with meals",
-        purpose: "Type-2 Diabetes — Blood sugar control",
-        prescribedBy: "Dr. Kavita Nair",
-        startDate: "Mar 2022",
-      },
-      {
-        name: "Amlodipine",
-        dosage: "5mg",
-        schedule: "Once daily, morning",
-        purpose: "Mild Hypertension — Blood pressure control",
-        prescribedBy: "Dr. Rajesh Kulkarni",
-        startDate: "Jun 2026",
-      },
-      {
-        name: "Atorvastatin",
-        dosage: "20mg",
-        schedule: "Once daily, bedtime",
-        purpose: "High LDL Cholesterol — Lipid management",
-        prescribedBy: "Dr. Ananya Sharma",
-        startDate: "Jul 2026",
-      },
-      {
-        name: "Pantoprazole",
-        dosage: "40mg",
-        schedule: "Once daily, before breakfast",
-        purpose: "Hyperacidity — Gastric protection",
-        prescribedBy: "Dr. Ananya Sharma",
-        startDate: "Aug 2026",
-      },
-      {
-        name: "Vitamin D3",
-        dosage: "60,000 IU",
-        schedule: "Once weekly (Sundays)",
-        purpose: "Vitamin D Deficiency — Bone health",
-        prescribedBy: "Dr. Kavita Nair",
-        startDate: "Mar 2026",
-      },
-    ],
-
-    symptomDetails: [
-      {
-        label: "Chest Tightness",
-        severity: "severe",
-        since: "This morning (3 hrs ago)",
-        notes: "Squeezing/pressure sensation across mid-chest, worse on exertion",
-      },
-      {
-        label: "Breathlessness",
-        severity: "moderate",
-        since: "This morning",
-        notes: "Intermittent, worsens while climbing stairs",
-      },
-
-
-      {
-        label: "Fatigue",
-        severity: "moderate",
-        since: "Past 2 weeks",
-        notes: "Persistent tiredness, worsened last few days",
-      },
-
-    ],
-
-    previousAppointments: [
-      {
-        id: "apt-001",
-        date: "28 Aug 2026",
-        time: "11:00 AM",
-        doctor: "Dr. Ananya Sharma",
-        specialization: "General Medicine (Kayachikitsa)",
-        hospital: "AIIA (All India Institute of Ayurveda)",
-        room: "OPD Room 2A, Ground Floor",
-        token: "#14",
-        status: "Completed",
-        diagnosis: "Hyperacidity (Amlapitta) — Resolved",
-        doctorSaid:
-          "Your acid reflux has improved significantly. Continue Pantoprazole 40mg for 2 more weeks and then taper. Your HbA1c is 7.1% which is good but we need to bring it below 7. Maintain a regular meal schedule and reduce spicy/oily food. Walk 30 minutes daily. Come for follow-up in 4 weeks with fresh HbA1c.",
-        prescription: [
-          "Pantoprazole 40mg — 1 tab before breakfast × 14 days",
-          "Avipattikar Churna — 1 tsp with lukewarm water after meals",
-          "Continue Metformin 500mg BD",
-        ],
-        nextVisit: "25 Sep 2026",
-        vitalsAtVisit: {
-          bp: "128/82 mmHg",
-          pulse: "78 bpm",
-          temp: "98.6 °F",
-          spo2: "98%",
-          weight: "63 kg",
-        },
-      },
-      {
-        id: "apt-002",
-        date: "10 Jun 2026",
-        time: "2:30 PM",
-        doctor: "Dr. Rajesh Kulkarni",
-        specialization: "Cardiology",
-        hospital: "AIIMS (All India Institute of Medical Sciences), New Delhi",
-        room: "Cardiology OPD, Room 5B, 2nd Floor",
-        token: "#8",
-        status: "Completed",
-        diagnosis: "Atypical Chest Pain — Cardiac cause ruled out",
-        doctorSaid:
-          "Your ECG shows normal sinus rhythm and Troponin-I is negative, which is very reassuring. The stress test was borderline but not diagnostic of ischemia. Given your diabetes and family history (father had MI at 58), you are at moderate cardiovascular risk. I am starting you on Amlodipine 5mg for your mildly elevated BP. Please get a lipid panel done. Avoid excessive stress and start regular exercise. If chest pain recurs with sweating, come to ER immediately.",
-        prescription: [
-          "Amlodipine 5mg — 1 tab morning",
-          "Ecosprin 75mg — 1 tab after lunch (for 30 days)",
-          "Lipid panel blood test in 2 weeks",
-          "2D Echo if symptoms recur",
-        ],
-        nextVisit: "10 Sep 2026",
-        vitalsAtVisit: {
-          bp: "142/90 mmHg",
-          pulse: "88 bpm",
-          temp: "98.5 °F",
-          spo2: "97%",
-          weight: "64 kg",
-        },
-      },
-      {
-        id: "apt-003",
-        date: "22 Mar 2026",
-        time: "10:00 AM",
-        doctor: "Dr. Kavita Nair",
-        specialization: "Endocrinology / Diabetology",
-        hospital: "City Care Hospital, Saket",
-        room: "Diabetes Clinic, Room 3C, 1st Floor",
-        token: "#22",
-        status: "Completed",
-        diagnosis: "Type-2 Diabetes Mellitus — Suboptimal control",
-        doctorSaid:
-          "Your HbA1c is 7.4%, which is slightly above target. I am increasing your Metformin to 500mg twice daily instead of once. Your Vitamin D is severely low at 12 ng/mL, so I am adding Vitamin D3 60K once a week for 8 weeks. Make sure to eat on time — skipping meals is causing sugar fluctuations. Reduce rice portions at dinner and add more dal/vegetables. Walk at least 30 minutes every day. Repeat HbA1c in 3 months.",
-        prescription: [
-          "Metformin 500mg — 1 tab after breakfast + 1 tab after dinner",
-          "Vitamin D3 60,000 IU — 1 sachet every Sunday",
-          "Repeat HbA1c + Vitamin D after 3 months",
-        ],
-        nextVisit: "22 Jun 2026",
-        vitalsAtVisit: {
-          bp: "130/84 mmHg",
-          pulse: "74 bpm",
-          temp: "98.6 °F",
-          spo2: "99%",
-          weight: "65 kg",
-        },
-      },
-    ],
-
-    clinicalNotes:
-      "Patient is a 34-year-old female with a 4-year history of Type-2 DM and recently diagnosed mild hypertension. She presents today with acute chest symptoms that are concerning given her risk profile (diabetes, family history of premature MI, sedentary lifestyle). Previous cardiac workup at AIIMS in June was reassuring but borderline stress test warrants closer monitoring. Current episode with left arm radiation and diaphoresis requires urgent ECG and Troponin-I to rule out ACS. Patient is compliant with medications and has shown improvement in HbA1c (7.4% → 7.1%). Continue current regimen and expedite cardiac evaluation.",
+    timeline: [],
+    doctorNotes: "",
+    updatedAt: new Date().toISOString(),
+    medicationDetails: [],
+    symptomDetails: [],
+    previousAppointments: [],
+    clinicalNotes: "",
   },
-  documents: [
-    {
-      id: "doc-1",
-      type: "Lab Report",
-      name: "HbA1c + Lipid Panel",
-      url: "#",
-      rawOcr: "HbA1c: 7.1% | Fasting Glucose: 132 mg/dL | LDL: 142 mg/dL | HDL: 48 mg/dL | Triglycerides: 178 mg/dL | Total Cholesterol: 218 mg/dL",
-      uploadedAt: "15 Jul 2026",
-    },
-    {
-      id: "doc-2",
-      type: "Prescription",
-      name: "Dr. Ananya Sharma — Follow-up Rx",
-      url: "#",
-      rawOcr: "Rx: Pantoprazole 40mg OD (before breakfast) x 14 days | Avipattikar Churna 1 tsp with lukewarm water after meals | Continue Metformin 500mg BD | Follow-up: 25 Sep 2026",
-      uploadedAt: "28 Aug 2026",
-    },
-    {
-      id: "doc-3",
-      type: "ECG Report",
-      name: "12-Lead ECG — AIIMS",
-      url: "#",
-      rawOcr: "12-Lead ECG: Normal Sinus Rhythm | Rate: 78 bpm | Axis: Normal | PR: 0.16s | QRS: 0.08s | ST Segment: No elevation/depression | T-waves: Normal | Impression: Normal ECG, no acute ischemic changes",
-      uploadedAt: "10 Jun 2026",
-    },
-    {
-      id: "doc-4",
-      type: "Blood Report",
-      name: "Complete Blood Count",
-      url: "#",
-      rawOcr: "Hb: 11.8 g/dL | WBC: 7,200/μL | Platelets: 2.4 Lakh | RBC: 4.2 M/μL | MCV: 86 fL | ESR: 18 mm/hr",
-      uploadedAt: "2 Sep 2026",
-    },
-  ],
+  documents: [],
 };
 
 /* ─────────────────────────── Helper Functions ─────────────────────────── */
 
 function normalizeBlueprintData(raw: Partial<BlueprintData>): BlueprintData {
+  const meds = raw.blueprint?.clinicalEntities?.medications || [];
+  const derivedMedDetails: MedicationDetail[] =
+    raw.blueprint?.medicationDetails && raw.blueprint.medicationDetails.length > 0
+      ? raw.blueprint.medicationDetails
+      : meds.map((m: string) => ({
+          name: m,
+          dosage: "1 dose",
+          schedule: "As directed",
+          purpose: "Prescribed clinical treatment",
+          prescribedBy: "OPD Physician",
+          startDate: "Active",
+        }));
+
+  const symptoms = raw.blueprint?.clinicalEntities?.symptoms || [];
+  const derivedSymptomDetails: SymptomDetail[] =
+    raw.blueprint?.symptomDetails && raw.blueprint.symptomDetails.length > 0
+      ? raw.blueprint.symptomDetails
+      : symptoms.map((s: string) => ({
+          label: s,
+          severity: "moderate" as const,
+          since: raw.blueprint?.hpi?.onset || "Recorded at intake",
+          notes: "Reported during kiosk intake",
+        }));
+
   return {
     patient: {
       ...DEFAULT_BLUEPRINT_DATA.patient,
@@ -464,7 +259,7 @@ function normalizeBlueprintData(raw: Partial<BlueprintData>): BlueprintData {
       chiefComplaint: raw.blueprint?.chiefComplaint ?? DEFAULT_BLUEPRINT_DATA.blueprint.chiefComplaint,
       triagePriority: raw.blueprint?.triagePriority ?? DEFAULT_BLUEPRINT_DATA.blueprint.triagePriority,
       aiSummary: raw.blueprint?.aiSummary ?? DEFAULT_BLUEPRINT_DATA.blueprint.aiSummary,
-      redFlags: raw.blueprint?.redFlags ?? DEFAULT_BLUEPRINT_DATA.blueprint.redFlags,
+      redFlags: raw.blueprint?.redFlags ?? [],
       vitals: {
         ...DEFAULT_BLUEPRINT_DATA.blueprint.vitals,
         ...raw.blueprint?.vitals,
@@ -476,24 +271,24 @@ function normalizeBlueprintData(raw: Partial<BlueprintData>): BlueprintData {
       clinicalEntities: {
         ...DEFAULT_BLUEPRINT_DATA.blueprint.clinicalEntities,
         ...raw.blueprint?.clinicalEntities,
-        medications: raw.blueprint?.clinicalEntities?.medications ?? DEFAULT_BLUEPRINT_DATA.blueprint.clinicalEntities.medications,
-        allergies: raw.blueprint?.clinicalEntities?.allergies ?? DEFAULT_BLUEPRINT_DATA.blueprint.clinicalEntities.allergies,
-        symptoms: raw.blueprint?.clinicalEntities?.symptoms ?? DEFAULT_BLUEPRINT_DATA.blueprint.clinicalEntities.symptoms,
-        history: raw.blueprint?.clinicalEntities?.history ?? DEFAULT_BLUEPRINT_DATA.blueprint.clinicalEntities.history,
+        medications: raw.blueprint?.clinicalEntities?.medications ?? [],
+        allergies: raw.blueprint?.clinicalEntities?.allergies ?? [],
+        symptoms: raw.blueprint?.clinicalEntities?.symptoms ?? [],
+        history: raw.blueprint?.clinicalEntities?.history ?? "None reported",
       },
       ayushPariksha: {
         ...DEFAULT_BLUEPRINT_DATA.blueprint.ayushPariksha,
         ...raw.blueprint?.ayushPariksha,
       },
-      timeline: raw.blueprint?.timeline ?? DEFAULT_BLUEPRINT_DATA.blueprint.timeline,
-      doctorNotes: raw.blueprint?.doctorNotes ?? DEFAULT_BLUEPRINT_DATA.blueprint.doctorNotes,
+      timeline: raw.blueprint?.timeline ?? [],
+      doctorNotes: raw.blueprint?.doctorNotes ?? "",
       updatedAt: raw.blueprint?.updatedAt ?? DEFAULT_BLUEPRINT_DATA.blueprint.updatedAt,
-      medicationDetails: raw.blueprint?.medicationDetails ?? DEFAULT_BLUEPRINT_DATA.blueprint.medicationDetails,
-      symptomDetails: raw.blueprint?.symptomDetails ?? DEFAULT_BLUEPRINT_DATA.blueprint.symptomDetails,
-      previousAppointments: raw.blueprint?.previousAppointments ?? DEFAULT_BLUEPRINT_DATA.blueprint.previousAppointments,
-      clinicalNotes: raw.blueprint?.clinicalNotes ?? DEFAULT_BLUEPRINT_DATA.blueprint.clinicalNotes,
+      medicationDetails: derivedMedDetails,
+      symptomDetails: derivedSymptomDetails,
+      previousAppointments: raw.blueprint?.previousAppointments ?? [],
+      clinicalNotes: raw.blueprint?.clinicalNotes ?? raw.blueprint?.aiSummary ?? "",
     },
-    documents: raw.documents ?? DEFAULT_BLUEPRINT_DATA.documents,
+    documents: raw.documents ?? [],
   };
 }
 

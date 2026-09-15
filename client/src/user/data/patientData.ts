@@ -1,23 +1,8 @@
-import { Droplets, Scan, FileCheck2, ClipboardList } from "lucide-react";
 import type {
-  PatientProfile,
   RecordCategory,
-  MedicalRecordItem,
   ScriptQuestion,
-  DoctorDirectoryItem,
   PriorityStyle,
 } from "../types";
-
-export const DEFAULT_PATIENT: PatientProfile = {
-  name: "Priya Sharma",
-  age: 34,
-  gender: "Female",
-  abha: "14-2938-4471-0093",
-  allergies: ["Penicillin", "Dust"],
-  medications: [
-    { name: "Metformin 500mg", schedule: "Twice daily, with meals" },
-  ],
-};
 
 export const RECORD_CATEGORIES: RecordCategory[] = [
   { id: "all", label: "All" },
@@ -25,14 +10,6 @@ export const RECORD_CATEGORIES: RecordCategory[] = [
   { id: "imaging", label: "Imaging" },
   { id: "rx", label: "Prescriptions" },
   { id: "reports", label: "Reports" },
-];
-
-export const INITIAL_RECORDS: MedicalRecordItem[] = [
-  { id: 1, cat: "blood", title: "Complete Blood Count", source: "Sunrise Diagnostics", date: "2 Sept 2026", icon: Droplets },
-  { id: 2, cat: "imaging", title: "Chest X-Ray", source: "City Care Hospital", date: "18 Aug 2026", icon: Scan },
-  { id: 3, cat: "rx", title: "Dr. Anil Kapoor — Prescription", source: "Follow-up visit", date: "18 Aug 2026", icon: FileCheck2 },
-  { id: 4, cat: "reports", title: "Discharge Summary", source: "City Care Hospital", date: "4 Jun 2026", icon: ClipboardList },
-  { id: 5, cat: "blood", title: "HbA1c", source: "Sunrise Diagnostics", date: "2 Sept 2026", icon: Droplets },
 ];
 
 export const INTAKE_SCRIPT: ScriptQuestion[] = [
@@ -52,12 +29,6 @@ export const INTAKE_SCRIPT: ScriptQuestion[] = [
     q: { en: "Do you have any history of heart conditions, diabetes, or high blood pressure?", hi: "क्या आपको दिल की बीमारी, डायबिटीज या हाई ब्लड प्रेशर की हिस्ट्री है?" },
     a: { en: "I have type 2 diabetes, diagnosed 4 years ago.", hi: "मुझे टाइप 2 डायबिटीज है, 4 साल पहले पता चला था।" }
   },
-];
-
-export const DOCTORS: DoctorDirectoryItem[] = [
-  { id: 1, name: "Dr. Anjali Verma", spec: "Cardiologist", hospital: "City Care Hospital", km: "1.2", rating: 4.8, next: "Today, 5:40 PM" },
-  { id: 2, name: "Dr. Ramesh Iyer", spec: "Cardiologist", hospital: "Sunrise Multispeciality", km: "2.4", rating: 4.6, next: "Today, 6:15 PM" },
-  { id: 3, name: "Dr. Kavita Nair", spec: "Cardiologist", hospital: "MedLife Clinic", km: "3.1", rating: 4.9, next: "Tomorrow, 9:00 AM" },
 ];
 
 export const PRIORITY_STYLES: Record<string, PriorityStyle> = {

@@ -3,4 +3,6 @@ server/venv/
 server/__pycache__/
 server/**/*.pyc
 *.db
-.agents/
+.agents/
+uploads/
+server/uploads/

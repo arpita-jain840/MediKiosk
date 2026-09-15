@@ -1,22 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { initialPatients } from '../data/patientsData';
+import { fetchLiveCockpitPatients, type PatientRecord } from '../data/patientsData';
 import {
   CheckCircle2,
   Stethoscope,
   Activity,
-  Search
+  Search,
+  Loader2
 } from 'lucide-react';
 
 export const Consultations: React.FC = () => {
   const navigate = useNavigate();
+  const [patients, setPatients] = useState<PatientRecord[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [search, setSearch] = useState('');
 
-  const activePatients = initialPatients.filter((p) => p.status === 'In Consultation' || p.status === 'Waiting');
-  const completedPatients = initialPatients.filter((p) => p.status === 'Done');
+  useEffect(() => {
+    let isMounted = true;
+    const loadConsultations = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchLiveCockpitPatients();
+        if (isMounted) {
+          setPatients(data);
+        }
+      } catch (err) {
+        console.error('[Consultations] Failed to load consultations from database:', err);
+        if (isMounted) setPatients([]);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    void loadConsultations();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-  const filteredPatients = initialPatients.filter((p) => {
+  const activePatients = patients.filter((p) => p.status === 'In Consultation' || p.status === 'Waiting');
+  const completedPatients = patients.filter((p) => p.status === 'Done');
+
+  const filteredPatients = patients.filter((p) => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.id.toLowerCase().includes(search.toLowerCase());
     if (!matchesSearch) return false;
     if (filter === 'active') return p.status === 'In Consultation' || p.status === 'Waiting';
@@ -92,12 +117,25 @@ export const Consultations: React.FC = () => {
       </div>
 
       {/* Consultations List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredPatients.map((patient) => (
-          <div
-            key={patient.id}
-            className="bg-white rounded-[2rem] p-5 sm:p-6 border border-slate-100/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4"
-          >
+      {isLoading ? (
+        <div className="bg-white rounded-[2rem] p-12 text-center border border-slate-100 flex flex-col items-center justify-center">
+          <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mb-3" />
+          <h3 className="text-sm font-bold text-slate-800">Loading Clinical Consultations from Database...</h3>
+          <p className="text-xs text-slate-400 mt-1">Retrieving live patient queue sessions.</p>
+        </div>
+      ) : filteredPatients.length === 0 ? (
+        <div className="bg-white rounded-[2rem] p-12 text-center border border-slate-100">
+          <CheckCircle2 className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+          <h3 className="text-sm font-bold text-slate-800">No Consultations Found</h3>
+          <p className="text-xs text-slate-400 mt-1">No patient consultations match your current filter or database records.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredPatients.map((patient) => (
+            <div
+              key={patient.id}
+              className="bg-white rounded-[2rem] p-5 sm:p-6 border border-slate-100/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4"
+            >
             <div>
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="flex items-center gap-3 min-w-0">
@@ -167,8 +205,9 @@ export const Consultations: React.FC = () => {
               </button>
             </div>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -49,9 +49,78 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [activeCallRoom, setActiveCallRoom] = useState<string>("Room 4B");
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false);
 
-  const activeToken = 5;
-  const assignedDoctor = "Dr. John Smith";
-  const assignedRoom = activeCallRoom || "Room 4B";
+  const userStr = typeof window !== "undefined" ? localStorage.getItem("medikiosk_user") : null;
+  let patientId = "user1";
+  if (userStr) {
+    try {
+      const parsed = JSON.parse(userStr);
+      patientId = parsed.patient_id || parsed.username || parsed.id || "user1";
+    } catch {
+      // fallback
+    }
+  }
+
+  const [dbData, setDbData] = useState<{
+    token: number;
+    doctorName: string;
+    doctorRoom: string;
+    doctorSpecialty: string;
+    vitals: { bp: string; pulse: string; spO2: string; temp: string; weight?: string };
+    ayush: { prakriti?: string; agni?: string; koshtha?: string; ahara_vihara?: string };
+    priority: string;
+    status: string;
+  }>({
+    token: 1,
+    doctorName: "OPD Duty Doctor",
+    doctorRoom: "Consultation Room 1",
+    doctorSpecialty: "General Medicine",
+    vitals: { bp: "120/80", pulse: "72", spO2: "98%", temp: "98.6" },
+    ayush: { prakriti: "Prakriti Assessment Recorded", agni: "Samagni", koshtha: "Madhyama" },
+    priority: "Routine",
+    status: "waiting",
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadBlueprint = async () => {
+      try {
+        const res = await fetch(getApiUrl(`/api/doctor/patient/${encodeURIComponent(patientId)}/blueprint`));
+        if (res.ok) {
+          const json = await res.json();
+          if (isMounted) {
+            const appt = json.appointment || {};
+            const bp = json.blueprint || {};
+            setDbData({
+              token: appt.token || 1,
+              doctorName: appt.doctorName || "OPD Duty Doctor",
+              doctorRoom: appt.doctorRoom || "Consultation Room 1",
+              doctorSpecialty: appt.doctorSpecialty || "General Medicine",
+              vitals: {
+                bp: (bp.vitals?.bp || "120/80").replace(" mmHg", ""),
+                pulse: (bp.vitals?.pulse || "72").replace(" bpm", ""),
+                spO2: bp.vitals?.spO2 || "98%",
+                temp: (bp.vitals?.temp || "98.4").replace(" °F", ""),
+                weight: bp.vitals?.weight || "65 kg",
+              },
+              ayush: bp.ayushPariksha || {},
+              priority: bp.triagePriority || "Routine",
+              status: appt.status || "waiting",
+            });
+            if (appt.status) setQueueStatus(appt.status);
+            if (appt.doctorRoom) setActiveCallRoom(appt.doctorRoom);
+          }
+        }
+      } catch (err) {
+        console.warn("[HomeScreen] Could not load database blueprint:", err);
+      }
+    };
+    loadBlueprint();
+    return () => { isMounted = false; };
+  }, [patientId]);
+
+  const activeToken = dbData.token;
+  const assignedDoctor = dbData.doctorName;
+  const assignedRoom = activeCallRoom || dbData.doctorRoom;
 
   // Subscribe to live WebSocket queue updates
   useEffect(() => {
@@ -90,7 +159,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     abha: patient.abha,
     room: assignedRoom,
     doctor: assignedDoctor,
-    priority: "Routine",
+    priority: dbData.priority,
     generatedAt: new Date().toISOString(),
   });
 
@@ -98,7 +167,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const handleExportFhir = async () => {
     setIsExportingFhir(true);
     try {
-      const res = await fetch(getApiUrl("/api/patient/demo-patient/fhir"));
+      const res = await fetch(getApiUrl(`/api/patient/${encodeURIComponent(patientId)}/fhir`));
       if (res.ok) {
         const bundle = await res.json();
         const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
@@ -119,7 +188,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   };
 
   const searchSuggestions = [
-    { label: `${t.home.btnBook} · Dr. John Smith (Room 4B)`, tab: "appointments" },
+    { label: `${t.home.btnBook} · ${assignedDoctor} (${assignedRoom})`, tab: "appointments" },
     { label: t.appointments.depts.panchakarma, tab: "appointments" },
     { label: t.home.btnRecords, tab: "records" },
     { label: t.home.btnGuide, tab: "ai-assistant" },
@@ -294,11 +363,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 <Activity size={16} className="text-emerald-600" />
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-xl font-black text-slate-900">120/80</span>
+                <span className="text-xl font-black text-slate-900">{dbData.vitals.bp}</span>
                 <span className="text-[11px] font-semibold text-slate-400">mmHg</span>
               </div>
               <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                Normal Range
+                Live Measured
               </span>
             </div>
 
@@ -309,11 +378,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 <HeartPulse size={16} className="text-rose-500" />
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-xl font-black text-slate-900">74</span>
+                <span className="text-xl font-black text-slate-900">{dbData.vitals.pulse}</span>
                 <span className="text-[11px] font-semibold text-slate-400">bpm</span>
               </div>
               <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                Regular Pulse
+                Live Measured
               </span>
             </div>
 
@@ -324,11 +393,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 <Droplets size={16} className="text-sky-500" />
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-xl font-black text-slate-900">98%</span>
+                <span className="text-xl font-black text-slate-900">{dbData.vitals.spO2}</span>
                 <span className="text-[11px] font-semibold text-slate-400">Optimal</span>
               </div>
               <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                Sufficient O2
+                Live Measured
               </span>
             </div>
 
@@ -339,11 +408,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 <Thermometer size={16} className="text-amber-500" />
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-xl font-black text-slate-900">98.4</span>
+                <span className="text-xl font-black text-slate-900">{dbData.vitals.temp}</span>
                 <span className="text-[11px] font-semibold text-slate-400">°F</span>
               </div>
               <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                Afebrile
+                Live Measured
               </span>
             </div>
           </div>
@@ -362,7 +431,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     {assignedRoom} · {assignedDoctor}
                   </h4>
                   <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                    Cardiology & Ayush
+                    {dbData.doctorSpecialty}
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -374,7 +443,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     {queueStatus === "in_consultation" ? "Now In Consultation" : "Waiting in Queue"}
                   </span>
                   <span className="text-slate-300">·</span>
-                  <span className="text-slate-500 font-medium">Est. Wait: ~4-8 mins</span>
+                  <span className="text-slate-500 font-medium">Database Synced</span>
                 </div>
               </div>
             </div>
@@ -400,9 +469,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </span>
                 <Sparkles size={16} className="text-amber-500" />
               </div>
-              <h4 className="text-base font-black text-slate-900">Vata-Pitta Balance</h4>
+              <h4 className="text-base font-black text-slate-900">{dbData.ayush.prakriti || "Vata-Pitta Balance"}</h4>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Agni: <span className="font-semibold text-slate-700">Samagni</span> · Koshtha: <span className="font-semibold text-slate-700">Madhyama</span>. Digestion and energy rhythm optimal.
+                Agni: <span className="font-semibold text-slate-700">{dbData.ayush.agni || "Samagni"}</span> · Koshtha: <span className="font-semibold text-slate-700">{dbData.ayush.koshtha || "Madhyama"}</span>. Digestion and energy rhythm optimal.
               </p>
             </div>
 

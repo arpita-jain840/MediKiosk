@@ -14,12 +14,29 @@ import {
   HelpCircle,
   Database,
   RefreshCw,
+  Droplets,
+  Scan,
+  ClipboardList,
+  Loader2,
 } from "lucide-react";
 import { TopBar } from "../components/TopBar";
-import { RECORD_CATEGORIES, INITIAL_RECORDS } from "../data/patientData";
+import { RECORD_CATEGORIES } from "../data/patientData";
 import { getTranslations } from "../utils/i18n";
 import type { MedicalRecordItem } from "../types";
 import { getApiUrl } from "../../config/api";
+
+const getCategoryIcon = (cat: string) => {
+  switch (cat) {
+    case "blood":
+      return Droplets;
+    case "imaging":
+      return Scan;
+    case "rx":
+      return FileCheck2;
+    default:
+      return ClipboardList;
+  }
+};
 
 interface RecordsScreenProps {
   currentLang?: string;
@@ -35,7 +52,8 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
   const t = getTranslations(currentLang);
   const [cat, setCat] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [recordsList, setRecordsList] = useState<MedicalRecordItem[]>(INITIAL_RECORDS);
+  const [recordsList, setRecordsList] = useState<MedicalRecordItem[]>([]);
+  const [isLoadingRecords, setIsLoadingRecords] = useState<boolean>(true);
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const [viewingOcr, setViewingOcr] = useState<{ title: string; ocr: string } | null>(null);
@@ -60,23 +78,50 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
     return "7047ac9d-9586-42fb-8728-acb9b52a10da";
   };
 
-  // Auto-fetch existing Gemini Medical Analysis from Database on mount
+  // Auto-fetch existing Gemini Medical Analysis and Records from Database on mount
   useEffect(() => {
-    const fetchExistingAnalysis = async () => {
+    let isMounted = true;
+    const fetchExistingData = async () => {
+      setIsLoadingRecords(true);
+      const patientId = getActivePatientId();
       try {
-        const patientId = getActivePatientId();
-        const res = await fetch(getApiUrl(`/api/patient/${patientId}/medical-analysis`));
-        if (res.ok) {
-          const data = await res.json();
-          if (data.hasAnalysis && data.analysis) {
+        const [analysisRes, recordsRes] = await Promise.all([
+          fetch(getApiUrl(`/api/patient/${encodeURIComponent(patientId)}/medical-analysis`)),
+          fetch(getApiUrl(`/api/patient/${encodeURIComponent(patientId)}/records`)),
+        ]);
+
+        if (analysisRes.ok) {
+          const data = await analysisRes.json();
+          if (isMounted && data.hasAnalysis && data.analysis) {
             setGeminiAnalysis(data.analysis);
           }
         }
+
+        if (recordsRes.ok) {
+          const rawRecords = await recordsRes.json();
+          if (isMounted && Array.isArray(rawRecords)) {
+            const mapped = rawRecords.map((r: any) => ({
+              id: r.id,
+              cat: r.cat || "reports",
+              title: r.title || "Medical Document",
+              source: r.source || "MediKiosk Records Vault",
+              date: r.date || "Recent",
+              icon: getCategoryIcon(r.cat),
+              ocr: r.ocr || "",
+            }));
+            setRecordsList(mapped);
+          }
+        }
       } catch (err) {
-        console.warn("[RecordsScreen] Could not fetch saved Gemini analysis:", err);
+        console.warn("[RecordsScreen] Could not fetch saved records or analysis:", err);
+      } finally {
+        if (isMounted) setIsLoadingRecords(false);
       }
     };
-    fetchExistingAnalysis();
+    fetchExistingData();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Trigger Dedicated Gemini Medical Page Analysis
@@ -521,11 +566,17 @@ export const RecordsScreen: React.FC<RecordsScreenProps> = ({
         {/* ========================================================== */}
         {/* 3. DIGITAL RECORDS GRID                                    */}
         {/* ========================================================== */}
-        {filtered.length === 0 ? (
+        {isLoadingRecords ? (
+          <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-sm font-bold text-slate-700">Loading Medical Records from Database...</p>
+            <p className="text-xs text-slate-400">Querying patient documents and lab extractions.</p>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="p-12 text-center bg-white rounded-3xl border border-slate-200/80">
             <FileText size={36} className="text-slate-300 mx-auto mb-2" />
             <p className="text-sm font-bold text-slate-700">{t.records.noRecords}</p>
-            <p className="text-xs text-slate-400 mt-1">{t.records.noRecordsSub}</p>
+            <p className="text-xs text-slate-400 mt-1">No uploaded records found in the database. Upload prescriptions, lab reports, or imaging to populate your timeline.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

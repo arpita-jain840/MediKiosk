@@ -9,12 +9,21 @@ import { ResultScreen } from "./screens/ResultScreen";
 import { ConfirmScreen } from "./screens/ConfirmScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { KioskSessionGuard } from "./components/KioskSessionGuard";
-import { DEFAULT_PATIENT } from "./data/patientData";
 import { PatientNotificationProvider, usePatientNotifications } from "./context/PatientNotificationContext";
 import { Bell, X } from "lucide-react";
 
-import type { DoctorDirectoryItem, BlueprintSynthesisResult } from "./types";
+import type { DoctorDirectoryItem, BlueprintSynthesisResult, PatientProfile } from "./types";
 import PatientHealthReport from "../components/PatientHealthReport";
+import { getApiUrl } from "../config/api";
+
+const EMPTY_PATIENT: PatientProfile = {
+  name: "Patient",
+  age: 0,
+  gender: "Not specified",
+  abha: "Pending Linking",
+  allergies: [],
+  medications: [],
+};
 
 export default function PatientApp() {
   const [tab, setTab] = useState("home");
@@ -34,26 +43,59 @@ export default function PatientApp() {
     }
   });
 
-  const [currentUser] = useState(() => {
+  const [currentUser, setCurrentUser] = useState<PatientProfile>(() => {
     try {
       const stored = localStorage.getItem("medikiosk_user");
       if (stored) {
         const parsed = JSON.parse(stored);
         return {
-          ...DEFAULT_PATIENT,
-          name: parsed.full_name || DEFAULT_PATIENT.name,
-          abha: parsed.abha || DEFAULT_PATIENT.abha,
-          bloodGroup: parsed.bloodGroup || DEFAULT_PATIENT.bloodGroup,
-          allergies: parsed.allergies || DEFAULT_PATIENT.allergies,
-          phone: parsed.phone || DEFAULT_PATIENT.phone,
-          gender: parsed.gender || DEFAULT_PATIENT.gender,
+          ...EMPTY_PATIENT,
+          name: parsed.full_name || parsed.name || "Patient",
+          abha: parsed.abha || "Pending Linking",
+          bloodGroup: parsed.bloodGroup || "",
+          allergies: parsed.allergies || [],
+          phone: parsed.phone || "",
+          gender: parsed.gender || "Not specified",
         };
       }
     } catch {
       // fallback
     }
-    return DEFAULT_PATIENT;
+    return EMPTY_PATIENT;
   });
+
+  useEffect(() => {
+    if (!patientId) return;
+    let isMounted = true;
+    const loadProfile = async () => {
+      try {
+        const res = await fetch(getApiUrl(`/api/doctor/patient/${encodeURIComponent(patientId)}/blueprint`));
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.patient) {
+            const p = data.patient;
+            const bp = data.blueprint;
+            setCurrentUser({
+              name: p.name || "Patient",
+              age: p.age || 0,
+              gender: p.gender || "Not specified",
+              abha: p.abha || "Pending Linking",
+              bloodGroup: p.bloodGroup || "",
+              allergies: p.allergies || [],
+              phone: p.phone || "",
+              medications: (bp?.clinicalEntities?.medications || []).map((m: any) =>
+                typeof m === "string" ? { name: m, schedule: "As prescribed" } : m
+              ),
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("[PatientApp] Could not load patient profile from database:", err);
+      }
+    };
+    loadProfile();
+    return () => { isMounted = false; };
+  }, [patientId]);
 
   let content;
   if (flow === "result") {

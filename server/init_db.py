@@ -542,7 +542,7 @@ async def reset_and_seed_db():
         await conn.run_sync(Base.metadata.create_all)
 
     async with AsyncSessionLocal() as session:
-        # 1. Exactly 1 Doctor Account (admindoc / admindoc)
+        # 1. Doctor Accounts (admindoc and specialists)
         doctor_user = User(
             email="admindoc",
             password_hash="admindoc",
@@ -561,6 +561,46 @@ async def reset_and_seed_db():
             room_number="Room 4B",
         )
         session.add(doctor)
+        await session.flush()
+
+        doc2_user = User(
+            email="dr.kulkarni@medikiosk.in",
+            password_hash="doctor123",
+            full_name="Dr. Rajesh Kulkarni",
+            role="doctor",
+            phone="+91 98765 43211",
+        )
+        session.add(doc2_user)
+        await session.flush()
+
+        doc2 = Doctor(
+            user_id=doc2_user.id,
+            specialization="Panchakarma & AYUSH Medicine",
+            license_number="DOC-ADMIN-002",
+            hospital_name="AIIA OPD Center",
+            room_number="Room 5B",
+        )
+        session.add(doc2)
+        await session.flush()
+
+        doc3_user = User(
+            email="dr.nair@medikiosk.in",
+            password_hash="doctor123",
+            full_name="Dr. Kavita Nair",
+            role="doctor",
+            phone="+91 98765 43212",
+        )
+        session.add(doc3_user)
+        await session.flush()
+
+        doc3 = Doctor(
+            user_id=doc3_user.id,
+            specialization="Endocrinology & Diabetology",
+            license_number="DOC-ADMIN-003",
+            hospital_name="MedLife Super Specialty Clinic",
+            room_number="Room 3C",
+        )
+        session.add(doc3)
         await session.flush()
 
         # 2. Exactly 5 Patient Accounts (user1..user5 / user1..user5)
@@ -639,8 +679,8 @@ async def init_db_and_seed():
 
     async with AsyncSessionLocal() as session:
         user_count = (await session.execute(select(User))).scalars().all()
-        # If already exactly 6 users (1 doc + 5 patients), don't wipe
-        if len(user_count) == 6:
+        # If already seeded with 3 doctors + 5 patients = 8 users, don't wipe
+        if len(user_count) == 8:
             return
 
     await reset_and_seed_db()

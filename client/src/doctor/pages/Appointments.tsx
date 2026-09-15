@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { getApiUrl } from '../../config/api';
 import {
   Search,
   SlidersHorizontal,
@@ -116,259 +117,100 @@ export const Appointments: React.FC = () => {
   const [showCancelConfirm, setShowCancelConfirm] = useState<AppointmentRecord | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Doctors list
-  const doctors: DoctorSchedule[] = [
-    {
-      id: 'doc-1',
-      name: 'Dr. Melvin Suharjo',
-      specialty: 'General Physician',
-      room: 'Room 101',
-      avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=120&auto=format&fit=crop&q=80',
-      status: 'Available',
-      notAvailableSlots: []
-    },
-    {
-      id: 'doc-2',
-      name: 'Dr. Budi Darmawan',
-      specialty: 'Internal Medicine',
-      room: 'Room 102',
-      avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=120&auto=format&fit=crop&q=80',
-      status: 'Available',
-      notAvailableSlots: []
-    },
-    {
-      id: 'doc-3',
-      name: 'Dr. Selvi Chandra',
-      specialty: 'Dermatologist',
-      room: 'Room 103',
-      avatar: 'https://images.unsplash.com/photo-1594824813589-3221bf9a888c?w=120&auto=format&fit=crop&q=80',
-      status: 'Available',
-      notAvailableSlots: ['09:00', '10:00']
-    }
-  ];
+  // Doctors list (Database-driven)
+  const [doctors, setDoctors] = useState<DoctorSchedule[]>([]);
 
-  // Appointments master state
-  const [appointments, setAppointments] = useState<AppointmentRecord[]>([
-    {
-      id: 'APT-1001',
-      patientName: 'Wayan Aditya',
-      patientId: 'MRN-88219',
-      dob: '1992-05-14',
-      age: 34,
-      gender: 'Male',
-      phone: '+62 812-3456-7890',
-      timeSlot: '09:00',
-      timeRange: '09:00 - 09:45',
-      duration: '45 mins',
-      type: 'General Checkup',
-      status: 'Completed',
-      priority: 'Normal',
-      doctorId: 'doc-1',
-      room: 'Room 101',
-      paymentStatus: 'Insured (BPJS)',
-      formsCompleted: true,
-      reason: 'Routine annual biometric health checkup',
-      allergies: ['Penicillin'],
-      medications: ['Multivitamins'],
-      history: 'No chronic illnesses. Mild hypertension in 2023.',
-      notes: 'Patient clear. Vitals normal. Advised standard diet maintenance.',
-      vitals: {
-        bp: '118/78 mmHg',
-        pulse: '72 bpm',
-        temp: '98.4 °F',
-        spO2: '99%',
-        bmi: '23.4'
-      },
-      activityLog: [
-        { timestamp: '08:50 AM', staffName: 'Nurse Sarah', action: 'Patient checked in at reception' },
-        { timestamp: '09:05 AM', staffName: 'Nurse Sarah', action: 'Recorded vitals and biometric panel' },
-        { timestamp: '09:40 AM', staffName: 'Dr. Melvin', action: 'Consultation completed and record signed' }
-      ]
-    },
-    {
-      id: 'APT-1002',
-      patientName: 'Adi Gunawan',
-      patientId: 'MRN-44102',
-      dob: '1985-11-20',
-      age: 40,
-      gender: 'Male',
-      phone: '+62 813-9876-5432',
-      timeSlot: '10:00',
-      timeRange: '10:00 - 10:45',
-      duration: '45 mins',
-      type: 'Follow-up',
-      status: 'Completed',
-      priority: 'Normal',
-      doctorId: 'doc-1',
-      room: 'Room 101',
-      paymentStatus: 'Self-Pay (Paid)',
-      formsCompleted: true,
-      reason: 'Post-gastritis medication response check',
-      allergies: ['Aspirin', 'Ibuprofen'],
-      medications: ['Omeprazole 20mg'],
-      history: 'Acute gastritis treated 2 weeks ago.',
-      notes: 'Gastric discomfort resolved. Omeprazole tapered to PRN.',
-      vitals: {
-        bp: '122/80 mmHg',
-        pulse: '76 bpm',
-        temp: '98.6 °F',
-        spO2: '98%',
-        bmi: '25.1'
-      },
-      activityLog: [
-        { timestamp: '09:55 AM', staffName: 'Receptionist Maya', action: 'Patient arrival confirmed' },
-        { timestamp: '10:42 AM', staffName: 'Dr. Melvin', action: 'Completed review and discharged' }
-      ]
-    },
-    {
-      id: 'APT-1003',
-      patientName: 'Dewi Kartika',
-      patientId: 'MRN-77301',
-      dob: '1998-03-22',
-      age: 28,
-      gender: 'Female',
-      phone: '+62 821-4455-6677',
-      timeSlot: '11:00',
-      timeRange: '11:00 - 11:30',
-      duration: '30 mins',
-      type: 'Consultation',
-      status: 'Checked In',
-      priority: 'Urgent',
-      doctorId: 'doc-2',
-      room: 'Room 102',
-      paymentStatus: 'Insured (BPJS)',
-      vitalRequired: true,
-      formsCompleted: false,
-      waitingMinutes: 14,
-      reason: 'Acute lower abdominal discomfort and intermittent low-grade fever',
-      allergies: ['Sulfa drugs'],
-      medications: ['Paracetamol 500mg'],
-      history: 'Appendectomy in 2019.',
-      notes: 'Fast-track vitals and urine dipstick requested before doctor examination.',
-      vitals: {
-        bp: '128/84 mmHg',
-        pulse: '88 bpm',
-        temp: '99.4 °F',
-        spO2: '98%',
-        bmi: '21.8'
-      },
-      activityLog: [
-        { timestamp: '10:46 AM', staffName: 'Receptionist Maya', action: 'Patient arrived & checked in' },
-        { timestamp: '10:50 AM', staffName: 'Nurse Sarah', action: 'Flagged as Urgent priority due to pain score 6/10' }
-      ]
-    },
-    {
-      id: 'APT-1004',
-      patientName: 'Indah Permata',
-      patientId: 'MRN-65209',
-      dob: '1995-09-08',
-      age: 30,
-      gender: 'Female',
-      phone: '+62 856-1122-3344',
-      timeSlot: '13:00',
-      timeRange: '13:00 - 13:45',
-      duration: '45 mins',
-      type: 'General Checkup',
-      status: 'Registered',
-      priority: 'Normal',
-      doctorId: 'doc-1',
-      room: 'Room 101',
-      paymentStatus: 'Pending Verification',
-      vitalRequired: true,
-      formsCompleted: true,
-      reason: 'Pre-employment health screening & chest radiograph review',
-      allergies: ['None'],
-      medications: ['None'],
-      history: 'No significant past medical history.',
-      notes: 'Ensure laboratory blood panel and audiometry records are attached.',
-      activityLog: [
-        { timestamp: '08:30 AM', staffName: 'System', action: 'Appointment booked via MediKiosk Desk' },
-        { timestamp: '09:00 AM', staffName: 'Admin Lisa', action: 'Confirmed slot allocation' }
-      ]
-    },
-    {
-      id: 'APT-1005',
-      patientName: 'Rina Kusuma',
-      patientId: 'MRN-90134',
-      dob: '1990-12-15',
-      age: 35,
-      gender: 'Female',
-      phone: '+62 878-3344-5566',
-      timeSlot: '14:00',
-      timeRange: '14:00 - 14:30',
-      duration: '30 mins',
-      type: 'Consultation',
-      status: 'Confirmed',
-      priority: 'Normal',
-      doctorId: 'doc-3',
-      room: 'Room 103',
-      paymentStatus: 'Direct Billing',
-      formsCompleted: true,
-      reason: 'Recurrent facial contact dermatitis evaluation',
-      allergies: ['Fragrance mix', 'Nickel'],
-      medications: ['Hydrocortisone 1% cream'],
-      history: 'Chronic eczema history.',
-      notes: 'Patch test results ready for review.',
-      activityLog: [
-        { timestamp: '09:15 AM', staffName: 'System', action: 'SMS Reminder dispatched' },
-        { timestamp: '10:00 AM', staffName: 'Receptionist Maya', action: 'Patient confirmed attendance' }
-      ]
-    },
-    {
-      id: 'APT-1006',
-      patientName: 'Bambang Wijaya',
-      patientId: 'MRN-33821',
-      dob: '1978-04-02',
-      age: 48,
-      gender: 'Male',
-      phone: '+62 811-9988-7766',
-      timeSlot: '15:00',
-      timeRange: '15:00 - 15:45',
-      duration: '45 mins',
-      type: 'Lab Review',
-      status: 'Registered',
-      priority: 'Normal',
-      doctorId: 'doc-2',
-      room: 'Room 102',
-      paymentStatus: 'Insured (BPJS)',
-      formsCompleted: true,
-      reason: 'Quarterly HbA1c and lipid panel review',
-      allergies: ['Latex'],
-      medications: ['Metformin 500mg', 'Atorvastatin 10mg'],
-      history: 'Type 2 Diabetes Mellitus diagnosed in 2018.',
-      notes: 'Latest HbA1c is 6.7%.',
-      activityLog: [
-        { timestamp: '08:00 AM', staffName: 'System', action: 'Scheduled automated check-in prompt' }
-      ]
-    },
-    {
-      id: 'APT-1007',
-      patientName: 'Siti Nurhaliza',
-      patientId: 'MRN-11928',
-      dob: '2001-07-19',
-      age: 25,
-      gender: 'Female',
-      phone: '+62 819-2233-4455',
-      timeSlot: '15:00',
-      timeRange: '15:00 - 15:30',
-      duration: '30 mins',
-      type: 'General Checkup',
-      status: 'Registered',
-      priority: 'Normal',
-      doctorId: 'doc-1',
-      room: 'Room 101',
-      paymentStatus: 'Self-Pay (Paid)',
-      formsCompleted: true,
-      reason: 'Vaccination booster & international travel certification',
-      allergies: ['Eggs'],
-      medications: ['None'],
-      history: 'Asthma in childhood.',
-      notes: 'Typhoid booster requested.',
-      activityLog: [
-        { timestamp: '08:45 AM', staffName: 'System', action: 'Created appointment' }
-      ]
-    }
-  ]);
+  // Appointments master state (Database-driven)
+  const [appointments, setAppointments] = useState<AppointmentRecord[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadAppointmentsData = async () => {
+      try {
+        const [docsRes, apptsRes] = await Promise.all([
+          fetch(getApiUrl('/api/doctors')),
+          fetch(getApiUrl('/api/appointments')),
+        ]);
+
+        if (docsRes.ok) {
+          const docData = await docsRes.json();
+          if (isMounted) {
+            const mappedDocs: DoctorSchedule[] = docData.map((d: any, idx: number) => ({
+              id: d.id || `doc-${idx + 1}`,
+              name: d.name,
+              specialty: d.spec || 'General Physician',
+              room: d.room || 'Room 101',
+              avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=120&auto=format&fit=crop&q=80',
+              status: 'Available',
+              notAvailableSlots: []
+            }));
+            setDoctors(mappedDocs);
+          }
+        }
+
+        if (apptsRes.ok) {
+          const apptData = await apptsRes.json();
+          if (isMounted) {
+            const statusMap: Record<string, AppointmentStatus> = {
+              waiting: 'Checked In',
+              in_consultation: 'In Consultation',
+              completed: 'Completed',
+              cancelled: 'Cancelled',
+              scheduled: 'Confirmed',
+            };
+
+            const mappedAppts: AppointmentRecord[] = apptData.map((a: any) => {
+              const timeSlot = a.scheduledAt
+                ? new Date(a.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : '10:00';
+              return {
+                id: a.appointmentId || `APT-${a.token || 1001}`,
+                patientName: a.patientName || 'Patient',
+                patientId: `MRN-${(a.patientId || '1001').slice(0, 5).toUpperCase()}`,
+                dob: '1992-05-14',
+                age: a.age || 30,
+                gender: a.gender || 'Not Specified',
+                phone: a.phone || '+91 91234 56789',
+                timeSlot: timeSlot.slice(0, 5),
+                timeRange: `${timeSlot} - 45 mins`,
+                duration: '45 mins',
+                type: 'Consultation',
+                status: statusMap[a.status] || 'Checked In',
+                priority: (a.priority === 'Emergency' || a.priority === 'Urgent' ? a.priority : 'Normal') as PriorityLevel,
+                doctorId: a.doctorId || 'doc-1',
+                room: a.room || 'Room 4B',
+                paymentStatus: 'Direct Billing',
+                formsCompleted: true,
+                reason: a.reason || 'OPD Consultation',
+                allergies: a.allergies || [],
+                medications: a.medications || [],
+                history: 'Recorded at MediKiosk intake',
+                notes: a.reason || '',
+                vitals: {
+                  bp: a.vitals?.bp || '120/80 mmHg',
+                  pulse: `${a.vitals?.pulse || 72} bpm`,
+                  temp: a.vitals?.temp || '98.6 °F',
+                  spO2: `${a.vitals?.spO2 || a.vitals?.spo2 || 98}%`,
+                  bmi: '23.4',
+                },
+                activityLog: [
+                  { timestamp: 'Just now', staffName: 'System', action: 'Synchronized from Database' }
+                ]
+              };
+            });
+            setAppointments(mappedAppts);
+          }
+        }
+      } catch (err) {
+        console.error('[Appointments] Failed to fetch database data:', err);
+      }
+    };
+
+    void loadAppointmentsData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Add Appointment form state
   const [formPatientName, setFormPatientName] = useState('');

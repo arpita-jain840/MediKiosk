@@ -28,7 +28,47 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
   onClose,
   onFindDoctors,
 }) => {
-  const bp = blueprintResult?.blueprint;
+  const userStr = typeof window !== "undefined" ? localStorage.getItem("medikiosk_user") : null;
+  let savedPatientId = "user1";
+  if (userStr) {
+    try {
+      const parsed = JSON.parse(userStr);
+      savedPatientId = parsed.patient_id || parsed.username || parsed.id || savedPatientId;
+    } catch {
+      // fallback
+    }
+  }
+  const patientId = blueprintResult?.profileId || savedPatientId;
+
+  const [dbBlueprint, setDbBlueprint] = useState<any>(blueprintResult?.blueprint || null);
+  const [liveToken, setLiveToken] = useState<number>(blueprintResult?.appointment?.token || 1);
+  const [liveRoom, setLiveRoom] = useState<string>("Room 4B");
+
+  useEffect(() => {
+    if (blueprintResult?.blueprint) return;
+    let isMounted = true;
+    const fetchBp = async () => {
+      try {
+        const res = await fetch(getApiUrl(`/api/doctor/patient/${encodeURIComponent(patientId)}/blueprint`));
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            if (data.blueprint) setDbBlueprint(data.blueprint);
+            if (data.appointment?.token) setLiveToken(data.appointment.token);
+            if (data.appointment?.doctorRoom) setLiveRoom(data.appointment.doctorRoom);
+          }
+        }
+      } catch (err) {
+        console.warn("[ResultScreen] Error loading live blueprint:", err);
+      }
+    };
+    fetchBp();
+    return () => {
+      isMounted = false;
+    };
+  }, [patientId, blueprintResult]);
+
+  const bp = dbBlueprint || blueprintResult?.blueprint;
   const priority = bp?.triage_priority || bp?.triagePriority || "Routine";
   const style = PRIORITY_STYLES[priority] || PRIORITY_STYLES.Routine;
   const redFlags = bp?.red_flags || bp?.redFlags || [];
@@ -36,24 +76,11 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
     bp?.ai_summary ||
     bp?.aiSummary ||
     "Intake recorded at MediKiosk terminal. Clinical blueprint committed to database.";
-
-  const userStr = typeof window !== "undefined" ? localStorage.getItem("medikiosk_user") : null;
-  let savedPatientId = "7047ac9d-9586-42fb-8728-acb9b52a10da";
-  if (userStr) {
-    try {
-      const parsed = JSON.parse(userStr);
-      savedPatientId = parsed.patient_id || parsed.id || savedPatientId;
-    } catch {
-      // fallback
-    }
-  }
-  const patientId = blueprintResult?.profileId || savedPatientId;
-  const token = blueprintResult?.appointment?.token || bp?.token || 1;
-
+  const token = liveToken;
 
   // Live WebSocket queue state
   const [queueStatus, setQueueStatus] = useState<string>("waiting");
-  const [activeCallRoom, setActiveCallRoom] = useState<string>("Room 4B");
+  const [activeCallRoom, setActiveCallRoom] = useState<string>(liveRoom);
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false);
   const [isExportingFhir, setIsExportingFhir] = useState<boolean>(false);
 
@@ -62,7 +89,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
     system: "MediKiosk",
     token: token,
     patientId: patientId,
-    room: "Room 4B",
+    room: activeCallRoom || liveRoom,
     priority: priority,
     generatedAt: new Date().toISOString(),
   });

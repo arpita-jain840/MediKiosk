@@ -93,3 +93,35 @@ async def test_full_intake_to_doctor_e2e():
         # 7. Doctor advances queue
         advance_res = await client.post("/api/doctor/queue/advance", data={"room_number": "Room 4B"})
         assert advance_res.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_database_only_endpoints():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        # 1. Test Doctors Directory from Database
+        doc_res = await client.get("/api/doctors")
+        assert doc_res.status_code == 200
+        doctors = doc_res.json()
+        assert len(doctors) >= 1
+        assert any("Sharma" in d["name"] or "Cardiologist" in d["spec"] for d in doctors)
+
+        # 2. Test Patient Records from Database
+        doc_patients_res = await client.get("/api/doctor/patients")
+        assert doc_patients_res.status_code == 200
+        patients = doc_patients_res.json()
+        assert len(patients) >= 1
+        first_patient_id = patients[0]["id"]
+
+        records_res = await client.get(f"/api/patient/{first_patient_id}/records")
+        assert records_res.status_code == 200
+        records = records_res.json()
+        assert isinstance(records, list)
+
+        # 3. Test Appointments from Database
+        appts_res = await client.get("/api/appointments")
+        assert appts_res.status_code == 200
+        appts = appts_res.json()
+        assert isinstance(appts, list)
+        assert len(appts) >= 1
+        assert "patientName" in appts[0]
+        assert "token" in appts[0]

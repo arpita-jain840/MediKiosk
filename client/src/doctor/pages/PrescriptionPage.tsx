@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { initialPatients, markPatientAsCompleted } from '../data/patientsData';
+import { markPatientAsCompleted } from '../data/patientsData';
 import type {
   PrescriptionData,
   MedicineItem,
@@ -18,139 +18,112 @@ import { HandwrittenCanvasModal } from '../components/prescription/HandwrittenCa
 import { PrescriptionPreviewModal } from '../components/prescription/PrescriptionPreviewModal';
 import { SendConfirmationModal } from '../components/prescription/SendConfirmationModal';
 import { PrescriptionSuccessModal } from '../components/prescription/PrescriptionSuccessModal';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { getApiUrl } from '../../config/api';
 
 export const PrescriptionPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Matched patient or default fallback
-  const matched = useMemo(() => {
-    return initialPatients.find((p) => p.id === id) || initialPatients[0];
-  }, [id]);
-
-  // Initial Prescription Data automatically populated based on patient
-  const [prescription, setPrescription] = useState<PrescriptionData>(() => {
-    const isMigraine = matched.name === 'Amina Begum';
-    const isHypertension = matched.name === 'Rajesh Kumar';
-    const isSkin = false;
-
-    const defaultDiagnosis = isMigraine
-      ? 'Acute Migraine with Photophobia & Nausea'
-      : isHypertension
-      ? 'Essential Hypertension (Stage 1) & Tension Fatigue'
-      : isSkin
-      ? 'Allergic Contact Dermatitis & Pruritus'
-      : 'Acute Bronchitis & Upper Airway Congestion';
-
-    const defaultMeds: MedicineItem[] = isMigraine
-      ? [
-          {
-            id: 'med-1',
-            name: 'Sumatriptan 50mg',
-            dosage: '1 tablet',
-            frequency: 'At onset of acute migraine attack',
-            duration: 'As needed',
-            instructions: 'Take immediately with water at first sign of aura',
-          },
-          {
-            id: 'med-2',
-            name: 'Naproxen Sodium 500mg',
-            dosage: '1 tablet',
-            frequency: 'Twice daily',
-            duration: '3 days',
-            instructions: 'Take with food to prevent gastric discomfort',
-          },
-          {
-            id: 'med-3',
-            name: 'Domperidone 10mg',
-            dosage: '1 tablet',
-            frequency: 'Before meals (PRN)',
-            duration: '5 days',
-            instructions: 'Take 30 mins before food for nausea control',
-          },
-        ]
-      : [
-          {
-            id: 'med-1',
-            name: 'Paracetamol 500mg',
-            dosage: '1 tablet',
-            frequency: 'Three times daily',
-            duration: '5 days',
-            instructions: 'Take after meals for fever & body ache',
-          },
-          {
-            id: 'med-2',
-            name: 'Levocetirizine 5mg',
-            dosage: '1 tablet',
-            frequency: 'Once daily (Night)',
-            duration: '7 days',
-            instructions: 'Take at bedtime with water',
-          },
-          {
-            id: 'med-3',
-            name: 'Ambroxol Syrup 30mg/5ml',
-            dosage: '10 ml',
-            frequency: 'Twice daily',
-            duration: '5 days',
-            instructions: 'Take with warm water after food',
-          },
-        ];
-
-    return {
-      patientId: matched.id,
-      patientName: matched.name,
-      patientAge: matched.age,
-      patientGender: matched.gender,
-      patientWeight: matched.weight || '56 kg',
-      patientBloodGroup: matched.bloodGroup || 'B+',
-      doctorId: 'DOC-1001',
-      doctorName: 'Dr. Ananya Sharma',
-      doctorQualification: 'MBBS, MD (Internal Medicine)',
-      doctorSpecialty: 'General Physician & Clinical Consultant',
-      doctorRegNo: 'MCI-DL-2014-98421',
-      clinicName: 'MEDIKIS CARE CENTER & MULTISPECIALTY CLINIC',
-      clinicAddress: 'Saket, New Delhi, India 110017',
-      clinicPhone: '+91 98101 23456',
-      consultationId: `RX-${matched.id}`,
-      consultationDate: new Date().toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      }),
-      diagnosis: defaultDiagnosis,
-      clinicalNotes: `Patient presented with ${matched.complaint}. Vital parameters recorded at Kiosk Desk.`,
-      medicines: defaultMeds,
-      instructions: isMigraine
-        ? 'Rest in a dark quiet room during acute flare-up. Maintain hydration > 2.5 Liters/day. Avoid direct bright screen glare and missed meals.'
-        : 'Warm steam inhalation twice daily. Maintain hydration > 2.5 Liters/day. Avoid cold drinks and direct AC drafts.',
-      dietaryAdvice: isMigraine
-        ? 'Avoid excess caffeine, aged cheese, MSG and processed foods. Regular sleep schedule.'
-        : 'Warm fluids, honey-ginger tea, low sodium fresh diet.',
-      followUp: isMigraine
-        ? '10 Days (or earlier if severe headache persists)'
-        : '7 Days (or earlier if high fever develops)',
-      voice: null,
-      handwritten: null,
-      uploadedFiles: [],
-      status: 'DRAFT',
-      createdAt: new Date().toISOString(),
-    };
+  const [prescription, setPrescription] = useState<PrescriptionData>({
+    patientId: id || '',
+    patientName: '',
+    patientAge: 30,
+    patientGender: '',
+    patientWeight: '60 kg',
+    patientBloodGroup: 'O+',
+    doctorId: 'DOC-1001',
+    doctorName: 'Dr. Neha Sharma',
+    doctorQualification: 'MBBS, MD (Internal Medicine)',
+    doctorSpecialty: 'General Physician & Clinical Consultant',
+    doctorRegNo: 'MCI-DL-2014-98421',
+    clinicName: 'MEDIKIOSK CARE CENTER & MULTISPECIALTY CLINIC',
+    clinicAddress: 'City Care Hospital · AIIA OPD Room 4B',
+    clinicPhone: '+91 98765 43210',
+    consultationId: `RX-${id || '1001'}`,
+    consultationDate: new Date().toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }),
+    diagnosis: '',
+    clinicalNotes: '',
+    medicines: [],
+    instructions: 'Maintain daily vitals log. Take medications on time as prescribed.',
+    dietaryAdvice: 'Warm fluids, low sodium fresh diet, adequate hydration.',
+    followUp: '7 Days',
+    voice: null,
+    handwritten: null,
+    uploadedFiles: [],
+    status: 'DRAFT',
+    createdAt: new Date().toISOString(),
   });
 
-  // Re-sync if patient ID changes
   useEffect(() => {
-    setPrescription((prev) => ({
-      ...prev,
-      patientId: matched.id,
-      patientName: matched.name,
-      patientAge: matched.age,
-      patientGender: matched.gender,
-      patientWeight: matched.weight || '56 kg',
-      patientBloodGroup: matched.bloodGroup || 'B+',
-      consultationId: `RX-${matched.id}`,
-    }));
-  }, [matched]);
+    let isMounted = true;
+    const fetchPatientData = async () => {
+      if (!id) return;
+      setIsLoading(true);
+      setLoadError(null);
+      try {
+        const res = await fetch(getApiUrl(`/api/doctor/patient/${encodeURIComponent(id)}/blueprint`));
+        if (!res.ok) throw new Error(`Failed to load patient record from database (${res.status})`);
+        const data = await res.json();
+        if (isMounted) {
+          const pat = data.patient || {};
+          const appt = data.appointment || {};
+          const bp = data.blueprint || {};
+          const existingMeds: string[] = bp.clinicalEntities?.medications || [];
+          const initialMeds: MedicineItem[] = existingMeds.map((m: string, idx: number) => ({
+            id: `med-${idx + 1}`,
+            name: m,
+            dosage: '1 dose',
+            frequency: 'As directed',
+            duration: '7 days',
+            instructions: 'Take with water after meals',
+          }));
+
+          setPrescription((prev) => ({
+            ...prev,
+            patientId: pat.id || id,
+            patientName: pat.name || 'Patient',
+            patientAge: pat.age || 30,
+            patientGender: pat.gender || 'Not Specified',
+            patientBloodGroup: pat.bloodGroup || 'O+',
+            patientWeight: bp.vitals?.weight || '60 kg',
+            doctorName: appt.doctorName || prev.doctorName,
+            doctorSpecialty: appt.doctorSpecialty || prev.doctorSpecialty,
+            clinicAddress: `${appt.doctorHospital || 'City Care Hospital'} · ${appt.doctorRoom || 'Room 4B'}`,
+            diagnosis: bp.chiefComplaint || 'OPD Clinical Consultation',
+            clinicalNotes: bp.aiSummary ? `Clinical Summary: ${bp.aiSummary}` : `Patient presented with ${bp.chiefComplaint || 'symptoms'}.`,
+            medicines: initialMeds.length > 0 ? initialMeds : [
+              {
+                id: 'med-1',
+                name: 'Paracetamol 500mg',
+                dosage: '1 tablet',
+                frequency: 'Twice daily',
+                duration: '3 days',
+                instructions: 'Take after meals as needed for fever or discomfort',
+              }
+            ],
+            instructions: bp.aiSummary ? `Clinical Note: ${bp.aiSummary}` : prev.instructions,
+            consultationId: `RX-${pat.id || id}`,
+          }));
+        }
+      } catch (err: any) {
+        console.error('[PrescriptionPage] Error fetching patient from database:', err);
+        if (isMounted) setLoadError(err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    fetchPatientData();
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   // Modals state
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
@@ -168,13 +141,11 @@ export const PrescriptionPage: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Update Prescription helper
   const handleUpdatePrescription = (updated: Partial<PrescriptionData>) => {
     setPrescription((prev) => ({ ...prev, ...updated }));
     showToast('Prescription updated');
   };
 
-  // Save from Text Modal
   const handleSaveText = (diagnosis: string, medicines: MedicineItem[], instructions: string) => {
     setPrescription((prev) => ({
       ...prev,
@@ -185,7 +156,6 @@ export const PrescriptionPage: React.FC = () => {
     showToast(`${medicines.length} medicine(s) updated in prescription`);
   };
 
-  // Save from Voice Modal
   const handleSaveVoice = (voice: VoiceAttachment) => {
     setPrescription((prev) => ({
       ...prev,
@@ -194,7 +164,6 @@ export const PrescriptionPage: React.FC = () => {
     showToast('Voice dictation attached to prescription');
   };
 
-  // Save from Upload Modal
   const handleSaveFiles = (files: UploadedPrescriptionFile[]) => {
     setPrescription((prev) => ({
       ...prev,
@@ -203,7 +172,6 @@ export const PrescriptionPage: React.FC = () => {
     showToast(`${files.length} diagnostic file(s) attached`);
   };
 
-  // Save from Handwritten Modal
   const handleSaveHandwritten = (handwritten: HandwrittenAttachment) => {
     setPrescription((prev) => ({
       ...prev,
@@ -212,7 +180,6 @@ export const PrescriptionPage: React.FC = () => {
     showToast('Handwritten clinical drawing saved to prescription');
   };
 
-  // Send the existing prescription reference to the patient's notification queue.
   const handleConfirmSend = async () => {
     setIsSending(true);
     try {
@@ -223,7 +190,7 @@ export const PrescriptionPage: React.FC = () => {
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
-            doctor_name: 'Dr. Sharma',
+            doctor_name: prescription.doctorName || 'Dr. Sharma',
             message: 'Your prescription has been uploaded.',
             pdf_url: 'https://example.com/prescription.pdf',
           }),
@@ -244,6 +211,26 @@ export const PrescriptionPage: React.FC = () => {
       setIsSending(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-8 bg-white rounded-3xl border border-slate-100 shadow-xs">
+        <Loader2 className="w-8 h-8 text-teal-600 animate-spin mb-3" />
+        <h3 className="text-sm font-bold text-slate-800">Loading Patient Prescription Profile from Database...</h3>
+        <p className="text-xs text-slate-400 mt-1">Retrieving clinical blueprint and current medications.</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-8 bg-white rounded-3xl border border-slate-100 shadow-xs">
+        <AlertCircle className="w-8 h-8 text-rose-500 mb-3" />
+        <h3 className="text-sm font-bold text-slate-800">Unable to Load Patient Record</h3>
+        <p className="text-xs text-slate-400 mt-1">{loadError}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-[1440px] mx-auto pb-24 space-y-5 sm:space-y-6 text-slate-800">

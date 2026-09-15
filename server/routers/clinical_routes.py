@@ -242,6 +242,124 @@ async def book_appointment(
     await db.commit()
     return {"message": "Appointment booked successfully", "token": token_count, "appointmentId": str(appt.id)}
 
+
+# ---------------------------------------------------------------------------
+# 2.1. Doctors Directory from Database
+# ---------------------------------------------------------------------------
+@router.get("/doctors")
+async def get_doctors_directory(db: AsyncSession = Depends(get_db)):
+    """
+    Returns the active doctors directory from the database.
+    """
+    stmt = select(Doctor).options(selectinload(Doctor.user))
+    res = await db.execute(stmt)
+    doctors = res.scalars().all()
+
+    result = []
+    for d in doctors:
+        u = d.user
+        result.append({
+            "id": str(d.id),
+            "name": u.full_name if u else "Doctor",
+            "spec": d.specialization or "General Physician",
+            "hospital": d.hospital_name or "City Care Hospital",
+            "room": d.room_number or "Room 101",
+            "license": d.license_number or "",
+            "phone": u.phone if u else "",
+            "rating": 4.8,
+            "km": "1.2",
+            "next": "Available Today",
+        })
+    return result
+
+
+# ---------------------------------------------------------------------------
+# 2.2. Raw Records / Uploaded Documents for Patient from Database
+# ---------------------------------------------------------------------------
+@router.get("/patient/{patient_id}/records")
+async def get_patient_records(patient_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    Returns all raw records and medical documents for the specified patient from the database.
+    """
+    patient = await resolve_patient(db, patient_id, [selectinload(Patient.documents)])
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found.")
+
+    records = []
+    for doc in patient.documents:
+        cat = "reports"
+        dtype = (doc.document_type or "").lower()
+        if "presc" in dtype or "rx" in dtype:
+            cat = "rx"
+        elif any(k in dtype for k in ["blood", "cbc", "lab", "panel", "tsh", "iron"]):
+            cat = "blood"
+        elif any(k in dtype for k in ["xray", "x-ray", "mri", "ct", "usg", "ultrasound", "imaging"]):
+            cat = "imaging"
+
+        records.append({
+            "id": str(doc.id),
+            "cat": cat,
+            "title": doc.file_name or "Medical Document",
+            "source": f"{doc.document_type.replace('_', ' ').title()}",
+            "date": doc.uploaded_at.strftime("%d %b %Y") if doc.uploaded_at else "Recent",
+            "documentType": doc.document_type,
+            "fileUrl": doc.file_url,
+            "ocr": doc.raw_extracted_text or "",
+        })
+    return records
+
+
+# ---------------------------------------------------------------------------
+# 2.3. All Appointments from Database (Doctor/Staff Queue Management)
+# ---------------------------------------------------------------------------
+@router.get("/appointments")
+async def get_all_appointments(db: AsyncSession = Depends(get_db)):
+    """
+    Returns all appointments joined with patient and doctor from the database.
+    """
+    stmt = (
+        select(Appointment)
+        .options(
+            selectinload(Appointment.patient).selectinload(Patient.user),
+            selectinload(Appointment.patient).selectinload(Patient.clinical_profiles),
+            selectinload(Appointment.doctor).selectinload(Doctor.user),
+        )
+        .order_by(Appointment.scheduled_at.desc())
+    )
+    res = await db.execute(stmt)
+    appts = res.scalars().all()
+
+    result = []
+    for a in appts:
+        p = a.patient
+        pu = p.user if p else None
+        d = a.doctor
+        du = d.user if d else None
+        latest_profile = p.clinical_profiles[-1] if p and p.clinical_profiles else None
+
+        age = 2026 - p.dob.year if p and p.dob else 30
+        result.append({
+            "id": str(a.id),
+            "appointmentId": f"APT-{a.token_number or 1000}",
+            "patientId": str(p.id) if p else "",
+            "patientName": pu.full_name if pu else "Unknown",
+            "age": age,
+            "gender": p.gender if p else "Not Specified",
+            "phone": pu.phone if pu else "",
+            "token": a.token_number,
+            "status": a.status or "waiting",
+            "scheduledAt": a.scheduled_at.isoformat() if a.scheduled_at else None,
+            "doctorName": du.full_name if du else "Assigned Doctor",
+            "specialty": d.specialization if d else "General Medicine",
+            "room": d.room_number if d else "Room 4B",
+            "reason": latest_profile.chief_complaint if latest_profile else "OPD Consultation",
+            "priority": latest_profile.triage_priority if latest_profile else "Routine",
+            "vitals": latest_profile.vitals if latest_profile else {},
+            "allergies": p.allergies if p else [],
+            "medications": latest_profile.clinical_entities.get("medications", []) if latest_profile and latest_profile.clinical_entities else [],
+        })
+    return result
+
 @router.post("/patient/upload-document")
 async def upload_patient_document(
     patient_id: str = Form(...),
@@ -316,7 +434,7 @@ async def get_patient_clinical_blueprint(patient_id: str, db: AsyncSession = Dep
         patient_id,
         [
             selectinload(Patient.user),
-            selectinload(Patient.appointments),
+            selectinload(Patient.appointments).selectinload(Appointment.doctor).selectinload(Doctor.user),
             selectinload(Patient.clinical_profiles),
             selectinload(Patient.documents),
         ]
@@ -329,6 +447,13 @@ async def get_patient_clinical_blueprint(patient_id: str, db: AsyncSession = Dep
     latest_appt = patient.appointments[-1] if patient.appointments else None
     latest_profile = patient.clinical_profiles[-1] if patient.clinical_profiles else None
     age = 2026 - patient.dob.year if patient.dob else 30
+
+    doctor_obj = latest_appt.doctor if latest_appt else None
+    doctor_user = doctor_obj.user if doctor_obj else None
+    doctor_name = doctor_user.full_name if doctor_user else "Dr. Neha Sharma"
+    doctor_room = doctor_obj.room_number if doctor_obj else "Room 4B"
+    doctor_hospital = doctor_obj.hospital_name if doctor_obj else "City Care Hospital · AIIA OPD"
+    doctor_spec = doctor_obj.specialization if doctor_obj else "Cardiologist & Internal Medicine"
 
     return {
         "patient": {
@@ -345,6 +470,10 @@ async def get_patient_clinical_blueprint(patient_id: str, db: AsyncSession = Dep
             "token": latest_appt.token_number if latest_appt else 1,
             "status": latest_appt.status if latest_appt else "waiting",
             "scheduledAt": latest_appt.scheduled_at.isoformat() if latest_appt else datetime.utcnow().isoformat(),
+            "doctorName": doctor_name,
+            "doctorRoom": doctor_room,
+            "doctorHospital": doctor_hospital,
+            "doctorSpecialty": doctor_spec,
         },
         "blueprint": {
             "chiefComplaint": latest_profile.chief_complaint if latest_profile else "General Consultation",

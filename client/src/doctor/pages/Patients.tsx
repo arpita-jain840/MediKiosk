@@ -1,24 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { getLivePatients, fetchLiveCockpitPatients } from '../data/patientsData';
+import { fetchLiveCockpitPatients } from '../data/patientsData';
 import type { PatientRecord } from '../data/patientsData';
-import { QrCode, Clock, Activity, CheckCircle2 } from 'lucide-react';
+import { QrCode, Clock, Activity, CheckCircle2, Loader2 } from 'lucide-react';
 
 export const Patients: React.FC = () => {
   const [patients, setPatients] = useState<PatientRecord[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>('active');
 
   useEffect(() => {
     let isMounted = true;
 
     const loadPatients = async () => {
-      setPatients(getLivePatients());
+      setIsLoading(true);
       try {
         const data = await fetchLiveCockpitPatients();
         if (isMounted) {
           setPatients(data);
         }
       } catch (error) {
-        console.warn('[Patients] Backend unavailable; showing local patient data.', error);
+        console.error('[Patients] Failed to load patients from database:', error);
+        if (isMounted) {
+          setPatients([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -78,7 +86,13 @@ export const Patients: React.FC = () => {
 
       {/* Patients Table / Card List */}
       <div className="bg-white rounded-[2rem] p-4 sm:p-6 border border-slate-100/80 shadow-xs overflow-hidden">
-        {displayedPatients.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-16 flex flex-col items-center justify-center">
+            <Loader2 className="w-8 h-8 text-indigo-600 animate-spin mb-3" />
+            <h3 className="text-sm font-bold text-slate-800">Loading Patient Records from Database...</h3>
+            <p className="text-xs text-slate-400 mt-1">Connecting to MediKiosk PostgreSQL/SQLite core.</p>
+          </div>
+        ) : displayedPatients.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-3">
               <CheckCircle2 size={24} />

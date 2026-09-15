@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Clock,
   MapPin,
@@ -6,11 +6,12 @@ import {
   CheckCircle2,
   Plus,
   Printer,
+  Loader2,
 } from "lucide-react";
 import { TopBar } from "../components/TopBar";
-import { DOCTORS } from "../data/patientData";
 import { getTranslations } from "../utils/i18n";
 import type { DoctorDirectoryItem } from "../types";
+import { getApiUrl } from "../../config/api";
 
 interface AppointmentsScreenProps {
   currentLang?: string;
@@ -29,7 +30,111 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
   const [selectedDept, setSelectedDept] = useState("all");
   const [bookedDoctor, setBookedDoctor] = useState<DoctorDirectoryItem | null>(null);
   const [showBookingSuccess, setShowBookingSuccess] = useState(false);
-  const [activeTokenNumber, setActiveTokenNumber] = useState<number>(2);
+  const [activeTokenNumber, setActiveTokenNumber] = useState<number>(1);
+  const [isBooking, setIsBooking] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [activeAppt, setActiveAppt] = useState<{
+    token: number;
+    doctorName: string;
+    doctorRoom: string;
+    doctorHospital: string;
+    doctorSpecialty: string;
+    status: string;
+  }>({
+    token: 1,
+    doctorName: "OPD Duty Doctor",
+    doctorRoom: "Room 4B",
+    doctorHospital: "MediKiosk Apex Center",
+    doctorSpecialty: "General Medicine",
+    status: "waiting",
+  });
+
+  const [doctors, setDoctors] = useState<DoctorDirectoryItem[]>([]);
+  const [pastVisits, setPastVisits] = useState<Array<{
+    id: string;
+    date: string;
+    doctor: string;
+    dept: string;
+    token: string;
+    diagnosis: string;
+    status: string;
+  }>>([]);
+
+  const userStr = typeof window !== "undefined" ? localStorage.getItem("medikiosk_user") : null;
+  let patientId = "user1";
+  if (userStr) {
+    try {
+      const parsed = JSON.parse(userStr);
+      patientId = parsed.patient_id || parsed.username || parsed.id || "user1";
+    } catch {
+      // fallback
+    }
+  }
+
+  const loadAppointmentsData = async () => {
+    setIsLoading(true);
+    try {
+      const [docsRes, bpRes] = await Promise.all([
+        fetch(getApiUrl("/api/doctors")),
+        fetch(getApiUrl(`/api/doctor/patient/${encodeURIComponent(patientId)}/blueprint`)),
+      ]);
+
+      if (docsRes.ok) {
+        const docData = await docsRes.json();
+        if (Array.isArray(docData)) {
+          const mapped: DoctorDirectoryItem[] = docData.map((d: any, idx: number) => ({
+            id: idx + 1,
+            name: d.name || "Doctor",
+            spec: d.specialty || d.department || "Consultant",
+            hospital: d.hospital || "MediKiosk Hospital",
+            km: "1.2",
+            rating: d.rating || 4.9,
+            next: d.room ? `${d.room} · Available today` : "Available today",
+          }));
+          setDoctors(mapped);
+        }
+      }
+
+      if (bpRes.ok) {
+        const bpData = await bpRes.json();
+        const appt = bpData.appointment;
+        if (appt) {
+          setActiveTokenNumber(appt.token || 1);
+          setActiveAppt({
+            token: appt.token || 1,
+            doctorName: appt.doctorName || "OPD Duty Doctor",
+            doctorRoom: appt.doctorRoom || "Room 4B",
+            doctorHospital: appt.doctorHospital || "MediKiosk Apex Center",
+            doctorSpecialty: appt.doctorSpecialty || "General Medicine",
+            status: appt.status || "waiting",
+          });
+        }
+
+        const timeline = bpData.blueprint?.timeline || [];
+        const mappedVisits = timeline
+          .filter((item: any) => item.type === "prescription" || item.type === "lab" || item.type === "consultation")
+          .map((item: any, idx: number) => ({
+            id: `v-${idx + 1}`,
+            date: item.date || "Past Visit",
+            doctor: item.doctor || "OPD Consultant",
+            dept: item.title || "Clinical Follow-up",
+            token: `#${idx + 1}`,
+            diagnosis: item.summary || "Clinical assessment completed",
+            status: "Completed",
+          }));
+        setPastVisits(mappedVisits);
+      }
+    } catch (err) {
+      console.warn("[AppointmentsScreen] Could not load database data:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadAppointmentsData();
+  }, [patientId]);
 
   const departments = [
     { id: "all", label: t.appointments.depts.all || "All Departments" },
@@ -40,33 +145,39 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
     { id: "pediatrics", label: t.appointments.depts.pediatrics || "Pediatrics" },
   ];
 
-  const pastVisits = [
-    {
-      id: "v-101",
-      date: "28 Aug 2026",
-      doctor: "Dr. Ananya Sharma",
-      dept: "General Medicine · Room 2A",
-      token: "#14",
-      diagnosis: "Hyperacidity - Prescribed Avipattikar Churna",
-      status: "Completed",
-    },
-    {
-      id: "v-102",
-      date: "12 Jul 2026",
-      doctor: "Dr. Rajesh Kulkarni",
-      dept: "Panchakarma · Room 5B",
-      token: "#8",
-      diagnosis: "Joint Pain - 7 Days Therapy",
-      status: "Completed",
-    },
-  ];
-
-  const handleBook = (doctor: DoctorDirectoryItem) => {
-    const newToken = Math.floor(Math.random() * 20) + 3;
-    setActiveTokenNumber(newToken);
-    setBookedDoctor(doctor);
-    setShowBookingSuccess(true);
-    if (onBookSuccess) onBookSuccess(doctor);
+  const handleBook = async (doctor: DoctorDirectoryItem) => {
+    setIsBooking(true);
+    try {
+      const res = await fetch(getApiUrl("/api/appointments/book"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patient_id: patientId,
+          doctor_id: (doctor as any).doctorId || null,
+          chief_complaint: "OPD Consultation Booking",
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const realToken = data.token || 1;
+        setActiveTokenNumber(realToken);
+        setActiveAppt({
+          token: realToken,
+          doctorName: doctor.name,
+          doctorRoom: "Room 4B",
+          doctorHospital: doctor.hospital,
+          doctorSpecialty: doctor.spec,
+          status: "waiting",
+        });
+      }
+    } catch (err) {
+      console.warn("[AppointmentsScreen] Booking error:", err);
+    } finally {
+      setIsBooking(false);
+      setBookedDoctor(doctor);
+      setShowBookingSuccess(true);
+      if (onBookSuccess) onBookSuccess(doctor);
+    }
   };
 
   return (
@@ -112,10 +223,10 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
                 </span>
               </div>
               <h2 className="text-xl font-extrabold text-slate-900">
-                {bookedDoctor ? bookedDoctor.name : "Dr. John Smith"}
+                {bookedDoctor ? bookedDoctor.name : activeAppt.doctorName}
               </h2>
               <p className="text-xs text-slate-500">
-                {bookedDoctor ? `${bookedDoctor.spec} · ${bookedDoctor.hospital}` : "Cardiology · Room 4B"}
+                {bookedDoctor ? `${bookedDoctor.spec} · ${bookedDoctor.hospital}` : `${activeAppt.doctorSpecialty} · ${activeAppt.doctorRoom}`}
               </p>
               <div className="flex items-center gap-3 mt-2 text-xs font-semibold text-slate-600">
                 <span className="flex items-center gap-1 text-primary">
@@ -125,7 +236,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
                 <span>•</span>
                 <span className="flex items-center gap-1 text-slate-500">
                   <MapPin size={13} />
-                  <span>{t.appointments.roomPrefix} 4B, {t.appointments.floorInfo}</span>
+                  <span>{t.appointments.roomPrefix} {activeAppt.doctorRoom}, {t.appointments.floorInfo}</span>
                 </span>
               </div>
             </div>
@@ -140,12 +251,12 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
             </button>
             <button
               onClick={() => {
-                setActiveTokenNumber(1);
-                alert("Queue refreshed! Token verified.");
+                void loadAppointmentsData();
               }}
-              className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-primary hover:bg-[#204b77] text-white text-xs font-bold transition-colors cursor-pointer text-center shadow-xs"
+              className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-primary hover:bg-[#204b77] text-white text-xs font-bold transition-colors cursor-pointer text-center shadow-xs flex items-center justify-center gap-1.5"
             >
-              {t.appointments.refresh}
+              <Loader2 className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+              <span>{t.appointments.refresh}</span>
             </button>
           </div>
         </div>
@@ -190,63 +301,70 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
               {t.appointments.doctorsTitle}
             </h3>
             <span className="text-xs text-emerald-700 font-bold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              {DOCTORS.length} {t.appointments.operationalBadge}
+              {doctors.length} {t.appointments.operationalBadge}
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {DOCTORS.map((d) => (
-              <div
-                key={d.id}
-                className="rounded-3xl p-5 bg-white border border-slate-200/90 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm shrink-0"
-                        style={{ background: "var(--primary-tint)", color: "var(--primary)" }}
-                      >
-                        {d.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="text-sm md:text-base font-bold text-slate-900 truncate">
-                          {d.name}
-                        </h4>
-                        <p className="text-xs text-slate-500 truncate">
-                          {d.spec} · {d.hospital}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 shrink-0">
-                      <Star size={12} className="text-amber-600 fill-amber-600" />
-                      <span className="text-xs font-bold text-slate-800">{d.rating}</span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 mb-2">
-                    <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-1.5">
-                      <MapPin size={13} className="text-primary" />
-                      <span className="truncate">{t.appointments.roomPrefix} {d.id === 1 ? "4B" : "2A"}</span>
-                    </div>
-                    <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-1.5">
-                      <Clock size={13} className="text-primary" />
-                      <span className="truncate">{d.next}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => handleBook(d)}
-                  className="w-full py-2.5 rounded-xl bg-primary hover:bg-[#204b77] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+          {doctors.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-3xl border border-slate-200/80">
+              <p className="text-xs font-semibold text-slate-600">No active doctors loaded from database.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {doctors.map((d) => (
+                <div
+                  key={d.id}
+                  className="rounded-3xl p-5 bg-white border border-slate-200/90 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
                 >
-                  <Plus size={14} />
-                  <span>{t.appointments.getToken}</span>
-                </button>
-              </div>
-            ))}
-          </div>
+                  <div>
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm shrink-0"
+                          style={{ background: "var(--primary-tint)", color: "var(--primary)" }}
+                        >
+                          {d.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-sm md:text-base font-bold text-slate-900 truncate">
+                            {d.name}
+                          </h4>
+                          <p className="text-xs text-slate-500 truncate">
+                            {d.spec} · {d.hospital}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60 shrink-0">
+                        <Star size={12} className="text-amber-600 fill-amber-600" />
+                        <span className="text-xs font-bold text-slate-800">{d.rating}</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 mb-2">
+                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-1.5">
+                        <MapPin size={13} className="text-primary" />
+                        <span className="truncate">{d.next}</span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-1.5">
+                        <Clock size={13} className="text-primary" />
+                        <span className="truncate">{d.km} km</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleBook(d)}
+                    disabled={isBooking}
+                    className="w-full py-2.5 rounded-xl bg-primary hover:bg-[#204b77] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-75"
+                  >
+                    <Plus size={14} />
+                    <span>{isBooking ? "Booking Token..." : t.appointments.getToken}</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ========================================================== */}
@@ -268,33 +386,37 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({
           </div>
 
           <div className="space-y-3">
-            {pastVisits.map((v) => (
-              <div
-                key={v.id}
-                className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 transition-colors"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900">{v.doctor}</span>
-                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.2 bg-emerald-100 text-emerald-800 rounded-md">
-                      {t.appointments.tokenLabel} {v.token}
-                    </span>
-                    <span className="text-[11px] text-slate-400">• {v.date}</span>
-                  </div>
-                  <p className="text-xs text-slate-500">{v.dept}</p>
-                  <p className="text-xs font-medium text-slate-700 bg-white px-2.5 py-1.5 rounded-lg border border-slate-200/70 inline-block">
-                    {v.diagnosis}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => alert(`Prescription: ${v.doctor}`)}
-                  className="px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:text-primary hover:border-primary/40 transition-colors cursor-pointer self-start sm:self-auto shadow-2xs"
+            {pastVisits.length === 0 ? (
+              <p className="text-xs text-slate-400 py-3 text-center">No prior consultation visits on record in database.</p>
+            ) : (
+              pastVisits.map((v) => (
+                <div
+                  key={v.id}
+                  className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 transition-colors"
                 >
-                  {t.appointments.viewPrescription}
-                </button>
-              </div>
-            ))}
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-900">{v.doctor}</span>
+                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.2 bg-emerald-100 text-emerald-800 rounded-md">
+                        {t.appointments.tokenLabel} {v.token}
+                      </span>
+                      <span className="text-[11px] text-slate-400">• {v.date}</span>
+                    </div>
+                    <p className="text-xs text-slate-500">{v.dept}</p>
+                    <p className="text-xs font-medium text-slate-700 bg-white px-2.5 py-1.5 rounded-lg border border-slate-200/70 inline-block">
+                      {v.diagnosis}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => alert(`Consultation record: ${v.doctor} (${v.date})`)}
+                    className="px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:text-primary hover:border-primary/40 transition-colors cursor-pointer self-start sm:self-auto shadow-2xs"
+                  >
+                    {t.appointments.viewPrescription}
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

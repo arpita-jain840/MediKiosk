@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import PatientQRCard from '../components/PatientQRCard';
 import { getApiUrl } from '../../config/api';
+import { fetchLiveCockpitPatients } from '../data/patientsData';
 
 /* ------------------------------------------------------------------ */
 /*  One-time global styles: keyframes used across the dashboard.       */
@@ -97,47 +98,52 @@ export const Dashboard: React.FC = () => {
   const [drawerPatient, setDrawerPatient] = useState<Patient | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const [patients, setPatients] = useState<Patient[]>([
-    {
-      id: 'dd282916-ac7a-4ca8-a6c0-e63ffc62066f',
-      mrn: 'MRN 88213',
-      name: 'Emma Watson',
-      chiefComplaint: 'Fever, cough & severe fatigue for 3 days',
-      attending: 'Dr. Ananya Sharma',
-      triage: 'Stable',
-      time: '10:00 am',
-      avatar:
-        'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&auto=format&fit=crop&q=80',
-      vitals: { bp: '120/78', hr: '76', spo2: '98%', temp: '99.0°F' },
-      allergies: 'None',
-    },
-    {
-      id: '89f13786-8f6b-4063-bbfa-9beec534a303',
-      mrn: 'MRN 77452',
-      name: 'Sarah Hosten',
-      chiefComplaint: 'Acute migraine with photophobia & nausea',
-      attending: 'Dr. Ananya Sharma',
-      triage: 'Guarded',
-      time: '11:00 am',
-      avatar:
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
-      vitals: { bp: '112/74', hr: '82', spo2: '99%', temp: '98.4°F' },
-      allergies: 'Sulfa drugs',
-    },
-    {
-      id: 'a5493a2e-120b-452f-b68a-3f0ec2c6589b',
-      mrn: 'MRN 65310',
-      name: 'Dakota Smith',
-      chiefComplaint: 'Chest tightness, palpitations & mild dyspnea',
-      attending: 'Dr. Rohan Mehta',
-      triage: 'Critical',
-      time: '12:00 pm',
-      avatar:
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-      vitals: { bp: '138/88', hr: '94', spo2: '96%', temp: '98.6°F' },
-      allergies: 'Penicillin',
-    },
-  ]);
+  const [patients, setPatients] = useState<Patient[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadDashboardPatients = async () => {
+      try {
+        const livePatients = await fetchLiveCockpitPatients();
+        if (isMounted) {
+          const mapped: Patient[] = livePatients.map((p) => {
+            const triage: Triage =
+              p.triagePriority === 'Emergency' || p.triagePriority === 'Critical'
+                ? 'Critical'
+                : p.triagePriority === 'Specialist' || p.triagePriority === 'Urgent'
+                ? 'Guarded'
+                : 'Stable';
+
+            return {
+              id: p.id,
+              name: p.name,
+              mrn: `MRN ${p.id.slice(0, 5).toUpperCase()}`,
+              chiefComplaint: p.complaint || 'OPD Clinical Consultation',
+              attending: 'Dr. Neha Sharma',
+              triage: triage,
+              time: p.time || 'Today',
+              avatar: p.avatar,
+              vitals: {
+                bp: p.bp || '120/80',
+                hr: p.pulse || '72',
+                spo2: p.spO2 && p.spO2.includes('%') ? p.spO2 : `${p.spO2 || '98'}%`,
+                temp: p.temp || '98.6°F',
+              },
+              allergies: p.allergies && p.allergies.length > 0 ? p.allergies.join(', ') : 'None',
+            };
+          });
+          setPatients(mapped);
+        }
+      } catch (err) {
+        console.error('[Dashboard] Error loading patients from database:', err);
+      }
+    };
+
+    void loadDashboardPatients();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const [lastScannedId, setLastScannedId] = useState<string | null>(null);
 
